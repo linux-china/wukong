@@ -17,7 +17,7 @@ name = "jbang"
 path = "src/jbang.rs"
 
 [[bin]]
-name = "sdkman"
+name = "sdk"
 path = "src/sdkman.rs"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
