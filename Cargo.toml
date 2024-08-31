@@ -1,0 +1,45 @@
+[package]
+name = "wukong"
+version = "0.1.0"
+edition = "2021"
+authors = ["linux_china <libing.chen@gmail.com>"]
+description = "Wukong is a command-line toolchain for Java with Rust"
+keywords = ["java", "toolchain", "jbang", "sdkman"]
+categories = ["command-line-utilities"]
+documentation = "https://github.com/linux-china/wukong"
+readme = "README.md"
+homepage = "https://github.com/linux-china/wukong"
+repository = "https://github.com/linux-china/wukong"
+license = "Apache-2.0"
+
+[[bin]]
+name = "jbang"
+path = "src/jbang.rs"
+
+[[bin]]
+name = "sdkman"
+path = "src/sdkman.rs"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[dependencies]
+clap = "4.5"
+reqwest = "0.12"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+which = "6"
+dirs = "5"
+
+[profile.dev]
+opt-level = 0
+debug = 0
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+strip = true
+lto = true
+opt-level = "z"
+codegen-units = 1
+panic = "abort"
