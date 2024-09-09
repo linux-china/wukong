@@ -1,4 +1,7 @@
 //! clap App for command cli
+
+mod common;
+
 use clap::{Command, Arg, ArgAction};
 
 pub const VERSION: &str = "0.1.0";
