@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::PathBuf;
+use clap::{Arg, Command};
 use colored::Colorize;
 use java_properties::PropertiesError;
 use crate::jbang_cli::jbang_home;
@@ -73,6 +74,59 @@ pub fn manage_config(config_matches: &clap::ArgMatches) {
             _ => {}
         }
     }
+}
+
+pub fn build_config_command() -> Command {
+    Command::new("config")
+        .about("Read and write configuration options.")
+        .subcommand(
+            Command::new("get")
+                .about("The name of the configuration option to get")
+                .arg(
+                    Arg::new("key")
+                        .help("The key to get")
+                        .index(1)
+                        .required(true)
+                )
+        )
+        .subcommand(
+            Command::new("set")
+                .about("Set a configuration value")
+                .arg(
+                    Arg::new("key")
+                        .help("The name of the configuration option to set")
+                        .index(1)
+                        .required(true)
+                )
+                .arg(
+                    Arg::new("value")
+                        .help("The value to set for the configuration option")
+                        .index(2)
+                        .required(true)
+                )
+        )
+        .subcommand(
+            Command::new("unset")
+                .about("Remove a configuration value")
+                .arg(
+                    Arg::new("key")
+                        .help("The key to remove")
+                        .index(1)
+                        .required(true)
+                )
+        )
+        .subcommand(
+            Command::new("list")
+                .about("List active configuration values")
+                .arg(
+                    Arg::new("format")
+                        .long("format")
+                        .help("Specify output format ('text' or 'json')")
+                        .num_args(1)
+                        .required(false)
+                        .value_parser(["text", "json"])
+                )
+        )
 }
 
 #[cfg(test)]

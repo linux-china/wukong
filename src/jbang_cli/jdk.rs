@@ -3,6 +3,7 @@ use std::fs;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
+use clap::{Arg, Command};
 use java_properties::PropertiesError;
 use serde::Serialize;
 use crate::build_jbang_app;
@@ -171,6 +172,93 @@ fn read_release(release_file: &Path) -> Result<HashMap<String, String>, Properti
         }
         map
     })
+}
+
+pub fn build_jdk_command() -> Command {
+    Command::new("jdk")
+        .about("Manage Java Development Kits installed by jbang.")
+        .subcommand(
+            Command::new("default")
+                .about("Sets the default JDK to be used by JBang.")
+                .arg(
+                    Arg::new("version")
+                        .help("The version of the JDK to select")
+                        .index(1)
+                        .required(true)
+                )
+        )
+        .subcommand(
+            Command::new("home")
+                .about("Prints the folder where the given JDK is installed.")
+                .arg(
+                    Arg::new("version")
+                        .help("The version of the JDK to select")
+                        .index(1)
+                        .required(false)
+                )
+        )
+        .subcommand(
+            Command::new("install")
+                .about("Installs a JDK.")
+                .arg(
+                    Arg::new("version")
+                        .help("The version or id to install")
+                        .index(1)
+                        .required(true)
+                )
+                .arg(
+                    Arg::new("existingJdkPath")
+                        .help("Pre installed JDK path")
+                        .index(2)
+                        .required(false)
+                )
+        )
+        .subcommand(
+            Command::new("java-env")
+                .about("Prints out the environment variables needed to use the given JDK.")
+                .arg(
+                    Arg::new("version")
+                        .help("The version of the JDK to select")
+                        .index(1)
+                        .required(false)
+                )
+        )
+        .subcommand(
+            Command::new("list")
+                .about("Lists installed JDKs.")
+                .arg(
+                    Arg::new("available")
+                        .long("available")
+                        .help("Shows versions available for installation")
+                        .num_args(0)
+                        .required(false)
+                )
+                .arg(
+                    Arg::new("show-details")
+                        .long("show-details")
+                        .help("Shows detailed information for each JDK (only when format=text)")
+                        .num_args(0)
+                        .required(false)
+                )
+                .arg(
+                    Arg::new("format")
+                        .long("format")
+                        .help("Specify output format ('text' or 'json')")
+                        .num_args(1)
+                        .required(false)
+                        .value_parser(["text", "json"])
+                )
+        )
+        .subcommand(
+            Command::new("uninstall")
+                .about("Uninstalls an existing JDK.")
+                .arg(
+                    Arg::new("version")
+                        .help("The version to uninstall")
+                        .index(1)
+                        .required(true)
+                )
+        )
 }
 
 
