@@ -2,6 +2,7 @@
 
 mod common;
 
+use std::path::PathBuf;
 use clap::{Command, Arg, ArgAction};
 
 pub const VERSION: &str = "0.1.0";
@@ -10,41 +11,60 @@ fn main() {
     let app = build_jbang_app();
     let matches = app.get_matches();
     if let Some((command, command_matches)) = matches.subcommand() {
-        manage_jdk(command, command_matches);
+        if command == "jdk" {
+            manage_jdk(command_matches);
+        }
     }
 }
 
-fn manage_jdk(command: &str, matches: &clap::ArgMatches) {
-    match command {
-        "default" => {
-            let version = matches.get_one::<String>("version").unwrap();
-            println!("Setting default JDK to {}", version);
+fn jbang_home() -> PathBuf {
+    if let Ok(jbang_home) = std::env::var("JBANG_DIR") {
+        PathBuf::from(jbang_home)
+    } else {
+        dirs::home_dir().unwrap().join(".jbang")
+    }
+}
+
+fn manage_jdk(jdk_matches: &clap::ArgMatches) {
+    let jbang_home_path = jbang_home();
+    if let Some((sub_command, matches)) = jdk_matches.subcommand() {
+        match sub_command {
+            "default" => {
+                let version = matches.get_one::<String>("version").unwrap();
+                println!("Setting default JDK to {}", version);
+            }
+            "home" => {
+                let version = matches.get_one::<String>("version").unwrap();
+                println!("Home of JDK {}", version);
+            }
+            "install" => {
+                let version = matches.get_one::<String>("version").unwrap();
+                println!("Installing JDK {}", version);
+            }
+            "java-env" => {
+                let version = matches.get_one::<String>("version").unwrap();
+                let jbang_home = jbang_home_path.to_str().unwrap();
+                println!("export PATH=\"{}/cache/jdks/{}/bin:$PATH\"", jbang_home, version);
+                println!("export JAVA_HOME=\"{}/cache/jdks/{}\"", jbang_home, version);
+                println!("# Run this command to configure your shell:");
+                println!("# eval $(jbang jdk java-env {})", version);
+            }
+            "list" => {
+                let available = matches.get_flag("available");
+                let show_details = matches.get_flag("show-details");
+                let format = matches.get_one::<String>("format").unwrap_or(&"text".to_string());
+                println!("Listing JDKs");
+            }
+            "uninstall" => {
+                let version = matches.get_one::<String>("version").unwrap();
+                println!("Uninstalling JDK {}", version);
+            }
+            _ => {
+                println!("Unknown command: {}", sub_command);
+            }
         }
-        "home" => {
-            let version = matches.get_one::<String>("version").unwrap();
-            println!("Home of JDK {}", version);
-        }
-        "install" => {
-            let version = matches.get_one::<String>("version").unwrap();
-            println!("Installing JDK {}", version);
-        }
-        "java-env" => {
-            let version = matches.get_one::<String>("version").unwrap();
-            println!("Java env for JDK {}", version);
-        }
-        "list" => {
-            let available = matches.get_flag("available");
-            let show_details = matches.get_flag("show-details");
-            let format = matches.get_one::<String>("format").unwrap_or(&"text".to_string());
-            println!("Listing JDKs");
-        }
-        "uninstall" => {
-            let version = matches.get_one::<String>("version").unwrap();
-            println!("Uninstalling JDK {}", version);
-        }
-        _ => {
-            println!("Unknown command: {}", command);
-        }
+    } else {
+        println!("Missing required subcommand.");
     }
 }
 
@@ -249,4 +269,14 @@ pub fn build_jbang_app() -> Command {
         .subcommand(build_command)
         .subcommand(init_command)
         .subcommand(jdk_command)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_jbang_home() {
+        println!("JBANG: {}", jbang_home().to_str().unwrap());
+    }
 }
