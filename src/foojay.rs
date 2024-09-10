@@ -35,13 +35,11 @@ pub fn get_jdk_download_url(java_version: &str) -> String {
 pub fn extract_jdk(java_version: &str, target_dir: &PathBuf) {
     let download_url = get_jdk_download_url(java_version);
     let temp_dir = std::env::temp_dir();
-    let uuid_dir = uuid::Uuid::new_v4();
-    let temp_download_dir = temp_dir.join(uuid_dir.to_string());
     let mut archive_file_name = format!("jdk-{}.tar.gz", java_version);
     if cfg!(target_os = "windows") {
         archive_file_name = format!("jdk-{}.zip", java_version);
     }
-    let target_file_path = temp_download_dir.join(archive_file_name);
+    let target_file_path = temp_dir.join(archive_file_name);
     download(&download_url, target_file_path.to_str().unwrap(), None).unwrap();
     if cfg!(target_family = "windows") {
         let mut archive = ZipArchive::new(File::open(&target_file_path).unwrap()).unwrap();
@@ -90,6 +88,7 @@ pub fn extract_jdk(java_version: &str, target_dir: &PathBuf) {
                 });
         }
     }
+    std::fs::remove_file(&target_file_path).unwrap();
 }
 
 #[cfg(test)]
