@@ -35,6 +35,7 @@ dirs = "5"
 anyhow = "1"
 java-properties = "2"
 zip = "2.2.0"
+colored = "2"
 
 [profile.dev]
 opt-level = 0
