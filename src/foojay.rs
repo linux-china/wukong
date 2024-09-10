@@ -5,7 +5,6 @@ use flate2::read::GzDecoder;
 use oneio::download;
 use tar::Archive;
 use zip::ZipArchive;
-use crate::common::unpack_tgz;
 
 pub fn get_jdk_download_url(java_version: &str) -> String {
     let distro = "temurin";
