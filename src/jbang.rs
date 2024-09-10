@@ -9,6 +9,7 @@ use serde::Serialize;
 use crate::jbang_cli::config::{build_config_command, manage_config};
 use crate::jbang_cli::jdk::{build_jdk_command, manage_jdk};
 use crate::jbang_cli::trust::{build_trust_command, manage_trust};
+use crate::jbang_cli::upgrade::upgrade_jbang;
 
 pub const VERSION: &str = "0.1.0";
 
@@ -20,6 +21,7 @@ fn main() {
             "jdk" => manage_jdk(command_matches),
             "config" => manage_config(command_matches),
             "trust" => manage_trust(command_matches),
+            "upgrade" => upgrade_jbang(),
             &_ => println!("Unknown command"),
         }
     }
@@ -89,6 +91,8 @@ pub fn build_jbang_app() -> Command {
     let jdk_command = build_jdk_command();
     let config_command = build_config_command();
     let trust_command = build_trust_command();
+    let upgrade_command = Command::new("upgrade")
+        .about("Upgrade jbang to the latest version.");
     Command::new("jbang")
         .version(VERSION)
         .about("jbang - Unleash the power of Java")
@@ -148,4 +152,5 @@ pub fn build_jbang_app() -> Command {
         .subcommand(jdk_command)
         .subcommand(config_command)
         .subcommand(trust_command)
+        .subcommand(upgrade_command)
 }
