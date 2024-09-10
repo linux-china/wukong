@@ -2,8 +2,14 @@
 
 mod common;
 
-use std::path::PathBuf;
+use std::collections::HashMap;
+use std::fs;
+use std::fs::{read, File};
+use std::io::BufReader;
+use std::path::{Path, PathBuf};
 use clap::{Command, Arg, ArgAction};
+use java_properties::PropertiesError;
+use crate::common::run_command;
 
 pub const VERSION: &str = "0.1.0";
 
@@ -25,6 +31,23 @@ fn jbang_home() -> PathBuf {
     }
 }
 
+fn jbang_exec() -> PathBuf {
+    let jbang_bin_dir = jbang_home().join("bin");
+    if cfg!(windows) {
+        jbang_bin_dir.join("jbang.cmd")
+    } else {
+        jbang_bin_dir.join("jbang")
+    }
+}
+
+fn get_current_jdk_path() -> String {
+    let current_jdk = jbang_home().join("currentjdk");
+    if current_jdk.exists() && current_jdk.is_symlink() {
+        return current_jdk.read_link().unwrap().to_str().unwrap().to_string();
+    }
+    "".to_owned()
+}
+
 fn manage_jdk(jdk_matches: &clap::ArgMatches) {
     let jbang_home_path = jbang_home();
     if let Some((sub_command, matches)) = jdk_matches.subcommand() {
@@ -34,12 +57,21 @@ fn manage_jdk(jdk_matches: &clap::ArgMatches) {
                 println!("Setting default JDK to {}", version);
             }
             "home" => {
-                let version = matches.get_one::<String>("version").unwrap();
-                println!("Home of JDK {}", version);
+                if let Some(version) = matches.get_one::<String>("version") {
+                    let jdk_path = jbang_home_path.join("cache").join("jdks").join(version);
+                    if jdk_path.exists() {
+                        println!("{}", jdk_path.to_str().unwrap());
+                    } else {
+                        println!("JDK {} is not installed.", version);
+                    }
+                } else {
+                    println!("{}", get_current_jdk_path());
+                }
             }
             "install" => {
+                // install JDK through jbang
                 let version = matches.get_one::<String>("version").unwrap();
-                println!("Installing JDK {}", version);
+                run_command(jbang_exec().to_str().unwrap(), &["jdk", "install", version]).unwrap();
             }
             "java-env" => {
                 let version = matches.get_one::<String>("version").unwrap();
@@ -53,7 +85,37 @@ fn manage_jdk(jdk_matches: &clap::ArgMatches) {
                 let available = matches.get_flag("available");
                 let show_details = matches.get_flag("show-details");
                 let format = matches.get_one::<String>("format").unwrap_or(&"text".to_string());
-                println!("Listing JDKs");
+                let jdks = jbang_home().join("cache").join("jdks");
+                let paths = fs::read_dir(&jdks).unwrap();
+                // current jdk
+                let current_jdk_path = get_current_jdk_path();
+                println!("Installed JDKs (<=default):");
+                for entry in paths {
+                    if let Ok(dir_entry) = entry {
+                        let jdk_path = dir_entry.path();
+                        if jdk_path.is_dir() && jdk_path.join("release").exists() {
+                            if let Ok(release_info) = read_release(jdk_path.join("release").as_path()) {
+                                if let Some(java_version) = release_info.get("JAVA_VERSION") {
+                                    let java_major = if java_version.contains('.') {
+                                        java_version.split('.').next().unwrap()
+                                    } else {
+                                        java_version
+                                    };
+                                    if let Some(java_runtime_version) = release_info.get("JAVA_RUNTIME_VERSION") {
+                                        print!("  {} ({})", java_major, java_runtime_version);
+                                    } else {
+                                        print!("  {} ({})", java_major, java_version);
+                                    }
+                                    if current_jdk_path == jdk_path.to_str().unwrap() {
+                                        println!(" <");
+                                    } else {
+                                        println!();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
             "uninstall" => {
                 let version = matches.get_one::<String>("version").unwrap();
@@ -66,6 +128,18 @@ fn manage_jdk(jdk_matches: &clap::ArgMatches) {
     } else {
         println!("Missing required subcommand.");
     }
+}
+
+fn read_release(release_file: &Path) -> Result<HashMap<String, String>, PropertiesError> {
+    // Reading
+    let f = File::open(&release_file)?;
+    java_properties::read(BufReader::new(f)).map(|(props)| {
+        let mut map = HashMap::new();
+        for (key, value) in props {
+            map.insert(key, value.trim_matches(&['"', '\'']).to_string());
+        }
+        map
+    })
 }
 
 pub fn build_jbang_app() -> Command {
@@ -273,10 +347,34 @@ pub fn build_jbang_app() -> Command {
 
 #[cfg(test)]
 mod tests {
+    use std::fs;
     use super::*;
 
     #[test]
     fn test_jbang_home() {
         println!("JBANG: {}", jbang_home().to_str().unwrap());
+    }
+
+    #[test]
+    fn test_jdk_list() {
+        let jbang_app = build_jbang_app();
+        let jbang_matches = jbang_app.get_matches_from(&vec!["jbang", "jdk", "list"]);
+        let jdk_matches = jbang_matches.subcommand_matches("jdk").unwrap();
+        manage_jdk(&jdk_matches);
+    }
+
+    #[test]
+    fn test_read_release() {
+        let release_file = jbang_home().join("cache").join("jdks").join("21").join("release");
+        let info = read_release(release_file.as_path()).unwrap();
+        println!("{:?}", info);
+    }
+
+    #[test]
+    fn read_current_jdk() {
+        let current_jdk = jbang_home().join("currentjdk");
+        if current_jdk.is_symlink() {
+            println!("{:?}", current_jdk.read_link().unwrap());
+        }
     }
 }
