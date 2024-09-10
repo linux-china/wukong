@@ -12,6 +12,7 @@ use clap::{Command, Arg, ArgAction};
 use java_properties::PropertiesError;
 use serde::Serialize;
 use crate::common::run_command;
+use crate::foojay::extract_jdk;
 
 pub const VERSION: &str = "0.1.0";
 
@@ -137,7 +138,7 @@ fn manage_jdk(jdk_matches: &clap::ArgMatches) {
             "install" => {
                 // install JDK through jbang
                 let version = matches.get_one::<String>("version").unwrap();
-                run_command(jbang_exec().to_str().unwrap(), &["jdk", "install", version]).unwrap();
+                extract_jdk(version, &jbang_home_path.join("cache").join("jdks").join(version));
             }
             "java-env" => {
                 let version = matches.get_one::<String>("version").unwrap();
