@@ -9,6 +9,7 @@ use std::io::BufReader;
 use std::path::{Path, PathBuf};
 use clap::{Command, Arg, ArgAction};
 use java_properties::PropertiesError;
+use serde::Serialize;
 use crate::common::run_command;
 
 pub const VERSION: &str = "0.1.0";
@@ -22,6 +23,7 @@ fn main() {
         }
     }
 }
+
 
 fn jbang_home() -> PathBuf {
     if let Ok(jbang_home) = std::env::var("JBANG_DIR") {
@@ -48,13 +50,76 @@ fn get_current_jdk_path() -> String {
     "".to_owned()
 }
 
+fn get_jdk_path(version: &str) -> PathBuf {
+    jbang_home().join("cache").join("jdks").join(version)
+}
+
+#[derive(Debug, Clone, Serialize)]
+struct JBangJDK {
+    pub id: String,
+    pub version: String, // major version
+    #[serde(rename = "fullVersion")]
+    pub full_version: String,
+    #[serde(rename = "javaHomeDir")]
+    pub java_home_dir: String,
+    #[serde(rename = "providerName")]
+    pub provider_name: String,
+}
+
+fn find_installed_jdks() -> Vec<JBangJDK> {
+    let mut jdks: Vec<JBangJDK> = vec![];
+    let jdks_path = jbang_home().join("cache").join("jdks");
+    let paths = fs::read_dir(&jdks_path).unwrap();
+    for entry in paths {
+        if let Ok(dir_entry) = entry {
+            let jdk_path = dir_entry.path();
+            if jdk_path.is_dir() && jdk_path.join("release").exists() {
+                if let Ok(release_info) = read_release(jdk_path.join("release").as_path()) {
+                    if let Some(java_version) = release_info.get("JAVA_VERSION") {
+                        let java_major = if java_version.starts_with("1.8") {
+                            "8"
+                        } else if java_version.contains('.') {
+                            java_version.split('.').next().unwrap()
+                        } else {
+                            java_version
+                        };
+                        let full_version = if let Some(java_runtime_version) = release_info.get("JAVA_RUNTIME_VERSION") {
+                            java_runtime_version.clone()
+                        } else {
+                            java_version.clone()
+                        };
+                        jdks.push(JBangJDK {
+                            id: format!("{}-jbang", java_major),
+                            version: java_major.to_string(),
+                            full_version: full_version,
+                            java_home_dir: jdk_path.to_str().unwrap().to_string(),
+                            provider_name: "jbang".to_string(),
+                        });
+                    }
+                }
+            }
+        }
+    }
+    jdks
+}
+
 fn manage_jdk(jdk_matches: &clap::ArgMatches) {
     let jbang_home_path = jbang_home();
     if let Some((sub_command, matches)) = jdk_matches.subcommand() {
         match sub_command {
             "default" => {
                 let version = matches.get_one::<String>("version").unwrap();
-                println!("Setting default JDK to {}", version);
+                let jdk_path = jbang_home_path.join("cache").join("jdks").join(version);
+                if jdk_path.exists() {
+                    let current_jdk_link = jbang_home_path.join("currentjdk");
+                    if current_jdk_link.exists() {
+                        fs::remove_file(current_jdk_link).unwrap();
+                    }
+                    fs::soft_link(jdk_path, jbang_home_path.join("currentjdk")).unwrap();
+                    println!("Setting default JDK to {}", version);
+                } else {
+                    println!("JDK {} is not installed.", version);
+                }
             }
             "home" => {
                 if let Some(version) = matches.get_one::<String>("version") {
@@ -84,34 +149,22 @@ fn manage_jdk(jdk_matches: &clap::ArgMatches) {
             "list" => {
                 let available = matches.get_flag("available");
                 let show_details = matches.get_flag("show-details");
-                let format = matches.get_one::<String>("format").unwrap_or(&"text".to_string());
-                let jdks = jbang_home().join("cache").join("jdks");
-                let paths = fs::read_dir(&jdks).unwrap();
+                let default_format = "text".to_owned();
+                let format = matches.get_one::<String>("format").unwrap_or(&default_format);
                 // current jdk
                 let current_jdk_path = get_current_jdk_path();
-                println!("Installed JDKs (<=default):");
-                for entry in paths {
-                    if let Ok(dir_entry) = entry {
-                        let jdk_path = dir_entry.path();
-                        if jdk_path.is_dir() && jdk_path.join("release").exists() {
-                            if let Ok(release_info) = read_release(jdk_path.join("release").as_path()) {
-                                if let Some(java_version) = release_info.get("JAVA_VERSION") {
-                                    let java_major = if java_version.contains('.') {
-                                        java_version.split('.').next().unwrap()
-                                    } else {
-                                        java_version
-                                    };
-                                    if let Some(java_runtime_version) = release_info.get("JAVA_RUNTIME_VERSION") {
-                                        print!("  {} ({})", java_major, java_runtime_version);
-                                    } else {
-                                        print!("  {} ({})", java_major, java_version);
-                                    }
-                                    if current_jdk_path == jdk_path.to_str().unwrap() {
-                                        println!(" <");
-                                    } else {
-                                        println!();
-                                    }
-                                }
+                let jdks = find_installed_jdks();
+                if !jdks.is_empty() {
+                    if format == "json" {
+                        println!("{}", serde_json::to_string_pretty(&jdks).unwrap())
+                    } else {
+                        println!("Installed JDKs (<=default):");
+                        for jdk in &jdks {
+                            print!("  {} ({})", jdk.version, jdk.full_version);
+                            if current_jdk_path == jdk.java_home_dir {
+                                println!(" <");
+                            } else {
+                                println!();
                             }
                         }
                     }
@@ -119,7 +172,18 @@ fn manage_jdk(jdk_matches: &clap::ArgMatches) {
             }
             "uninstall" => {
                 let version = matches.get_one::<String>("version").unwrap();
-                println!("Uninstalling JDK {}", version);
+                let jdk_path = jbang_home_path.join("cache").join("jdks").join(version);
+                if jdk_path.exists() {
+                    fs::remove_dir_all(&jdk_path).unwrap();
+                    println!("JDK {} has been uninstalled.", version);
+                    let current_jdk_path = get_current_jdk_path();
+                    if jdk_path.to_str().unwrap() == current_jdk_path {
+                        fs::remove_file(current_jdk_path).unwrap();
+                        println!("JDK {} was the current JDK, it has been removed.", version);
+                    }
+                } else {
+                    println!("JDK {} is not installed.", version);
+                }
             }
             _ => {
                 println!("Unknown command: {}", sub_command);
