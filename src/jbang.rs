@@ -6,8 +6,9 @@ mod jbang_cli;
 
 use clap::{Command, Arg, ArgAction};
 use serde::Serialize;
-use crate::jbang_cli::config::manage_config;
-use crate::jbang_cli::jdk::manage_jdk;
+use crate::jbang_cli::config::{build_config_command, manage_config};
+use crate::jbang_cli::jdk::{build_jdk_command, manage_jdk};
+use crate::jbang_cli::trust::{build_trust_command, manage_trust};
 
 pub const VERSION: &str = "0.1.0";
 
@@ -18,6 +19,7 @@ fn main() {
         match command {
             "jdk" => manage_jdk(command_matches),
             "config" => manage_config(command_matches),
+            "trust" => manage_trust(command_matches),
             &_ => println!("Unknown command"),
         }
     }
@@ -84,140 +86,9 @@ pub fn build_jbang_app() -> Command {
                 .index(2)
                 .num_args(1..)
         );
-    let jdk_command = Command::new("jdk")
-        .about("Manage Java Development Kits installed by jbang.")
-        .subcommand(
-            Command::new("default")
-                .about("Sets the default JDK to be used by JBang.")
-                .arg(
-                    Arg::new("version")
-                        .help("The version of the JDK to select")
-                        .index(1)
-                        .required(true)
-                )
-        )
-        .subcommand(
-            Command::new("home")
-                .about("Prints the folder where the given JDK is installed.")
-                .arg(
-                    Arg::new("version")
-                        .help("The version of the JDK to select")
-                        .index(1)
-                        .required(false)
-                )
-        )
-        .subcommand(
-            Command::new("install")
-                .about("Installs a JDK.")
-                .arg(
-                    Arg::new("version")
-                        .help("The version or id to install")
-                        .index(1)
-                        .required(true)
-                )
-                .arg(
-                    Arg::new("existingJdkPath")
-                        .help("Pre installed JDK path")
-                        .index(2)
-                        .required(false)
-                )
-        )
-        .subcommand(
-            Command::new("java-env")
-                .about("Prints out the environment variables needed to use the given JDK.")
-                .arg(
-                    Arg::new("version")
-                        .help("The version of the JDK to select")
-                        .index(1)
-                        .required(false)
-                )
-        )
-        .subcommand(
-            Command::new("list")
-                .about("Lists installed JDKs.")
-                .arg(
-                    Arg::new("available")
-                        .long("available")
-                        .help("Shows versions available for installation")
-                        .num_args(0)
-                        .required(false)
-                )
-                .arg(
-                    Arg::new("show-details")
-                        .long("show-details")
-                        .help("Shows detailed information for each JDK (only when format=text)")
-                        .num_args(0)
-                        .required(false)
-                )
-                .arg(
-                    Arg::new("format")
-                        .long("format")
-                        .help("Specify output format ('text' or 'json')")
-                        .num_args(1)
-                        .required(false)
-                        .value_parser(["text", "json"])
-                )
-        )
-        .subcommand(
-            Command::new("uninstall")
-                .about("Uninstalls an existing JDK.")
-                .arg(
-                    Arg::new("version")
-                        .help("The version to uninstall")
-                        .index(1)
-                        .required(true)
-                )
-        );
-    let config_command = Command::new("config")
-        .about("Read and write configuration options.")
-        .subcommand(
-            Command::new("get")
-                .about("The name of the configuration option to get")
-                .arg(
-                    Arg::new("key")
-                        .help("The key to get")
-                        .index(1)
-                        .required(true)
-                )
-        )
-        .subcommand(
-            Command::new("set")
-                .about("Set a configuration value")
-                .arg(
-                    Arg::new("key")
-                        .help("The name of the configuration option to set")
-                        .index(1)
-                        .required(true)
-                )
-                .arg(
-                    Arg::new("value")
-                        .help("The value to set for the configuration option")
-                        .index(2)
-                        .required(true)
-                )
-        )
-        .subcommand(
-            Command::new("unset")
-                .about("Remove a configuration value")
-                .arg(
-                    Arg::new("key")
-                        .help("The key to remove")
-                        .index(1)
-                        .required(true)
-                )
-        )
-        .subcommand(
-            Command::new("list")
-                .about("List active configuration values")
-                .arg(
-                    Arg::new("format")
-                        .long("format")
-                        .help("Specify output format ('text' or 'json')")
-                        .num_args(1)
-                        .required(false)
-                        .value_parser(["text", "json"])
-                )
-        );
+    let jdk_command = build_jdk_command();
+    let config_command = build_config_command();
+    let trust_command = build_trust_command();
     Command::new("jbang")
         .version(VERSION)
         .about("jbang - Unleash the power of Java")
@@ -276,4 +147,5 @@ pub fn build_jbang_app() -> Command {
         .subcommand(init_command)
         .subcommand(jdk_command)
         .subcommand(config_command)
+        .subcommand(trust_command)
 }
