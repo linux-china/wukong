@@ -2,17 +2,12 @@
 
 mod common;
 mod foojay;
+mod jbang_cli;
 
-use std::collections::HashMap;
-use std::fs;
-use std::fs::{read, File};
-use std::io::BufReader;
-use std::path::{Path, PathBuf};
 use clap::{Command, Arg, ArgAction};
-use java_properties::PropertiesError;
 use serde::Serialize;
-use crate::common::run_command;
-use crate::foojay::extract_jdk;
+use crate::jbang_cli::config::manage_config;
+use crate::jbang_cli::jdk::manage_jdk;
 
 pub const VERSION: &str = "0.1.0";
 
@@ -20,192 +15,12 @@ fn main() {
     let app = build_jbang_app();
     let matches = app.get_matches();
     if let Some((command, command_matches)) = matches.subcommand() {
-        if command == "jdk" {
-            manage_jdk(command_matches);
+        match command {
+            "jdk" => manage_jdk(command_matches),
+            "config" => manage_config(command_matches),
+            &_ => println!("Unknown command"),
         }
     }
-}
-
-
-fn jbang_home() -> PathBuf {
-    if let Ok(jbang_home) = std::env::var("JBANG_DIR") {
-        PathBuf::from(jbang_home)
-    } else {
-        dirs::home_dir().unwrap().join(".jbang")
-    }
-}
-
-fn jbang_exec() -> PathBuf {
-    let jbang_bin_dir = jbang_home().join("bin");
-    if cfg!(windows) {
-        jbang_bin_dir.join("jbang.cmd")
-    } else {
-        jbang_bin_dir.join("jbang")
-    }
-}
-
-fn get_current_jdk_path() -> String {
-    let current_jdk = jbang_home().join("currentjdk");
-    if current_jdk.exists() && current_jdk.is_symlink() {
-        return current_jdk.read_link().unwrap().to_str().unwrap().to_string();
-    }
-    "".to_owned()
-}
-
-fn get_jdk_path(version: &str) -> PathBuf {
-    jbang_home().join("cache").join("jdks").join(version)
-}
-
-#[derive(Debug, Clone, Serialize)]
-struct JBangJDK {
-    pub id: String,
-    pub version: String, // major version
-    #[serde(rename = "fullVersion")]
-    pub full_version: String,
-    #[serde(rename = "javaHomeDir")]
-    pub java_home_dir: String,
-    #[serde(rename = "providerName")]
-    pub provider_name: String,
-}
-
-fn find_installed_jdks() -> Vec<JBangJDK> {
-    let mut jdks: Vec<JBangJDK> = vec![];
-    let jdks_path = jbang_home().join("cache").join("jdks");
-    let paths = fs::read_dir(&jdks_path).unwrap();
-    for entry in paths {
-        if let Ok(dir_entry) = entry {
-            let jdk_path = dir_entry.path();
-            if jdk_path.is_dir() && jdk_path.join("release").exists() {
-                if let Ok(release_info) = read_release(jdk_path.join("release").as_path()) {
-                    if let Some(java_version) = release_info.get("JAVA_VERSION") {
-                        let java_major = if java_version.starts_with("1.8") {
-                            "8"
-                        } else if java_version.contains('.') {
-                            java_version.split('.').next().unwrap()
-                        } else {
-                            java_version
-                        };
-                        let full_version = if let Some(java_runtime_version) = release_info.get("JAVA_RUNTIME_VERSION") {
-                            java_runtime_version.clone()
-                        } else {
-                            java_version.clone()
-                        };
-                        jdks.push(JBangJDK {
-                            id: format!("{}-jbang", java_major),
-                            version: java_major.to_string(),
-                            full_version: full_version,
-                            java_home_dir: jdk_path.to_str().unwrap().to_string(),
-                            provider_name: "jbang".to_string(),
-                        });
-                    }
-                }
-            }
-        }
-    }
-    jdks
-}
-
-fn manage_jdk(jdk_matches: &clap::ArgMatches) {
-    let jbang_home_path = jbang_home();
-    if let Some((sub_command, matches)) = jdk_matches.subcommand() {
-        match sub_command {
-            "default" => {
-                let version = matches.get_one::<String>("version").unwrap();
-                let jdk_path = jbang_home_path.join("cache").join("jdks").join(version);
-                if jdk_path.exists() {
-                    let current_jdk_link = jbang_home_path.join("currentjdk");
-                    if current_jdk_link.exists() {
-                        fs::remove_file(current_jdk_link).unwrap();
-                    }
-                    fs::soft_link(jdk_path, jbang_home_path.join("currentjdk")).unwrap();
-                    println!("Setting default JDK to {}", version);
-                } else {
-                    println!("JDK {} is not installed.", version);
-                }
-            }
-            "home" => {
-                if let Some(version) = matches.get_one::<String>("version") {
-                    let jdk_path = jbang_home_path.join("cache").join("jdks").join(version);
-                    if jdk_path.exists() {
-                        println!("{}", jdk_path.to_str().unwrap());
-                    } else {
-                        println!("JDK {} is not installed.", version);
-                    }
-                } else {
-                    println!("{}", get_current_jdk_path());
-                }
-            }
-            "install" => {
-                // install JDK through jbang
-                let version = matches.get_one::<String>("version").unwrap();
-                extract_jdk(version, &jbang_home_path.join("cache").join("jdks").join(version));
-            }
-            "java-env" => {
-                let version = matches.get_one::<String>("version").unwrap();
-                let jbang_home = jbang_home_path.to_str().unwrap();
-                println!("export PATH=\"{}/cache/jdks/{}/bin:$PATH\"", jbang_home, version);
-                println!("export JAVA_HOME=\"{}/cache/jdks/{}\"", jbang_home, version);
-                println!("# Run this command to configure your shell:");
-                println!("# eval $(jbang jdk java-env {})", version);
-            }
-            "list" => {
-                let available = matches.get_flag("available");
-                let show_details = matches.get_flag("show-details");
-                let default_format = "text".to_owned();
-                let format = matches.get_one::<String>("format").unwrap_or(&default_format);
-                // current jdk
-                let current_jdk_path = get_current_jdk_path();
-                let jdks = find_installed_jdks();
-                if !jdks.is_empty() {
-                    if format == "json" {
-                        println!("{}", serde_json::to_string_pretty(&jdks).unwrap())
-                    } else {
-                        println!("Installed JDKs (<=default):");
-                        for jdk in &jdks {
-                            print!("  {} ({})", jdk.version, jdk.full_version);
-                            if current_jdk_path == jdk.java_home_dir {
-                                println!(" <");
-                            } else {
-                                println!();
-                            }
-                        }
-                    }
-                }
-            }
-            "uninstall" => {
-                let version = matches.get_one::<String>("version").unwrap();
-                let jdk_path = jbang_home_path.join("cache").join("jdks").join(version);
-                if jdk_path.exists() {
-                    fs::remove_dir_all(&jdk_path).unwrap();
-                    println!("JDK {} has been uninstalled.", version);
-                    let current_jdk_path = get_current_jdk_path();
-                    if jdk_path.to_str().unwrap() == current_jdk_path {
-                        fs::remove_file(current_jdk_path).unwrap();
-                        println!("JDK {} was the current JDK, it has been removed.", version);
-                    }
-                } else {
-                    println!("JDK {} is not installed.", version);
-                }
-            }
-            _ => {
-                println!("Unknown command: {}", sub_command);
-            }
-        }
-    } else {
-        println!("Missing required subcommand.");
-    }
-}
-
-fn read_release(release_file: &Path) -> Result<HashMap<String, String>, PropertiesError> {
-    // Reading
-    let f = File::open(&release_file)?;
-    java_properties::read(BufReader::new(f)).map(|(props)| {
-        let mut map = HashMap::new();
-        for (key, value) in props {
-            map.insert(key, value.trim_matches(&['"', '\'']).to_string());
-        }
-        map
-    })
 }
 
 pub fn build_jbang_app() -> Command {
@@ -340,6 +155,7 @@ pub fn build_jbang_app() -> Command {
                         .help("Specify output format ('text' or 'json')")
                         .num_args(1)
                         .required(false)
+                        .value_parser(["text", "json"])
                 )
         )
         .subcommand(
@@ -350,6 +166,56 @@ pub fn build_jbang_app() -> Command {
                         .help("The version to uninstall")
                         .index(1)
                         .required(true)
+                )
+        );
+    let config_command = Command::new("config")
+        .about("Read and write configuration options.")
+        .subcommand(
+            Command::new("get")
+                .about("The name of the configuration option to get")
+                .arg(
+                    Arg::new("key")
+                        .help("The key to get")
+                        .index(1)
+                        .required(true)
+                )
+        )
+        .subcommand(
+            Command::new("set")
+                .about("Set a configuration value")
+                .arg(
+                    Arg::new("key")
+                        .help("The name of the configuration option to set")
+                        .index(1)
+                        .required(true)
+                )
+                .arg(
+                    Arg::new("value")
+                        .help("The value to set for the configuration option")
+                        .index(2)
+                        .required(true)
+                )
+        )
+        .subcommand(
+            Command::new("unset")
+                .about("Remove a configuration value")
+                .arg(
+                    Arg::new("key")
+                        .help("The key to remove")
+                        .index(1)
+                        .required(true)
+                )
+        )
+        .subcommand(
+            Command::new("list")
+                .about("List active configuration values")
+                .arg(
+                    Arg::new("format")
+                        .long("format")
+                        .help("Specify output format ('text' or 'json')")
+                        .num_args(1)
+                        .required(false)
+                        .value_parser(["text", "json"])
                 )
         );
     Command::new("jbang")
@@ -409,38 +275,5 @@ pub fn build_jbang_app() -> Command {
         .subcommand(build_command)
         .subcommand(init_command)
         .subcommand(jdk_command)
-}
-
-#[cfg(test)]
-mod tests {
-    use std::fs;
-    use super::*;
-
-    #[test]
-    fn test_jbang_home() {
-        println!("JBANG: {}", jbang_home().to_str().unwrap());
-    }
-
-    #[test]
-    fn test_jdk_list() {
-        let jbang_app = build_jbang_app();
-        let jbang_matches = jbang_app.get_matches_from(&vec!["jbang", "jdk", "list"]);
-        let jdk_matches = jbang_matches.subcommand_matches("jdk").unwrap();
-        manage_jdk(&jdk_matches);
-    }
-
-    #[test]
-    fn test_read_release() {
-        let release_file = jbang_home().join("cache").join("jdks").join("21").join("release");
-        let info = read_release(release_file.as_path()).unwrap();
-        println!("{:?}", info);
-    }
-
-    #[test]
-    fn read_current_jdk() {
-        let current_jdk = jbang_home().join("currentjdk");
-        if current_jdk.is_symlink() {
-            println!("{:?}", current_jdk.read_link().unwrap());
-        }
-    }
+        .subcommand(config_command)
 }
