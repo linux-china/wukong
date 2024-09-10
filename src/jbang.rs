@@ -8,7 +8,44 @@ pub const VERSION: &str = "0.1.0";
 
 fn main() {
     let app = build_jbang_app();
-    let _matches = app.get_matches();
+    let matches = app.get_matches();
+    if let Some((command, command_matches)) = matches.subcommand() {
+        manage_jdk(command, command_matches);
+    }
+}
+
+fn manage_jdk(command: &str, matches: &clap::ArgMatches) {
+    match command {
+        "default" => {
+            let version = matches.get_one::<String>("version").unwrap();
+            println!("Setting default JDK to {}", version);
+        }
+        "home" => {
+            let version = matches.get_one::<String>("version").unwrap();
+            println!("Home of JDK {}", version);
+        }
+        "install" => {
+            let version = matches.get_one::<String>("version").unwrap();
+            println!("Installing JDK {}", version);
+        }
+        "java-env" => {
+            let version = matches.get_one::<String>("version").unwrap();
+            println!("Java env for JDK {}", version);
+        }
+        "list" => {
+            let available = matches.get_flag("available");
+            let show_details = matches.get_flag("show-details");
+            let format = matches.get_one::<String>("format").unwrap_or(&"text".to_string());
+            println!("Listing JDKs");
+        }
+        "uninstall" => {
+            let version = matches.get_one::<String>("version").unwrap();
+            println!("Uninstalling JDK {}", version);
+        }
+        _ => {
+            println!("Unknown command: {}", command);
+        }
+    }
 }
 
 pub fn build_jbang_app() -> Command {
