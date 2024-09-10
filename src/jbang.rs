@@ -1,6 +1,7 @@
 //! clap App for command cli
 
 mod common;
+mod foojay;
 
 use std::collections::HashMap;
 use std::fs;
