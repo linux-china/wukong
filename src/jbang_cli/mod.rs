@@ -2,6 +2,7 @@ pub mod config;
 pub mod jdk;
 pub mod trust;
 pub mod upgrade;
+pub mod init;
 
 use std::path::PathBuf;
 
