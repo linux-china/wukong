@@ -13,6 +13,7 @@ use crate::jbang_cli::jdk::{build_jdk_command, manage_jdk};
 use crate::jbang_cli::template::{build_template_command, manage_template};
 use crate::jbang_cli::trust::{build_trust_command, manage_trust};
 use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
+use itertools::Itertools;
 
 pub const VERSION: &str = "0.1.0";
 
@@ -36,6 +37,13 @@ fn main() {
             "version" => display_version(&jbang_home),
             &_ => println!("Unknown command"),
         }
+    } else if let Some(script_or_file) = matches.get_one::<String>("scriptOrFile") {
+        let params: Vec<&String> = if let Some(user_params) = matches.get_many::<String>("userParams") {
+            user_params.collect()
+        } else {
+            vec![]
+        };
+        println!("{}: {}", script_or_file, params.iter().join(","));
     }
 }
 
@@ -150,6 +158,20 @@ pub fn build_jbang_app() -> Command {
                 .action(ArgAction::SetTrue)
                 .help("jbang will be verbose on what it does.")
                 .required(false),
+        )
+        .arg(
+            Arg::new("scriptOrFile")
+                .help("A reference to a source file")
+                .index(1)
+                .required(false)
+        )
+        .arg(
+            Arg::new("userParams")
+                .help("Parameters to pass on to the script")
+                .index(2)
+                .num_args(1..)
+                .action(ArgAction::Append)
+                .required(false)
         )
         .subcommand(run_command)
         .subcommand(build_command)
