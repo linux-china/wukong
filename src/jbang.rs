@@ -10,6 +10,7 @@ use crate::jbang_cli::config::{build_config_command, manage_config};
 use crate::jbang_cli::init::{build_init_command, manage_init};
 use crate::jbang_cli::jbang_home;
 use crate::jbang_cli::jdk::{build_jdk_command, manage_jdk};
+use crate::jbang_cli::template::{build_template_command, manage_template};
 use crate::jbang_cli::trust::{build_trust_command, manage_trust};
 use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 
@@ -28,6 +29,7 @@ fn main() {
             "config" => manage_config(command_matches),
             "trust" => manage_trust(command_matches),
             "init" => manage_init(command_matches),
+            "template" => manage_template(command_matches),
             "upgrade" => upgrade_jbang(),
             "version" => display_version(&jbang_home),
             &_ => println!("Unknown command"),
@@ -85,6 +87,7 @@ pub fn build_jbang_app() -> Command {
     let config_command = build_config_command();
     let trust_command = build_trust_command();
     let init_command = build_init_command();
+    let template_command = build_template_command();
     let upgrade_command = Command::new("upgrade")
         .about("Upgrade jbang to the latest version.");
     Command::new("jbang")
@@ -146,6 +149,7 @@ pub fn build_jbang_app() -> Command {
         .subcommand(config_command)
         .subcommand(trust_command)
         .subcommand(init_command)
+        .subcommand(template_command)
         .subcommand(upgrade_command)
         .subcommand(version_command)
 }
