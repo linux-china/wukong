@@ -1,4 +1,4 @@
-//! clap App for command cli
+//! clap App for JBang command cli
 
 mod common;
 mod foojay;
