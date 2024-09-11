@@ -5,6 +5,10 @@ use crate::jbang_cli::jbang_home;
 
 pub fn upgrade_jbang() {
     println!("Upgrading jbang...");
+    install_jbang();
+}
+
+pub fn install_jbang() {
     let download_url = "https://github.com/jbangdev/jbang/releases/latest/download/jbang.tar";
     let temp_dir = std::env::temp_dir();
     let target_file_path = temp_dir.join("jbang.tar");
