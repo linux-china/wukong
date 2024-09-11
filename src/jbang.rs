@@ -7,6 +7,7 @@ mod jbang_cli;
 use clap::{Command, Arg, ArgAction};
 use serde::Serialize;
 use crate::jbang_cli::config::{build_config_command, manage_config};
+use crate::jbang_cli::init::{build_init_command, manage_init};
 use crate::jbang_cli::jdk::{build_jdk_command, manage_jdk};
 use crate::jbang_cli::trust::{build_trust_command, manage_trust};
 use crate::jbang_cli::upgrade::upgrade_jbang;
@@ -21,6 +22,7 @@ fn main() {
             "jdk" => manage_jdk(command_matches),
             "config" => manage_config(command_matches),
             "trust" => manage_trust(command_matches),
+            "init" => manage_init(command_matches),
             "upgrade" => upgrade_jbang(),
             &_ => println!("Unknown command"),
         }
@@ -65,32 +67,10 @@ pub fn build_jbang_app() -> Command {
                 .index(1)
                 .required(false)
         );
-    let init_command = Command::new("init")
-        .about("Builds and runs provided script.")
-        .arg(
-            Arg::new("template")
-                .short('t')
-                .long("template")
-                .num_args(1)
-                .help("Init script with a java class useful for scripting")
-                .required(true)
-        )
-        .arg(
-            Arg::new("scriptOrFile")
-                .help(" file or URL to a Java code file")
-                .index(1)
-                .required(false)
-        )
-        .arg(
-            Arg::new("params")
-                .help("Parameters to pass on to the generation.")
-                .required(false)
-                .index(2)
-                .num_args(1..)
-        );
     let jdk_command = build_jdk_command();
     let config_command = build_config_command();
     let trust_command = build_trust_command();
+    let init_command = build_init_command();
     let upgrade_command = Command::new("upgrade")
         .about("Upgrade jbang to the latest version.");
     Command::new("jbang")
@@ -148,9 +128,9 @@ pub fn build_jbang_app() -> Command {
         )
         .subcommand(run_command)
         .subcommand(build_command)
-        .subcommand(init_command)
         .subcommand(jdk_command)
         .subcommand(config_command)
         .subcommand(trust_command)
+        .subcommand(init_command)
         .subcommand(upgrade_command)
 }
