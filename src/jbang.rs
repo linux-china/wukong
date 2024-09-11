@@ -14,7 +14,7 @@ use crate::jbang_cli::template::{build_template_command, manage_template};
 use crate::jbang_cli::trust::{build_trust_command, manage_trust};
 use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
-use crate::jbang_cli::run::run;
+use crate::jbang_cli::run::{manage_run, run};
 
 pub const VERSION: &str = "0.1.0";
 
@@ -34,6 +34,7 @@ fn main() {
             "trust" => manage_trust(command_matches),
             "init" => manage_init(command_matches),
             "template" => manage_template(command_matches),
+            "run" => manage_run(command_matches),
             "upgrade" => upgrade_jbang(),
             "version" => display_version(&jbang_home),
             &_ => println!("Unknown command"),
