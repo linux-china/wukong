@@ -36,6 +36,7 @@ anyhow = "1"
 java-properties = "2"
 zip = "2.2.0"
 colored = "2"
+handlebars = "6.1.0"
 
 [profile.dev]
 opt-level = 0
