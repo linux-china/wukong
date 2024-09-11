@@ -7,13 +7,18 @@ mod jbang_cli;
 use clap::{Command, Arg, ArgAction};
 use crate::jbang_cli::config::{build_config_command, manage_config};
 use crate::jbang_cli::init::{build_init_command, manage_init};
+use crate::jbang_cli::jbang_home;
 use crate::jbang_cli::jdk::{build_jdk_command, manage_jdk};
 use crate::jbang_cli::trust::{build_trust_command, manage_trust};
-use crate::jbang_cli::upgrade::upgrade_jbang;
+use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 
 pub const VERSION: &str = "0.1.0";
 
 fn main() {
+    let jbang_home = jbang_home();
+    if !jbang_home.exists() {
+        install_jbang();
+    }
     let app = build_jbang_app();
     let matches = app.get_matches();
     if let Some((command, command_matches)) = matches.subcommand() {
