@@ -14,6 +14,7 @@ use crate::jbang_cli::template::{build_template_command, manage_template};
 use crate::jbang_cli::trust::{build_trust_command, manage_trust};
 use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
+use crate::jbang_cli::run::run;
 
 pub const VERSION: &str = "0.1.0";
 
@@ -43,7 +44,7 @@ fn main() {
         } else {
             vec![]
         };
-        println!("{}: {}", script_or_file, params.iter().join(","));
+        run(script_or_file, &params.iter().map(|s| s.as_str()).collect_vec());
     }
 }
 
