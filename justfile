@@ -18,6 +18,10 @@ jbang-config-list:
 jbang-init-hello:
   cargo run --bin jbang -- init hello
 
+# jbang trust lit
+jbang-trust-list:
+  cargo run --bin jbang -- trust list
+
 # display sdkman help
 sdkman-help:
   cargo run --bin sdk -- help
