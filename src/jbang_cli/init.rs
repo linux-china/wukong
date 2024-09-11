@@ -3,11 +3,12 @@ use std::fs::Permissions;
 use clap::{Arg, Command};
 use handlebars::{Handlebars};
 
-const TEMPLATES: &[&str] = &["hello"];
+const TEMPLATES: &[&str] = &["hello", "cli"];
 
 fn handlebars() -> Handlebars<'static> {
     let mut hbs = Handlebars::new();
     hbs.register_template_string("hello", include_str!("templates/hello.java")).unwrap();
+    hbs.register_template_string("cli", include_str!("templates/cli.java")).unwrap();
     hbs
 }
 
@@ -25,8 +26,14 @@ pub fn manage_init(init_matches: &clap::ArgMatches) {
     } else {
         class_name = script_file.split('.').next().unwrap().to_string();
     }
+    let file_name = if script_file.contains('/') {
+        script_file.split('/').last().unwrap().to_string()
+    } else {
+        script_file.clone()
+    };
     let mut context: HashMap<String, String> = HashMap::new();
     context.insert("className".to_string(), class_name);
+    context.insert("fileName".to_string(), file_name);
     let code = handlebars().render(template, &context).unwrap();
     std::fs::write(&script_file, code).unwrap();
     set_executable(&script_file);
@@ -66,4 +73,19 @@ pub fn build_init_command() -> Command {
                 .index(2)
                 .num_args(1..)
         )
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_render_template() {
+        let template = "cli";
+        let mut context: HashMap<String, String> = HashMap::new();
+        context.insert("className".to_string(), "hello".to_string());
+        context.insert("fileName".to_string(), "hello.java".to_string());
+        let code = handlebars().render(template, &context).unwrap();
+        println!("{}", code);
+    }
 }
