@@ -4,6 +4,7 @@ pub mod trust;
 pub mod upgrade;
 pub mod init;
 pub mod template;
+pub mod run;
 
 use std::path::PathBuf;
 
