@@ -26,6 +26,10 @@ jbang-trust-list:
 jbang-version:
   cargo run --bin jbang -- version
 
+# jbang run hello.java
+jbang-run:
+  cargo run --bin jbang -- scripts/hello.java first second
+
 # display sdkman help
 sdkman-help:
   cargo run --bin sdk -- help
