@@ -37,6 +37,7 @@ java-properties = "2"
 zip = "2.2.0"
 colored = "2"
 handlebars = "6.1.0"
+itertools = "0.13"
 
 [profile.dev]
 opt-level = 0
