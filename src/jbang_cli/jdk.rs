@@ -18,10 +18,6 @@ fn get_current_jdk_path() -> String {
     "".to_owned()
 }
 
-fn get_jdk_path(version: &str) -> PathBuf {
-    jbang_home().join("cache").join("jdks").join(version)
-}
-
 #[derive(Debug, Clone, Serialize)]
 struct JBangJDK {
     pub id: String,
@@ -165,7 +161,7 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
 fn read_release(release_file: &Path) -> Result<HashMap<String, String>, PropertiesError> {
     // Reading
     let f = File::open(&release_file)?;
-    java_properties::read(BufReader::new(f)).map(|(props)| {
+    java_properties::read(BufReader::new(f)).map(|props| {
         let mut map = HashMap::new();
         for (key, value) in props {
             map.insert(key, value.trim_matches(&['"', '\'']).to_string());
