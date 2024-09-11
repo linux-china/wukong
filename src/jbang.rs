@@ -4,6 +4,7 @@ mod common;
 mod foojay;
 mod jbang_cli;
 
+use std::path::PathBuf;
 use clap::{Command, Arg, ArgAction};
 use crate::jbang_cli::config::{build_config_command, manage_config};
 use crate::jbang_cli::init::{build_init_command, manage_init};
@@ -28,9 +29,16 @@ fn main() {
             "trust" => manage_trust(command_matches),
             "init" => manage_init(command_matches),
             "upgrade" => upgrade_jbang(),
+            "version" => display_version(&jbang_home),
             &_ => println!("Unknown command"),
         }
     }
+}
+
+fn display_version(jbang_home: &PathBuf) {
+    let jbang_version = std::fs::read_to_string(jbang_home.join("version.txt")).unwrap_or("unknown".to_string());
+    println!("JBang: {}", jbang_version.trim());
+    println!("JBang-rs: {}", VERSION);
 }
 
 pub fn build_jbang_app() -> Command {
@@ -71,6 +79,8 @@ pub fn build_jbang_app() -> Command {
                 .index(1)
                 .required(false)
         );
+    let version_command = Command::new("version")
+        .about("Display version info.");
     let jdk_command = build_jdk_command();
     let config_command = build_config_command();
     let trust_command = build_trust_command();
@@ -137,4 +147,5 @@ pub fn build_jbang_app() -> Command {
         .subcommand(trust_command)
         .subcommand(init_command)
         .subcommand(upgrade_command)
+        .subcommand(version_command)
 }
