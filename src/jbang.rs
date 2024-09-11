@@ -5,7 +5,6 @@ mod foojay;
 mod jbang_cli;
 
 use clap::{Command, Arg, ArgAction};
-use serde::Serialize;
 use crate::jbang_cli::config::{build_config_command, manage_config};
 use crate::jbang_cli::init::{build_init_command, manage_init};
 use crate::jbang_cli::jdk::{build_jdk_command, manage_jdk};
