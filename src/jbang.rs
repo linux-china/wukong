@@ -5,7 +5,7 @@ mod foojay;
 mod jbang_cli;
 
 use std::path::PathBuf;
-use clap::{Command, Arg, ArgAction};
+use clap::{Command, Arg, ArgAction, ArgMatches};
 use crate::jbang_cli::config::{build_config_command, manage_config};
 use crate::jbang_cli::init::{build_init_command, manage_init};
 use crate::jbang_cli::jbang_home;
@@ -23,6 +23,8 @@ fn main() {
     }
     let app = build_jbang_app();
     let matches = app.get_matches();
+    // inject insecure
+    inject_insecure(&matches);
     if let Some((command, command_matches)) = matches.subcommand() {
         match command {
             "jdk" => manage_jdk(command_matches),
@@ -34,6 +36,12 @@ fn main() {
             "version" => display_version(&jbang_home),
             &_ => println!("Unknown command"),
         }
+    }
+}
+
+fn inject_insecure(matches: &ArgMatches) {
+    if matches.get_flag("insecure") {
+        std::env::set_var("ONEIO_ACCEPT_INVALID_CERTS", "true")
     }
 }
 
