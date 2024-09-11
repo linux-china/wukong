@@ -3,6 +3,7 @@ pub mod jdk;
 pub mod trust;
 pub mod upgrade;
 pub mod init;
+pub mod template;
 
 use std::path::PathBuf;
 
