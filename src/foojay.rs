@@ -1,5 +1,4 @@
 use std::fs::File;
-use std::os;
 use std::path::PathBuf;
 use flate2::read::GzDecoder;
 use oneio::download;
