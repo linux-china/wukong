@@ -14,6 +14,10 @@ jbang-jdk-java-env:
 jbang-config-list:
   cargo run --bin jbang -- config list
 
+# display jbang config
+jbang-init-hello:
+  cargo run --bin jbang -- init hello
+
 # display sdkman help
 sdkman-help:
   cargo run --bin sdk -- help
