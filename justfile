@@ -22,6 +22,10 @@ jbang-init-hello:
 jbang-trust-list:
   cargo run --bin jbang -- trust list
 
+# display jbang version
+jbang-version:
+  cargo run --bin jbang -- version
+
 # display sdkman help
 sdkman-help:
   cargo run --bin sdk -- help
