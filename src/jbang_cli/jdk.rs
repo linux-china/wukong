@@ -142,7 +142,7 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
                     println!("JDK {} has been uninstalled.", version);
                     let current_jdk_path = get_current_jdk_path();
                     if jdk_path.to_str().unwrap() == current_jdk_path {
-                        fs::remove_file(current_jdk_path).unwrap();
+                        symlink::remove_symlink_dir(current_jdk_path).unwrap();
                         println!("JDK {} was the current JDK, it has been removed.", version);
                     }
                 } else {
