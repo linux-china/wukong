@@ -10,6 +10,10 @@ use reqwest::redirect::Policy;
 use tar::Archive;
 use zip::ZipArchive;
 
+pub async fn http_text(http_url: &str) -> String {
+    reqwest::get(http_url).await.unwrap().text().unwrap()
+}
+
 pub fn http_download(http_url: &str, target_file_path: &str) {
     oneio::download(http_url, target_file_path, None).unwrap();
 }
