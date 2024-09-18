@@ -26,7 +26,7 @@ pub fn get_jdk_download_url(java_version: &str) -> String {
     format!("https://api.foojay.io/disco/v3.0/directuris?distro={distro}&javafx_bundled=false&libc_type={libc_type}&archive_type={archive_type}&operating_system={os}&package_type=jdk&version={java_version}&architecture={arch}&latest=available")
 }
 
-pub fn extract_jdk(java_version: &str, target_dir: &PathBuf) {
+pub fn install_jdk(java_version: &str, target_dir: &PathBuf) {
     let download_url = get_jdk_download_url(java_version);
     let temp_dir = std::env::temp_dir();
     let mut archive_file_name = format!("jdk-{}.tar.gz", java_version);

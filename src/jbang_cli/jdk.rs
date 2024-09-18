@@ -7,7 +7,7 @@ use clap::{Arg, Command};
 use java_properties::PropertiesError;
 use serde::Serialize;
 use crate::build_jbang_app;
-use crate::foojay::extract_jdk;
+use crate::foojay::install_jdk;
 use crate::jbang_cli::jbang_home;
 
 fn get_current_jdk_path() -> String {
@@ -103,7 +103,7 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
                 let versions: Vec<&str> = versions.split(',').collect();
                 for version in versions {
                     if !version.trim().is_empty() {
-                        extract_jdk(version, &jbang_home_path.join("cache").join("jdks").join(version));
+                        install_jdk(version, &jbang_home_path.join("cache").join("jdks").join(version));
                     }
                 }
             }
