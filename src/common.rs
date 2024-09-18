@@ -3,12 +3,27 @@ use std::fs::File;
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
+use anyhow::anyhow;
 use flate2::read::GzDecoder;
+use reqwest::Client;
+use reqwest::redirect::Policy;
 use tar::Archive;
 use zip::ZipArchive;
 
 pub fn http_download(http_url: &str, target_file_path: &str) {
     oneio::download(http_url, target_file_path, None).unwrap();
+}
+
+pub async fn get_redirect_url(http_url: &str) -> anyhow::Result<String> {
+    let client = Client::builder().redirect(Policy::none()).build()?;
+    let mut response = client.get(http_url).send().await?;
+    // Check if the response status is a redirect
+    if response.status().is_redirection() {
+        if let Some(location) = response.headers().get("Location") {
+            return Ok(location.to_str()?.to_string());
+        }
+    }
+    Err(anyhow!("Failed to get redirect url: {}", http_url))
 }
 
 pub fn extract_zip<P: AsRef<Path>>(archive_file_path: P, target_dir: &PathBuf, root_excluded: bool) {
@@ -123,5 +138,13 @@ mod tests {
         let archive_file_path = "/Users/linux_china/temp/jdks/jdk-21-mac.tgz";
         let target_dir = PathBuf::from("/Users/linux_china/temp/jdks/21");
         extract_tgz_from_sub_path(archive_file_path, &target_dir, "Contents/Home/")
+    }
+
+    #[tokio::test]
+    async fn test_redirect_url() {
+        let download_url = "https://api.sdkman.io/2/broker/download/ant/1.10.14/darwinx64";
+        let redirect_url = get_redirect_url(download_url).await.unwrap();
+        let http_url = url::Url::parse(&redirect_url).unwrap();
+        println!("{:?}", http_url)
     }
 }
