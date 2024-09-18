@@ -1,3 +1,5 @@
+pub mod list;
+
 const SDKMAN_CANDIDATES_API: &str = "https://api.sdkman.io/2";
 pub fn get_sdkman_platform() -> String {
     let os_name = match std::env::consts::OS {
