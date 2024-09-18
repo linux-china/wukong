@@ -8,12 +8,13 @@ use std::path::PathBuf;
 use clap::{Command, Arg, ArgAction, ArgMatches};
 use crate::jbang_cli::config::{build_config_command, manage_config};
 use crate::jbang_cli::init::{build_init_command, manage_init};
-use crate::jbang_cli::jbang_home;
+use crate::jbang_cli::{jbang_home, JBANG_DEFAULT_JAVA_VERSION};
 use crate::jbang_cli::jdk::{build_jdk_command, manage_jdk};
 use crate::jbang_cli::template::{build_template_command, manage_template};
 use crate::jbang_cli::trust::{build_trust_command, manage_trust};
 use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
+use crate::foojay::install_jdk;
 use crate::jbang_cli::run::{manage_run, run};
 
 pub const VERSION: &str = "0.1.0";
@@ -22,6 +23,11 @@ fn main() {
     let jbang_home = jbang_home();
     if !jbang_home.exists() {
         install_jbang();
+        // install default JDK
+        let default_jdk_home = jbang_home.join("cache").join("jdks").join(JBANG_DEFAULT_JAVA_VERSION);
+        if !default_jdk_home.exists() {
+            install_jdk(JBANG_DEFAULT_JAVA_VERSION, &default_jdk_home);
+        }
     }
     let app = build_jbang_app();
     let matches = app.get_matches();
