@@ -45,3 +45,7 @@ sdkman-list-java:
 # sdk install java
 sdkman-install-java:
   cargo run --bin sdk -- install java
+
+# sdk use java
+sdkman-use-java:
+  cargo run --bin sdk -- use java 22.0.2-tem
