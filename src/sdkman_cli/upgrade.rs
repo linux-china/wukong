@@ -46,6 +46,6 @@ mod tests {
     #[test]
     fn test_upgrade_candidate() {
         let candidate_name = "ant";
-        upgrade_candidate(candidate_name);
+        upgrade_candidate(candidate_name, true);
     }
 }
