@@ -99,8 +99,13 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
             }
             "install" => {
                 // install JDK through jbang
-                let version = matches.get_one::<String>("version").unwrap();
-                extract_jdk(version, &jbang_home_path.join("cache").join("jdks").join(version));
+                let versions = matches.get_one::<String>("version").unwrap();
+                let versions: Vec<&str> = versions.split(',').collect();
+                for version in versions {
+                    if !version.trim().is_empty() {
+                        extract_jdk(version, &jbang_home_path.join("cache").join("jdks").join(version));
+                    }
+                }
             }
             "java-env" => {
                 let version = matches.get_one::<String>("version").unwrap();
@@ -198,7 +203,7 @@ pub fn build_jdk_command() -> Command {
                 .about("Installs a JDK.")
                 .arg(
                     Arg::new("version")
-                        .help("The version or id to install")
+                        .help("The versions or IDs to install, seperated by comma")
                         .index(1)
                         .required(true)
                 )
