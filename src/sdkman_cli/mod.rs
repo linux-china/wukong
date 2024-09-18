@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 pub mod list;
 pub mod install;
+pub mod default;
 
 const SDKMAN_CANDIDATES_API: &str = "https://api.sdkman.io/2";
 pub fn get_sdkman_platform() -> String {
@@ -29,6 +30,11 @@ pub fn sdkman_home() -> PathBuf {
     } else {
         dirs::home_dir().unwrap().join(".sdkman")
     }
+}
+
+pub fn find_candidate_home(candidate_name: &str, candidate_version: &str) -> PathBuf {
+    sdkman_home().join("candidates")
+        .join(candidate_name).join(candidate_version)
 }
 
 #[cfg(test)]
