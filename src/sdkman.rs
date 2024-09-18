@@ -2,12 +2,23 @@ mod common;
 mod sdkman_cli;
 
 use clap::{Command, Arg};
+use crate::sdkman_cli::default::manage_default;
+use crate::sdkman_cli::install::manage_install;
+use crate::sdkman_cli::list::manage_list;
 
 pub const VERSION: &str = "0.1.0";
 
 fn main() {
     let app = build_sdkman_app();
-    let _matches = app.get_matches();
+    let matches = app.get_matches();
+    if let Some((command, command_matches)) = matches.subcommand() {
+        match command {
+            "list" => manage_list(command_matches),
+            "install" => manage_install(command_matches),
+            "default" => manage_default(command_matches),
+            &_ => println!("Unknown command"),
+        }
+    }
 }
 
 pub fn build_sdkman_app() -> Command {
@@ -68,11 +79,27 @@ Java has a custom list view with vendor-specific details. "#)
             Arg::new("candidate")
                 .help("candidate name")
                 .index(1)
-                .required(true)
+                .required(false)
         );
     let use_command = Command::new("use")
         .about("use a specific version only in the current shell.")
         .long_about(r#"The mandatory candidate and version follow the subcommand to specify what to use in the shell. This subcommand only operates on the current shell. It does not affect other shells running different versions of the same candidate. It also does not change the default version set for all subsequent shells."#)
+        .arg(
+            Arg::new("candidate")
+                .help("candidate name")
+                .index(1)
+                .required(true)
+        )
+        .arg(
+            Arg::new("version")
+                .help("candidate version.")
+                .required(false)
+                .index(2)
+                .num_args(1)
+        );
+    let default_command = Command::new("default")
+        .about("set the local default version of the candidate.")
+        .long_about(r#"The mandatory candidate qualifier of the subcommand specifies the candidate to default for all future shells. The optional version qualifier sets that specific version as default for all subsequent shells on the local environment. Omitting the version will set the global SDKMAN tracked version as the default version for that candidate."#)
         .arg(
             Arg::new("candidate")
                 .help("candidate name")
@@ -94,4 +121,5 @@ Java has a custom list view with vendor-specific details. "#)
         .subcommand(uninstall_command)
         .subcommand(list_command)
         .subcommand(use_command)
+        .subcommand(default_command)
 }
