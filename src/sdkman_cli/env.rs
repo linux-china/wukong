@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::Write;
+use std::io::{BufReader, Write};
 use std::path::PathBuf;
 use clap::{Command};
 use crate::sdkman_cli::install::install_candidate;
@@ -48,19 +48,11 @@ pub fn env_install() {
 pub fn env_clear() {
     let sdkmanrc_path = PathBuf::from(".sdkmanrc");
     if sdkmanrc_path.exists() {
-        let text = std::fs::read_to_string(&sdkmanrc_path).unwrap();
+        let f2 = File::open(&sdkmanrc_path).unwrap();
+        let map = java_properties::read(BufReader::new(f2)).unwrap();
         let mut candidates: Vec<String> = vec![];
-        for line in text.lines() {
-            if !line.is_empty() && !line.starts_with("#") {
-                let parts: Vec<&str> = line.trim().split("=").collect();
-                let candidate_name = parts[0].trim();
-                let default_version = get_installed_candidate_default_version(candidate_name);
-                if !default_version.is_empty() {
-                    candidates.push(format!("{}={}", candidate_name, default_version));
-                } else {
-                    candidates.push(line.to_string());
-                }
-            }
+        for (key, value) in map {
+            candidates.push(format!("{}={}", key, value));
         }
         if !candidates.is_empty() {
             for candidate in &candidates {
