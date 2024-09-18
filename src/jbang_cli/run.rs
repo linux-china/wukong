@@ -10,9 +10,9 @@ pub fn manage_run(run_matches: &clap::ArgMatches) {
     } else {
         vec![]
     };
-    run(script_or_file, &params.iter().map(|s| s.as_str()).collect_vec());
+    jbang_run(script_or_file, &params.iter().map(|s| s.as_str()).collect_vec());
 }
-pub fn run(script_or_file: &str, user_params: &[&str]) {
+pub fn jbang_run(script_or_file: &str, user_params: &[&str]) {
     let mut jbang_params = vec!["run", script_or_file];
     jbang_params.extend(user_params);
     run_command(jbang_exec().to_str().unwrap(), &jbang_params).unwrap();
