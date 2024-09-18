@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::fs;
 use std::fs::File;
 use std::io::BufReader;
-use std::path::{Path, PathBuf};
+use std::path::{Path};
 use clap::{Arg, Command};
 use java_properties::PropertiesError;
 use serde::Serialize;
@@ -79,7 +79,7 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
                     if current_jdk_link.exists() {
                         fs::remove_file(current_jdk_link).unwrap();
                     }
-                    fs::soft_link(jdk_path, jbang_home_path.join("currentjdk")).unwrap();
+                    symlink::symlink_dir(jdk_path, jbang_home_path.join("currentjdk")).unwrap();
                     println!("Setting default JDK to {}", version);
                 } else {
                     println!("JDK {} is not installed.", version);
