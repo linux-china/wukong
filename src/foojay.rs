@@ -13,7 +13,7 @@ pub fn get_jdk_download_url(java_version: &str) -> String {
         "aarch64" => "aarch64",
         _ => panic!("Unsupported architecture"),
     };
-    let mut file_type = "tar.gz";
+    let mut archive_type = "tar.gz";
     let mut libc_type = "glibc";
     if cfg!(target_os = "linux") {
         os = "linux";
@@ -23,11 +23,11 @@ pub fn get_jdk_download_url(java_version: &str) -> String {
     } else if cfg!(target_os = "windows") {
         os = "windows";
         libc_type = "c_std_lib";
-        file_type = "zip";
+        archive_type = "zip";
     } else {
         panic!("Unsupported OS");
     };
-    format!("https://api.foojay.io/disco/v3.0/directuris?distro={distro}&javafx_bundled=false&libc_type={libc_type}&archive_type={file_type}&operating_system={os}&package_type=jdk&version={java_version}&architecture={arch}&latest=available")
+    format!("https://api.foojay.io/disco/v3.0/directuris?distro={distro}&javafx_bundled=false&libc_type={libc_type}&archive_type={archive_type}&operating_system={os}&package_type=jdk&version={java_version}&architecture={arch}&latest=available")
 }
 
 pub fn extract_jdk(java_version: &str, target_dir: &PathBuf) {
@@ -37,10 +37,10 @@ pub fn extract_jdk(java_version: &str, target_dir: &PathBuf) {
     if cfg!(target_os = "windows") {
         archive_file_name = format!("jdk-{}.zip", java_version);
     }
-    let target_file_path = temp_dir.join(archive_file_name);
-    download(&download_url, target_file_path.to_str().unwrap(), None).unwrap();
+    let archive_file_path = temp_dir.join(archive_file_name);
+    download(&download_url, archive_file_path.to_str().unwrap(), None).unwrap();
     if cfg!(target_family = "windows") {
-        let mut archive = ZipArchive::new(File::open(&target_file_path).unwrap()).unwrap();
+        let mut archive = ZipArchive::new(File::open(&archive_file_path).unwrap()).unwrap();
         for i in 0..archive.len() {
             let mut file = archive.by_index(i).unwrap();
             if file.is_file() {
@@ -58,7 +58,7 @@ pub fn extract_jdk(java_version: &str, target_dir: &PathBuf) {
             }
         }
     } else {
-        let tgz_file = File::open(&target_file_path).unwrap();
+        let tgz_file = File::open(&archive_file_path).unwrap();
         let gz_decoder = GzDecoder::new(tgz_file);
         let mut archive = Archive::new(gz_decoder);
         if cfg!(target_os = "macos") {
@@ -86,7 +86,7 @@ pub fn extract_jdk(java_version: &str, target_dir: &PathBuf) {
                 });
         }
     }
-    std::fs::remove_file(&target_file_path).unwrap();
+    std::fs::remove_file(&archive_file_path).unwrap();
 }
 
 #[cfg(test)]
