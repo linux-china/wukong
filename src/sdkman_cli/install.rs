@@ -2,6 +2,7 @@ use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, get_red
 use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, get_sdkman_platform, SDKMAN_CANDIDATES_API};
 
 pub fn manage_install(install_matches: &clap::ArgMatches) {
+    let accept_as_default = install_matches.get_flag("yes");
     if let Some(candidate_name) = install_matches.get_one::<String>("candidate") {
         let candidate_version = if let Some(version) = install_matches.get_one::<String>("version") {
             version.clone()
@@ -13,6 +14,14 @@ pub fn manage_install(install_matches: &clap::ArgMatches) {
             return;
         }
         install_candidate(candidate_name, &candidate_version);
+        if accept_as_default {
+            let candidate_home = find_candidate_home(candidate_name, &candidate_version);
+            let candidate_current_link = candidate_home.parent().unwrap().join("current");
+            if candidate_current_link.exists() && candidate_current_link.is_symlink() {
+                symlink::remove_symlink_dir(&candidate_current_link).unwrap();
+            }
+            symlink::symlink_dir(&candidate_home, &candidate_current_link).unwrap();
+        }
     } else {
         println!("No candidate supplied!");
         println!("Please use `sdk install candidate_name` to install candidate.")
