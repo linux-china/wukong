@@ -1,3 +1,6 @@
+use std::collections::HashMap;
+use std::fs::File;
+use std::io::BufReader;
 use std::path::PathBuf;
 use crate::common::http_text;
 
@@ -37,6 +40,15 @@ pub fn sdkman_home() -> PathBuf {
     } else {
         dirs::home_dir().unwrap().join(".sdkman")
     }
+}
+
+pub fn read_sdkman_config() -> HashMap<String, String> {
+    let config_file_path = sdkman_home().join("etc").join("config");
+    if config_file_path.exists() {
+        let f2 = File::open(&config_file_path).unwrap();
+        return java_properties::read(BufReader::new(f2)).unwrap();
+    }
+    HashMap::new()
 }
 
 pub fn find_candidate_home(candidate_name: &str, candidate_version: &str) -> PathBuf {
