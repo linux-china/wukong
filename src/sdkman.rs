@@ -5,6 +5,7 @@ use clap::{Command, Arg};
 use crate::sdkman_cli::default::manage_default;
 use crate::sdkman_cli::install::manage_install;
 use crate::sdkman_cli::list::manage_list;
+use crate::sdkman_cli::use_candidate::manage_use;
 
 pub const VERSION: &str = "0.1.0";
 
@@ -16,6 +17,7 @@ fn main() {
             "list" => manage_list(command_matches),
             "install" => manage_install(command_matches),
             "default" => manage_default(command_matches),
+            "use" => manage_use(command_matches),
             &_ => println!("Unknown command"),
         }
     }
@@ -93,7 +95,7 @@ Java has a custom list view with vendor-specific details. "#)
         .arg(
             Arg::new("version")
                 .help("candidate version.")
-                .required(false)
+                .required(true)
                 .index(2)
                 .num_args(1)
         );
