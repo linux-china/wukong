@@ -35,6 +35,9 @@ pub fn extract_jdk(java_version: &str, target_dir: &PathBuf) {
     }
     let archive_file_path = temp_dir.join(archive_file_name);
     http_download(&download_url, archive_file_path.to_str().unwrap());
+    if target_dir.exists() { // remove old jdk version
+        std::fs::remove_dir_all(&target_dir).unwrap();
+    }
     if cfg!(target_family = "windows") {
         extract_zip(&archive_file_path, target_dir, true);
     } else {
