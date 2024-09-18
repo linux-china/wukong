@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use crate::common::http_text;
 
 pub mod list;
 pub mod install;
@@ -42,13 +43,18 @@ pub fn find_candidate_home(candidate_name: &str, candidate_version: &str) -> Pat
         .join(candidate_name).join(candidate_version)
 }
 
-pub fn get_candidate_default_version(candidate_name: &str) -> String {
+pub fn get_installed_candidate_default_version(candidate_name: &str) -> String {
     let candidate_current_link = sdkman_home().join("candidates").join(candidate_name).join("current");
     if candidate_current_link.exists() {
         let link_target_path = candidate_current_link.read_link().unwrap();
         return link_target_path.file_name().unwrap().to_str().unwrap().to_string();
     }
     "".to_owned()
+}
+
+pub fn get_remote_candidate_default_version(candidate_name: &str) -> String {
+    let default_version_url = format!("{}/candidates/default/{}", SDKMAN_CANDIDATES_API, candidate_name);
+    http_text(&default_version_url).trim().to_string()
 }
 
 #[cfg(test)]
