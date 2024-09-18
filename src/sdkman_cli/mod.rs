@@ -69,6 +69,6 @@ mod tests {
     #[test]
     fn test_get_candidate_default_version() {
         let candidate_name = "java";
-        println!("{}", get_candidate_default_version(candidate_name));
+        println!("{}", get_installed_candidate_default_version(candidate_name));
     }
 }
