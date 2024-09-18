@@ -1,9 +1,5 @@
-use std::fs::File;
-use std::path::PathBuf;
-use flate2::read::GzDecoder;
-use oneio::download;
-use tar::Archive;
-use zip::ZipArchive;
+use std::path::{PathBuf};
+use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, http_download};
 
 pub fn get_jdk_download_url(java_version: &str) -> String {
     let distro = "temurin";
@@ -38,52 +34,14 @@ pub fn extract_jdk(java_version: &str, target_dir: &PathBuf) {
         archive_file_name = format!("jdk-{}.zip", java_version);
     }
     let archive_file_path = temp_dir.join(archive_file_name);
-    download(&download_url, archive_file_path.to_str().unwrap(), None).unwrap();
+    http_download(&download_url, archive_file_path.to_str().unwrap());
     if cfg!(target_family = "windows") {
-        let mut archive = ZipArchive::new(File::open(&archive_file_path).unwrap()).unwrap();
-        for i in 0..archive.len() {
-            let mut file = archive.by_index(i).unwrap();
-            if file.is_file() {
-                let enclosed_name = file.enclosed_name().unwrap();
-                let mut relative_path = enclosed_name.to_str().unwrap();
-                relative_path = &relative_path[(relative_path.find("/").unwrap() + 1)..];
-                let outpath = target_dir.join(relative_path);
-                if let Some(p) = outpath.parent() {
-                    if !p.exists() {
-                        std::fs::create_dir_all(p).unwrap();
-                    }
-                }
-                let mut outfile = File::create(&outpath).unwrap();
-                std::io::copy(&mut file, &mut outfile).unwrap();
-            }
-        }
+        extract_zip(&archive_file_path, target_dir, true);
     } else {
-        let tgz_file = File::open(&archive_file_path).unwrap();
-        let gz_decoder = GzDecoder::new(tgz_file);
-        let mut archive = Archive::new(gz_decoder);
         if cfg!(target_os = "macos") {
-            archive
-                .entries().unwrap()
-                .filter_map(|e| e.ok())
-                .filter(|e| e.path().unwrap().to_str().unwrap().contains("Contents/Home"))
-                .for_each(|mut entry| {
-                    let entry_path = entry.path().unwrap();
-                    let mut relative_path = entry_path.to_str().unwrap();
-                    relative_path = &relative_path[(relative_path.find("Contents/Home").unwrap() + 14)..];
-                    let path = target_dir.join(relative_path);
-                    entry.unpack(&path).unwrap();
-                });
+            extract_tgz_from_sub_path(&archive_file_path, target_dir, "Contents/Home/");
         } else {
-            archive
-                .entries().unwrap()
-                .filter_map(|e| e.ok())
-                .for_each(|mut entry| {
-                    let entry_path = entry.path().unwrap();
-                    let mut relative_path = entry_path.to_str().unwrap();
-                    relative_path = &relative_path[(relative_path.find("/").unwrap() + 1)..];
-                    let path = target_dir.join(relative_path);
-                    entry.unpack(&path).unwrap();
-                });
+            extract_tgz(&archive_file_path, target_dir, true);
         }
     }
     std::fs::remove_file(&archive_file_path).unwrap();
