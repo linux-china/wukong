@@ -8,6 +8,8 @@ pub mod run;
 
 use std::path::PathBuf;
 
+const JBANG_DEFAULT_JAVA_VERSION: &str = "17";
+
 pub fn jbang_home() -> PathBuf {
     if let Ok(jbang_home) = std::env::var("JBANG_DIR") {
         PathBuf::from(jbang_home)
