@@ -3,6 +3,7 @@ mod sdkman_cli;
 
 use clap::{Command, Arg};
 use crate::sdkman_cli::default::manage_default;
+use crate::sdkman_cli::env::{build_env_command, manage_env};
 use crate::sdkman_cli::home::manage_home;
 use crate::sdkman_cli::install::manage_install;
 use crate::sdkman_cli::list::manage_list;
@@ -22,6 +23,7 @@ fn main() {
             "default" => manage_default(command_matches),
             "use" => manage_use(command_matches),
             "home" => manage_home(command_matches),
+            "env" => manage_env(command_matches),
             &_ => println!("Unknown command"),
         }
     }
@@ -142,6 +144,7 @@ Java has a custom list view with vendor-specific details. "#)
                 .index(1)
                 .required(true)
         );
+    let env_command = build_env_command();
     Command::new("sdk")
         .version(VERSION)
         .about("sdk - The command line interface (CLI) for SDKMAN!")
@@ -153,4 +156,5 @@ Java has a custom list view with vendor-specific details. "#)
         .subcommand(home_command)
         .subcommand(default_command)
         .subcommand(current_command)
+        .subcommand(env_command)
 }
