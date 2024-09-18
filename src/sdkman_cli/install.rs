@@ -1,5 +1,5 @@
 use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, get_redirect_url, http_download, http_text};
-use crate::sdkman_cli::{get_sdkman_platform, sdkman_home, SDKMAN_CANDIDATES_API};
+use crate::sdkman_cli::{ find_candidate_home, get_sdkman_platform, SDKMAN_CANDIDATES_API};
 
 pub fn manage_install(install_matches: &clap::ArgMatches) {
     if let Some(candidate_name) = install_matches.get_one::<String>("candidate") {
@@ -20,8 +20,7 @@ pub fn manage_install(install_matches: &clap::ArgMatches) {
 }
 
 pub fn install_candidate(candidate_name: &str, candidate_version: &str) {
-    let candidate_home = sdkman_home().join("candidates")
-        .join(candidate_name).join(&candidate_version);
+    let candidate_home = find_candidate_home(candidate_name, candidate_version);
     if candidate_home.exists() {
         println!("{}@{} installed already: {}", candidate_name, candidate_version, candidate_home.to_str().unwrap());
         return;
