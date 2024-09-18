@@ -1,9 +1,12 @@
 use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, get_redirect_url, http_download};
-use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, get_sdkman_platform, SDKMAN_CANDIDATES_API};
+use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, get_sdkman_platform, read_sdkman_config, SDKMAN_CANDIDATES_API};
 use crate::sdkman_cli::default::make_candidate_default;
 
 pub fn manage_install(install_matches: &clap::ArgMatches) {
-    let accept_as_default = install_matches.get_flag("yes");
+    let mut accept_as_default = install_matches.get_flag("yes");
+    if !accept_as_default {
+        accept_as_default = read_sdkman_config().contains_key("sdkman_auto_answer");
+    }
     if let Some(candidate_name) = install_matches.get_one::<String>("candidate") {
         let candidate_version = if let Some(version) = install_matches.get_one::<String>("version") {
             version.clone()
