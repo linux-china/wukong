@@ -6,7 +6,7 @@ pub fn manage_uninstall(uninstall_matches: &clap::ArgMatches) {
     let candidate_home = find_candidate_home(candidate_name, candidate_version);
     if candidate_home.exists() {
         let candidate_current_link = candidate_home.parent().unwrap().join("current");
-        if candidate_current_link.is_symlink() {
+        if candidate_current_link.exists()  && candidate_current_link.is_symlink() {
             let link_target_path = candidate_current_link.read_link().unwrap();
             if candidate_home == link_target_path {
                 symlink::remove_symlink_dir(&candidate_current_link).unwrap();
