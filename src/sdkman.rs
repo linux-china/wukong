@@ -1,4 +1,5 @@
 mod common;
+mod sdkman_cli;
 
 use clap::{Command, Arg};
 
