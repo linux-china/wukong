@@ -134,6 +134,14 @@ Java has a custom list view with vendor-specific details. "#)
                 .index(2)
                 .num_args(1)
         );
+    let current_command = Command::new("current")
+        .about("display the current default installed")
+        .arg(
+            Arg::new("candidate")
+                .help("candidate name")
+                .index(1)
+                .required(true)
+        );
     Command::new("sdk")
         .version(VERSION)
         .about("sdk - The command line interface (CLI) for SDKMAN!")
@@ -144,4 +152,5 @@ Java has a custom list view with vendor-specific details. "#)
         .subcommand(use_command)
         .subcommand(home_command)
         .subcommand(default_command)
+        .subcommand(current_command)
 }
