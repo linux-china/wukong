@@ -84,4 +84,9 @@ mod tests {
         let candidate_name = "java";
         println!("{}", get_installed_candidate_default_version(candidate_name));
     }
+
+    #[test]
+    fn test_read_config() {
+        println!("{:?}", read_sdkman_config());
+    }
 }
