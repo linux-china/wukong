@@ -12,9 +12,12 @@ pub fn manage_install(install_matches: &clap::ArgMatches) {
     if let Some(candidate_name) = install_matches.get_one::<String>("candidate") {
         let installed_version = if let Some(install_path) = install_matches.get_one::<String>("candidate") {
             let candidate_version = install_matches.get_one::<String>("version").unwrap();
-            let candidate_home = find_candidate_home(candidate_name, candidate_version);
-            let options = CopyOptions::new(); //Initialize default values for CopyOptions
-            fs_extra::dir::copy(PathBuf::from(install_path), &candidate_home, &options).unwrap();
+            let source_path = PathBuf::from(install_path);
+            if !source_path.exists() {
+                eprintln!("Source path not exists: {}", source_path.to_str().unwrap());
+                return;
+            }
+            install_candidate_from_path(&candidate_name, &candidate_version, &source_path);
             candidate_version.clone()
         } else {
             let candidate_version = if let Some(version) = install_matches.get_one::<String>("version") {
@@ -36,6 +39,20 @@ pub fn manage_install(install_matches: &clap::ArgMatches) {
         println!("No candidate supplied!");
         println!("Please use `sdk install candidate_name` to install candidate.")
     }
+}
+
+pub fn install_candidate_from_path(candidate_name: &str, candidate_version: &str, install_path: &PathBuf) {
+    let candidate_home = find_candidate_home(candidate_name, candidate_version);
+    if candidate_home.exists() {
+        println!("{}@{} installed already: {}", candidate_name, candidate_version, candidate_home.to_str().unwrap());
+        return;
+    }
+    let options = CopyOptions::new(); //Initialize default values for CopyOptions
+    let parent_path = candidate_home.parent().unwrap();
+    if !parent_path.exists() {
+        std::fs::create_dir_all(parent_path).unwrap();
+    }
+    fs_extra::dir::copy(install_path, &candidate_home, &options).unwrap();
 }
 
 pub fn install_candidate(candidate_name: &str, candidate_version: &str) {
@@ -90,5 +107,14 @@ mod tests {
         let candidate_name = "java";
         let version = "22.0.2-tem";
         install_candidate(candidate_name, version);
+    }
+
+    #[test]
+    fn test_copy_dir() {
+        let source = PathBuf::from("/Users/linux_china/temp/jdks/apache-maven-3.9.9");
+        let target = PathBuf::from("/Users/linux_china/temp/jdks/maven/3.9.9");
+        let mut options = CopyOptions::new(); //Initialize default values for CopyOptions
+        options.copy_inside = true;
+        fs_extra::dir::copy(PathBuf::from(source), target, &options).unwrap();
     }
 }
