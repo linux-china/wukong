@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+use fs_extra::dir::CopyOptions;
 use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, get_redirect_url, http_download};
 use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, get_sdkman_platform, read_sdkman_config, SDKMAN_CANDIDATES_API};
 use crate::sdkman_cli::default::make_candidate_default;
@@ -8,18 +10,27 @@ pub fn manage_install(install_matches: &clap::ArgMatches) {
         accept_as_default = read_sdkman_config().contains_key("sdkman_auto_answer");
     }
     if let Some(candidate_name) = install_matches.get_one::<String>("candidate") {
-        let candidate_version = if let Some(version) = install_matches.get_one::<String>("version") {
-            version.clone()
+        let installed_version = if let Some(install_path) = install_matches.get_one::<String>("candidate") {
+            let candidate_version = install_matches.get_one::<String>("version").unwrap();
+            let candidate_home = find_candidate_home(candidate_name, candidate_version);
+            let options = CopyOptions::new(); //Initialize default values for CopyOptions
+            fs_extra::dir::copy(PathBuf::from(install_path), &candidate_home, &options).unwrap();
+            candidate_version.clone()
         } else {
-            get_remote_candidate_default_version(candidate_name)
+            let candidate_version = if let Some(version) = install_matches.get_one::<String>("version") {
+                version.clone()
+            } else {
+                get_remote_candidate_default_version(candidate_name)
+            };
+            if candidate_version == "" {
+                eprintln!("Failed to find default version for : {}", candidate_name);
+                return;
+            }
+            install_candidate(candidate_name, &candidate_version);
+            candidate_version
         };
-        if candidate_version == "" {
-            eprintln!("Failed to find default version for : {}", candidate_name);
-            return;
-        }
-        install_candidate(candidate_name, &candidate_version);
         if accept_as_default {
-            make_candidate_default(candidate_name, &candidate_version);
+            make_candidate_default(candidate_name, &installed_version);
         }
     } else {
         println!("No candidate supplied!");
