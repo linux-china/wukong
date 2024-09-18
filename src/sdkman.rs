@@ -36,6 +36,13 @@ pub fn build_sdkman_app() -> Command {
         .about("install a candidate version.")
         .long_about(r#"Invoking this subcommand with only the candidate as parameter will install the currently known default version for that candidate. Provide a second qualifier to install a specific non-default version. Provide a third optional qualifier to add an already installed local version. This final qualifier is the absolute local path to the base directory of the SDK to be added. The local version will appear as an installed version of the candidate. The version may not conflict with an existing version, installed or not."#)
         .arg(
+            Arg::new("yes")
+                .short('y')
+                .help("Accept installed candidate version as default.")
+                .num_args(0)
+                .required(false)
+        )
+        .arg(
             Arg::new("candidate")
                 .help("candidate name")
                 .index(1)
@@ -149,6 +156,13 @@ Java has a custom list view with vendor-specific details. "#)
     let env_command = build_env_command();
     let upgrade_command = Command::new("upgrade")
         .about("upgrade installed candidate versions.")
+        .arg(
+            Arg::new("yes")
+                .short('y')
+                .help("Accept installed candidate version as default.")
+                .num_args(0)
+                .required(false)
+        )
         .arg(
             Arg::new("candidate")
                 .help("candidate name")
