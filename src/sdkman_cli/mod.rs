@@ -4,6 +4,7 @@ pub mod list;
 pub mod install;
 pub mod default;
 pub mod use_candidate;
+pub mod uninstall;
 
 const SDKMAN_CANDIDATES_API: &str = "https://api.sdkman.io/2";
 pub fn get_sdkman_platform() -> String {
