@@ -5,16 +5,21 @@ pub fn manage_default(default_matches: &clap::ArgMatches) {
     let candidate_version = default_matches.get_one::<String>("version").unwrap();
     let candidate_home = find_candidate_home(candidate_name, candidate_version);
     if candidate_home.exists() {
-        let candidate_current_link = candidate_home.parent().unwrap().join("current");
-        if candidate_current_link.exists() {
-            symlink::remove_symlink_dir(&candidate_current_link).unwrap();
-        }
-        symlink::symlink_dir(&candidate_home, &candidate_current_link).unwrap();
+        make_candidate_default(candidate_name, candidate_version);
     } else {
         eprintln!("{}@{} not installed, please install it first!", candidate_name, candidate_version);
     }
 }
 
+
+pub fn make_candidate_default(candidate_name: &str, candidate_version: &str) {
+    let candidate_home = find_candidate_home(candidate_name, &candidate_version);
+    let candidate_current_link = candidate_home.parent().unwrap().join("current");
+    if candidate_current_link.exists() && candidate_current_link.is_symlink() {
+        symlink::remove_symlink_dir(&candidate_current_link).unwrap();
+    }
+    symlink::symlink_dir(&candidate_home, &candidate_current_link).unwrap();
+}
 
 #[cfg(test)]
 mod tests {

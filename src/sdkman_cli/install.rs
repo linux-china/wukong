@@ -1,5 +1,6 @@
 use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, get_redirect_url, http_download};
 use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, get_sdkman_platform, SDKMAN_CANDIDATES_API};
+use crate::sdkman_cli::default::make_candidate_default;
 
 pub fn manage_install(install_matches: &clap::ArgMatches) {
     let accept_as_default = install_matches.get_flag("yes");
@@ -15,12 +16,7 @@ pub fn manage_install(install_matches: &clap::ArgMatches) {
         }
         install_candidate(candidate_name, &candidate_version);
         if accept_as_default {
-            let candidate_home = find_candidate_home(candidate_name, &candidate_version);
-            let candidate_current_link = candidate_home.parent().unwrap().join("current");
-            if candidate_current_link.exists() && candidate_current_link.is_symlink() {
-                symlink::remove_symlink_dir(&candidate_current_link).unwrap();
-            }
-            symlink::symlink_dir(&candidate_home, &candidate_current_link).unwrap();
+            make_candidate_default(candidate_name, &candidate_version);
         }
     } else {
         println!("No candidate supplied!");

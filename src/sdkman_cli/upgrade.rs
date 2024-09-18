@@ -1,9 +1,11 @@
 use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, sdkman_home};
+use crate::sdkman_cli::default::make_candidate_default;
 use crate::sdkman_cli::install::install_candidate;
 
 pub fn manage_upgrade(upgrade_matches: &clap::ArgMatches) {
+    let accept_as_default = upgrade_matches.get_flag("yes");
     if let Some(candidate_name) = upgrade_matches.get_one::<String>("candidate") {
-        upgrade_candidate(candidate_name);
+        upgrade_candidate(candidate_name, accept_as_default);
     } else {
         // list all candidates
         let candidates_dir = sdkman_home().join("candidates");
@@ -14,14 +16,14 @@ pub fn manage_upgrade(upgrade_matches: &clap::ArgMatches) {
                 let entry = entry.unwrap();
                 if entry.path().is_dir() {
                     let candidate_name = entry.file_name().into_string().unwrap();
-                    upgrade_candidate(&candidate_name);
+                    upgrade_candidate(&candidate_name, accept_as_default);
                 }
             }
         }
     }
 }
 
-fn upgrade_candidate(candidate_name: &str) {
+fn upgrade_candidate(candidate_name: &str, accept_as_default: bool) {
     let default_remote_version = get_remote_candidate_default_version(candidate_name);
     if default_remote_version == "" {
         eprintln!("Failed to find default version for : {}", candidate_name);
@@ -31,6 +33,9 @@ fn upgrade_candidate(candidate_name: &str) {
     if !candidate_home.exists() {
         println!("Begin to upgrade {} to {}", candidate_name, default_remote_version);
         install_candidate(candidate_name, &default_remote_version);
+        if accept_as_default {
+            make_candidate_default(candidate_name, &default_remote_version);
+        }
     }
 }
 
