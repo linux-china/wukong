@@ -3,6 +3,7 @@ mod sdkman_cli;
 
 use clap::{Command, Arg};
 use crate::sdkman_cli::default::manage_default;
+use crate::sdkman_cli::home::manage_home;
 use crate::sdkman_cli::install::manage_install;
 use crate::sdkman_cli::list::manage_list;
 use crate::sdkman_cli::uninstall::manage_uninstall;
@@ -20,6 +21,7 @@ fn main() {
             "uninstall" => manage_uninstall(command_matches),
             "default" => manage_default(command_matches),
             "use" => manage_use(command_matches),
+            "home" => manage_home(command_matches),
             &_ => println!("Unknown command"),
         }
     }
@@ -61,7 +63,22 @@ pub fn build_sdkman_app() -> Command {
         .arg(
             Arg::new("version")
                 .help("candidate version.")
-                .required(false)
+                .required(true)
+                .index(2)
+                .num_args(1)
+        );
+    let home_command = Command::new("home")
+        .about("output the path of a specific candidate version.")
+        .arg(
+            Arg::new("candidate")
+                .help("candidate name")
+                .index(1)
+                .required(true)
+        )
+        .arg(
+            Arg::new("version")
+                .help("candidate version.")
+                .required(true)
                 .index(2)
                 .num_args(1)
         );
@@ -125,5 +142,6 @@ Java has a custom list view with vendor-specific details. "#)
         .subcommand(uninstall_command)
         .subcommand(list_command)
         .subcommand(use_command)
+        .subcommand(home_command)
         .subcommand(default_command)
 }
