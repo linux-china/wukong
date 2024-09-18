@@ -33,3 +33,15 @@ jbang-run:
 # display sdkman help
 sdkman-help:
   cargo run --bin sdk -- help
+
+# sdk list
+sdkman-list:
+  cargo run --bin sdk -- list
+
+# sdk list java
+sdkman-list-java:
+  cargo run --bin sdk -- list java
+
+# sdk install java
+sdkman-install-java:
+  cargo run --bin sdk -- install java
