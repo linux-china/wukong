@@ -49,3 +49,7 @@ sdkman-install-java:
 # sdk use java
 sdkman-use-java:
   cargo run --bin sdk -- use java 22.0.2-tem
+
+# sdk home java
+sdkman-home-java:
+  cargo run --bin sdk -- home java 22.0.2-tem
