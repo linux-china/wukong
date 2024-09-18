@@ -15,9 +15,11 @@ use crate::jbang_cli::trust::{build_trust_command, manage_trust};
 use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
 use crate::foojay::install_jdk;
-use crate::jbang_cli::run::{manage_run, run};
+use crate::jbang_cli::run::{manage_run, jbang_run};
 
 pub const VERSION: &str = "0.1.0";
+pub const JBANG_SUB_COMMANDS: [&str; 17] = ["run", "build", "init", "edit", "cache", "export",
+    "jdk", "config", "trust", "alias", "template", "catalog", "app", "completion", "info", "version", "wrapper"];
 
 fn main() {
     let jbang_home = jbang_home();
@@ -27,6 +29,21 @@ fn main() {
         let default_jdk_home = jbang_home.join("cache").join("jdks").join(JBANG_DEFAULT_JAVA_VERSION);
         if !default_jdk_home.exists() {
             install_jdk(JBANG_DEFAULT_JAVA_VERSION, &default_jdk_home);
+        }
+    }
+    let args = std::env::args().collect::<Vec<String>>();
+    // check run script from jbang
+    if args.len() >= 3 && args[1] == "run" { // jbang run script_file
+        let script_path = &args[2];
+        if !script_path.starts_with("-") {
+            jbang_run(&args[2], &args[3..].iter().map(|s| s.as_str()).collect_vec());
+            return;
+        }
+    } else if args.len() >= 2 { // jbang script file
+        let script_path = &args[1];
+        if !script_path.starts_with("-") && !JBANG_SUB_COMMANDS.contains(&script_path.as_str()) {
+            jbang_run(&args[1], &args[2..].iter().map(|s| s.as_str()).collect_vec());
+            return;
         }
     }
     let app = build_jbang_app();
@@ -51,7 +68,7 @@ fn main() {
         } else {
             vec![]
         };
-        run(script_or_file, &params.iter().map(|s| s.as_str()).collect_vec());
+        jbang_run(script_or_file, &params.iter().map(|s| s.as_str()).collect_vec());
     }
 }
 
@@ -190,4 +207,14 @@ pub fn build_jbang_app() -> Command {
         .subcommand(template_command)
         .subcommand(upgrade_command)
         .subcommand(version_command)
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_help() {
+        let app = build_jbang_app();
+        app.get_matches_from(vec!["jbang", "--help"]);
+    }
 }
