@@ -1,9 +1,12 @@
-use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, sdkman_home};
+use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, read_sdkman_config, sdkman_home};
 use crate::sdkman_cli::default::make_candidate_default;
 use crate::sdkman_cli::install::install_candidate;
 
 pub fn manage_upgrade(upgrade_matches: &clap::ArgMatches) {
-    let accept_as_default = upgrade_matches.get_flag("yes");
+    let mut accept_as_default = upgrade_matches.get_flag("yes");
+    if !accept_as_default {
+        accept_as_default = read_sdkman_config().contains_key("sdkman_auto_answer");
+    }
     if let Some(candidate_name) = upgrade_matches.get_one::<String>("candidate") {
         upgrade_candidate(candidate_name, accept_as_default);
     } else {
