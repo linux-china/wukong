@@ -8,6 +8,7 @@ use crate::sdkman_cli::home::manage_home;
 use crate::sdkman_cli::install::manage_install;
 use crate::sdkman_cli::list::manage_list;
 use crate::sdkman_cli::uninstall::manage_uninstall;
+use crate::sdkman_cli::upgrade::manage_upgrade;
 use crate::sdkman_cli::use_candidate::manage_use;
 
 pub const VERSION: &str = "0.1.0";
@@ -24,6 +25,7 @@ fn main() {
             "use" => manage_use(command_matches),
             "home" => manage_home(command_matches),
             "env" => manage_env(command_matches),
+            "upgrade" => manage_upgrade(command_matches),
             &_ => println!("Unknown command"),
         }
     }
@@ -145,6 +147,14 @@ Java has a custom list view with vendor-specific details. "#)
                 .required(true)
         );
     let env_command = build_env_command();
+    let upgrade_command = Command::new("upgrade")
+        .about("upgrade installed candidate versions.")
+        .arg(
+            Arg::new("candidate")
+                .help("candidate name")
+                .index(1)
+                .required(false)
+        );
     Command::new("sdk")
         .version(VERSION)
         .about("sdk - The command line interface (CLI) for SDKMAN!")
@@ -157,4 +167,5 @@ Java has a custom list view with vendor-specific details. "#)
         .subcommand(default_command)
         .subcommand(current_command)
         .subcommand(env_command)
+        .subcommand(upgrade_command)
 }
