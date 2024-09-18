@@ -1,12 +1,12 @@
-use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, get_redirect_url, http_download, http_text};
-use crate::sdkman_cli::{ find_candidate_home, get_sdkman_platform, SDKMAN_CANDIDATES_API};
+use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, get_redirect_url, http_download};
+use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, get_sdkman_platform, SDKMAN_CANDIDATES_API};
 
 pub fn manage_install(install_matches: &clap::ArgMatches) {
     if let Some(candidate_name) = install_matches.get_one::<String>("candidate") {
         let candidate_version = if let Some(version) = install_matches.get_one::<String>("version") {
             version.clone()
         } else {
-            get_candidate_default_version(candidate_name)
+            get_remote_candidate_default_version(candidate_name)
         };
         if candidate_version == "" {
             eprintln!("Failed to find default version for : {}", candidate_name);
@@ -48,19 +48,15 @@ pub fn install_candidate(candidate_name: &str, candidate_version: &str) {
     std::fs::remove_file(&archive_file_path).unwrap();
 }
 
-pub fn get_candidate_default_version(candidate_name: &str) -> String {
-    let default_version_url = format!("{}/candidates/default/{}", SDKMAN_CANDIDATES_API, candidate_name);
-    http_text(&default_version_url).trim().to_string()
-}
-
 #[cfg(test)]
 mod tests {
+    use crate::sdkman_cli::get_remote_candidate_default_version;
     use super::*;
 
     #[test]
     fn test_candidate_default_version() {
         let candidate_name = "java";
-        println!("java: {}", get_candidate_default_version(candidate_name));
+        println!("java: {}", get_remote_candidate_default_version(candidate_name));
     }
 
     #[test]
