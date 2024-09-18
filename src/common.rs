@@ -5,22 +5,26 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use anyhow::anyhow;
 use flate2::read::GzDecoder;
-use reqwest::Client;
 use reqwest::redirect::Policy;
 use tar::Archive;
 use zip::ZipArchive;
 
-pub async fn http_text(http_url: &str) -> String {
-    reqwest::get(http_url).await.unwrap().text().unwrap()
+pub fn http_text(http_url: &str) -> String {
+    let resp = reqwest::blocking::get(http_url).unwrap();
+    if resp.status().is_success() {
+        resp.text().unwrap()
+    } else {
+        "".to_owned()
+    }
 }
 
 pub fn http_download(http_url: &str, target_file_path: &str) {
     oneio::download(http_url, target_file_path, None).unwrap();
 }
 
-pub async fn get_redirect_url(http_url: &str) -> anyhow::Result<String> {
-    let client = Client::builder().redirect(Policy::none()).build()?;
-    let mut response = client.get(http_url).send().await?;
+pub fn get_redirect_url(http_url: &str) -> anyhow::Result<String> {
+    let client = reqwest::blocking::Client::builder().redirect(Policy::none()).build()?;
+    let response = client.get(http_url).send()?;
     // Check if the response status is a redirect
     if response.status().is_redirection() {
         if let Some(location) = response.headers().get("Location") {
@@ -144,10 +148,10 @@ mod tests {
         extract_tgz_from_sub_path(archive_file_path, &target_dir, "Contents/Home/")
     }
 
-    #[tokio::test]
-    async fn test_redirect_url() {
-        let download_url = "https://api.sdkman.io/2/broker/download/ant/1.10.14/darwinx64";
-        let redirect_url = get_redirect_url(download_url).await.unwrap();
+    #[test]
+    fn test_redirect_url() {
+        let download_url = "https://api.sdkman.io/2/broker/download/java/22.0.2-tem/darwinx64";
+        let redirect_url = get_redirect_url(download_url).unwrap();
         let http_url = url::Url::parse(&redirect_url).unwrap();
         println!("{:?}", http_url)
     }
