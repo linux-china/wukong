@@ -7,6 +7,7 @@ pub mod use_candidate;
 pub mod uninstall;
 pub mod home;
 pub mod current;
+pub mod env;
 
 const SDKMAN_CANDIDATES_API: &str = "https://api.sdkman.io/2";
 pub fn get_sdkman_platform() -> String {
@@ -41,6 +42,15 @@ pub fn find_candidate_home(candidate_name: &str, candidate_version: &str) -> Pat
         .join(candidate_name).join(candidate_version)
 }
 
+pub fn get_candidate_default_version(candidate_name: &str) -> String {
+    let candidate_current_link = sdkman_home().join("candidates").join(candidate_name).join("current");
+    if candidate_current_link.exists() {
+        let link_target_path = candidate_current_link.read_link().unwrap();
+        return link_target_path.file_name().unwrap().to_str().unwrap().to_string();
+    }
+    "".to_owned()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -48,5 +58,11 @@ mod tests {
     #[test]
     fn test_sdkman_platform() {
         println!("{}", get_sdkman_platform());
+    }
+
+    #[test]
+    fn test_get_candidate_default_version() {
+        let candidate_name = "java";
+        println!("{}", get_candidate_default_version(candidate_name));
     }
 }
