@@ -6,6 +6,7 @@ Wukong is a Java toolchain with Rust.
 
 - JBang: https://www.jbang.dev/
 - SDKMAN: https://sdkman.io/
+- jenv: https://github.com/jenv/jenv
 - Maven Toolchains: https://maven.apache.org/guides/mini/guide-using-toolchains.html
 
 # References
