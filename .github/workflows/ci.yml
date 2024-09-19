@@ -3,6 +3,11 @@ name: CI
 on:
   push:
     branches: [ "main" ]
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+      - 'justfile'
+      - 'index.http'
   pull_request:
     branches: [ "main" ]
 
