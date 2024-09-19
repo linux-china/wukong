@@ -1,0 +1,34 @@
+### ChatGPT simple chat for translation
+POST https://api.openai.com/v1/chat/completions
+Authorization: Bearer {{OPENAI_API_KEY}}
+Content-Type: application/json
+
+{
+  "model": "gpt-4o-mini",
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are an Java expert. You are writing Java code with JBang style. Add no additional text. You can add jbang shebang, dependencies, comments in the code."
+    },
+    {
+      "role": "user",
+      "content": "Please write a simple Hello.java."
+    }
+  ]
+}
+
+### SDKMAN candidates list
+GET https://api.sdkman.io/2/candidates/list
+
+### SDKMAN candidate version list
+GET https://api.sdkman.io/2/candidates/java/darwinx64/versions/list?installed=
+
+### SDKMAN candidate default version
+GET https://api.sdkman.io/2/candidates/default/java
+
+### SDKMAN candidate version list
+GET https://api.sdkman.io/2/candidates/ant/darwinx64/versions/list?installed=
+
+### sdkman candidate release download url
+// @no-redirect
+GET https://api.sdkman.io/2/broker/download/java/22.0.2-tem/darwinx64
