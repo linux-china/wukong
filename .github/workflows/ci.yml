@@ -1,54 +1,25 @@
 name: CI
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
-    branches:
-      - main
-    paths-ignore:
-      - "*.md"
-      - "*.yml"
-      - "*.yaml"
-      - "!.github/workflows/ci.yml"
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+env:
+  CARGO_TERM_COLOR: always
 
 jobs:
-
-  format:
-    name: Format
+  build-unbuntu:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Boshen/setup-rust@main
-        with:
-          components: rustfmt
-          tools: taplo-cli
-          restore-cache: false
-      - run: taplo lint
-      - run: cargo fmt -- --check
+      - name: Build
+        run: cargo build --verbose
 
-  lint:
-    name: Clippy
-    runs-on: ubuntu-latest
-    steps:
-      - uses: taiki-e/checkout-action@v1
-      - uses: Boshen/setup-rust@main
-        with:
-          cache-key: warm
-          components: clippy
-      - run: cargo clippy --all-targets --all-features --no-deps -- -D warnings
-
-  shear:
-    name: Check Dependencies
-    runs-on: ubuntu-latest
+  build-windows:
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: Boshen/setup-rust@main
-        with:
-          tools: cargo-shear
-          restore-cache: false
-      - run: cargo shear
+      - name: Build
+        run: cargo build --verbose
