@@ -2,6 +2,12 @@ Wukong - Java Toolchain with Rust
 ====================================
 Wukong is a Java toolchain written with Rust.
 
+# Get started
+
+- Install: `cargo binstall wukong`. Please run `cargo install cargo-binstall` first.
+- JBang-rs: `~/.cargo/bin/jbang --version`
+- SDKMAN-rs: `~/.cargo/bin/sdk --version`
+
 # Toolchain
 
 - JBang(Java): https://www.jbang.dev/
