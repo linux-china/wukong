@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - "*.md"
+      - "*.yml"
+      - "*.yaml"
+      - "!.github/workflows/ci.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Boshen/setup-rust@main
+        with:
+          components: rustfmt
+          tools: taplo-cli
+          restore-cache: false
+      - run: taplo lint
+      - run: cargo fmt -- --check
+
+  lint:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: taiki-e/checkout-action@v1
+      - uses: Boshen/setup-rust@main
+        with:
+          cache-key: warm
+          components: clippy
+      - run: cargo clippy --all-targets --all-features --no-deps -- -D warnings
+
+  shear:
+    name: Check Dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Boshen/setup-rust@main
+        with:
+          tools: cargo-shear
+          restore-cache: false
+      - run: cargo shear
