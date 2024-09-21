@@ -15,6 +15,8 @@ use crate::jbang_cli::trust::{build_trust_command, manage_trust};
 use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
 use crate::foojay::install_jdk;
+use crate::jbang_cli::alias::build_alias_command;
+use crate::jbang_cli::catalog::build_catalog_command;
 use crate::jbang_cli::run::{manage_run, jbang_run};
 
 pub const VERSION: &str = "0.1.0";
@@ -132,6 +134,8 @@ pub fn build_jbang_app() -> Command {
     let trust_command = build_trust_command();
     let init_command = build_init_command();
     let template_command = build_template_command();
+    let alias_command = build_alias_command();
+    let catalog_command = build_catalog_command();
     let upgrade_command = Command::new("upgrade")
         .about("Upgrade jbang to the latest version.");
     Command::new("jbang")
@@ -210,6 +214,8 @@ pub fn build_jbang_app() -> Command {
         .subcommand(template_command)
         .subcommand(upgrade_command)
         .subcommand(version_command)
+        .subcommand(alias_command)
+        .subcommand(catalog_command)
 }
 #[cfg(test)]
 mod tests {
