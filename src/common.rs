@@ -96,10 +96,24 @@ pub fn extract_tgz_from_sub_path<P: AsRef<Path>>(archive_file_path: P, target_di
 }
 
 pub fn run_command(command_name: &str, args: &[&str]) -> io::Result<Output> {
-    run_command_with_env_vars(command_name, args, &None, &None)
+    run_command_with_env_vars(command_name, args, &None, &None, false)
 }
 
-pub fn run_command_with_env_vars(command_name: &str, args: &[&str], working_dir: &Option<String>, env_vars: &Option<HashMap<String, String>>) -> io::Result<Output> {
+pub fn run_command_line(command_line: &str) -> io::Result<Output> {
+    let command_and_args = shlex::split(command_line).unwrap();
+    let command_name = command_and_args[0].clone();
+    let args = &command_and_args[1..].iter().map(AsRef::as_ref).collect::<Vec<&str>>();
+    run_command(&command_name, args)
+}
+
+pub fn capture_command(command_name: &str, args: &[&str]) -> io::Result<Output> {
+    run_command_with_env_vars(command_name, args, &None, &None, true)
+}
+
+pub fn run_command_with_env_vars(command_name: &str, args: &[&str],
+                                 working_dir: &Option<String>,
+                                 env_vars: &Option<HashMap<String, String>>,
+                                 capture_output: bool) -> io::Result<Output> {
     let mut command = Command::new(command_name);
     if args.len() > 0 {
         command.args(args);
@@ -112,12 +126,21 @@ pub fn run_command_with_env_vars(command_name: &str, args: &[&str], working_dir:
             command.env(key, value);
         }
     }
-    command
-        .envs(std::env::vars())
-        .stdin(Stdio::inherit())
-        .stdout(Stdio::inherit())
-        .stderr(Stdio::inherit())
-        .output()
+    if capture_output {
+        command
+            .envs(std::env::vars())
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .output()
+    } else {
+        command
+            .envs(std::env::vars())
+            .stdin(Stdio::inherit())
+            .stdout(Stdio::inherit())
+            .stderr(Stdio::inherit())
+            .output()
+    }
 }
 
 #[cfg(test)]
