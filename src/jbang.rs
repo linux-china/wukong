@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use clap::{Command, Arg, ArgAction, ArgMatches};
 use crate::jbang_cli::config::{build_config_command, manage_config};
 use crate::jbang_cli::init::{build_init_command, manage_init};
-use crate::jbang_cli::{jbang_home, JBANG_DEFAULT_JAVA_VERSION};
+use crate::jbang_cli::{jbang_home, print_command_help, JBANG_DEFAULT_JAVA_VERSION};
 use crate::jbang_cli::jdk::{build_jdk_command, manage_jdk};
 use crate::jbang_cli::template::{build_template_command, manage_template};
 use crate::jbang_cli::trust::{build_trust_command, manage_trust};
@@ -35,7 +35,10 @@ fn main() {
     // check run script from jbang
     if args.len() >= 3 && args[1] == "run" { // jbang run script_file
         let script_path = &args[2];
-        if !script_path.starts_with("-") {
+        if script_path == "-h" || script_path == "--help" {
+            print_command_help("run");
+            return;
+        } else if !script_path.starts_with("-") {
             jbang_run(&args[2], &args[3..].iter().map(|s| s.as_str()).collect_vec());
             return;
         }
