@@ -1,7 +1,7 @@
 use clap::{Arg, ArgAction, Command};
 use itertools::Itertools;
 use crate::common::{capture_command, run_command_line};
-use crate::jbang_cli::{ensure_jdk_available, java_exec, jbang_exec, jbang_home, JBANG_DEFAULT_JAVA_VERSION};
+use crate::jbang_cli::{ensure_jdk_available, java_exec, jbang_home, JBANG_DEFAULT_JAVA_VERSION};
 
 pub fn manage_run(run_matches: &clap::ArgMatches) {
     let script_or_file = run_matches.get_one::<String>("scriptOrFile").unwrap();
