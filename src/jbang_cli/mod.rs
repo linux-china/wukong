@@ -6,6 +6,8 @@ pub mod init;
 pub mod template;
 pub mod run;
 pub mod models;
+pub mod alias;
+pub mod catalog;
 
 use std::path::PathBuf;
 use crate::common::run_command;
