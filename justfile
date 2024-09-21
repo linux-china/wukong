@@ -30,6 +30,10 @@ jbang-version:
 jbang-run:
   cargo run --bin jbang -- scripts/hello.java first second
 
+# jbang run by java
+jbang-raw-hello:
+  java -classpath $HOME/.jbang/bin/jbang.jar dev.jbang.Main run scripts/hello.java first second
+
 # display sdkman help
 sdkman-help:
   cargo run --bin sdk -- help
