@@ -1,8 +1,8 @@
 use clap::{Arg, Command};
 use crate::jbang_cli::call_jbang_sub_command;
 
-pub fn manage_info(catalog_matches: &clap::ArgMatches) {
-    if let Some((sub_command, matches)) = catalog_matches.subcommand() {
+pub fn manage_info(info_matches: &clap::ArgMatches) {
+    if let Some((sub_command, matches)) = info_matches.subcommand() {
         match sub_command {
             "tools" => {
                 let script_or_file = matches.get_one::<String>("scriptOrFile").unwrap();
