@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 use clap::{Arg, Command};
 use colored::Colorize;
-use crate::jbang_cli::{find_jbang_catalog_from_path, jbang_catalog};
+use crate::jbang_cli::{call_jbang_sub_command, find_jbang_catalog_from_path, jbang_catalog};
 use crate::jbang_cli::models::{CatalogRef, JBangCatalog};
+use crate::jbang_cli::run::jbang_run;
 
 pub fn manage_catalog(catalog_matches: &clap::ArgMatches) {
     if let Some((sub_command, matches)) = catalog_matches.subcommand() {
@@ -24,6 +25,9 @@ pub fn manage_catalog(catalog_matches: &clap::ArgMatches) {
             }
             "list" => {
                 list_catalogs();
+            }
+            "update" => {
+                update_catalog();
             }
             _ => {}
         }
@@ -62,6 +66,10 @@ pub fn remove_catalog(name: &str) {
     let mut jbang_catalog = jbang_catalog();
     jbang_catalog.remove_catalog(name);
     jbang_catalog.write_default();
+}
+
+pub fn update_catalog() {
+    call_jbang_sub_command(&["catalog", "update"]);
 }
 
 pub fn build_catalog_command() -> Command {
