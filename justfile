@@ -48,6 +48,10 @@ jbang-alias-list:
 jbang-catalog-list:
   cargo run --bin jbang -- catalog list
 
+# jbang info tools
+jbang-info-tools:
+  cargo run --bin jbang -- info tools scripts/hello.java
+
 # display sdkman help
 sdkman-help:
   cargo run --bin sdk -- help
