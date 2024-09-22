@@ -1,3 +1,9 @@
+# build project and copy to ~/bin
+build:
+  cargo build
+  cp target/debug/jbang ~/bin/jbang
+  cp target/debug/sdk ~/bin/sdk
+
 # display jbang help
 jbang-help:
   cargo run --bin jbang -- help
@@ -33,6 +39,14 @@ jbang-run:
 # jbang run by java
 jbang-raw-hello:
   java -classpath $HOME/.jbang/bin/jbang.jar dev.jbang.Main run scripts/hello.java first second
+
+# jbang run hello.java
+jbang-alias-list:
+  cargo run --bin jbang -- alias list
+
+# jbang run hello.java
+jbang-catalog-list:
+  cargo run --bin jbang -- catalog list
 
 # display sdkman help
 sdkman-help:
