@@ -8,14 +8,6 @@ pub fn jenv_home() -> PathBuf {
     home.join(".jenv")
 }
 
-fn system_java_home() -> Option<String> {
-    if let Ok(java_exec) = which::which("java") {
-        java_exec.parent().unwrap().parent().unwrap().to_str().map(|s| s.to_string())
-    } else {
-        None
-    }
-}
-
 fn get_shell_name() -> String {
     if let Ok(shell) = std::env::var("SHELL") {
         shell.split("/").last().unwrap().to_string()
@@ -121,9 +113,7 @@ pub fn versions_command() {
     } else {
         ("".to_owned(), "".to_owned())
     };
-    if let Some(system_java_home) = system_java_home() {
-        println!("  system({})", system_java_home);
-    }
+    println!("  system");
     if versions_dir.exists() {
         for entry in fs::read_dir(versions_dir).unwrap() {
             let entry = entry.unwrap();
