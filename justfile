@@ -4,6 +4,7 @@ build:
   cp target/debug/jbang ~/bin/jbang
   cp target/debug/sdk ~/bin/sdk
   cp target/debug/jenv ~/bin/jenv
+  cp target/debug/mt ~/bin/mt
 
 # display jbang help
 jbang-help:
