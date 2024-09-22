@@ -1,5 +1,7 @@
 use std::fs;
 use std::path::PathBuf;
+use crate::common::capture_command;
+use crate::foojay::install_jdk;
 
 pub fn jenv_home() -> PathBuf {
     let home = dirs::home_dir().unwrap();
@@ -83,8 +85,8 @@ pub fn global_command(command_matches: &clap::ArgMatches) {
         let jenv_home = jenv_home();
         let global_version_file = jenv_home.join("version");
         if global_version_file.exists() {
-            let version = fs::read_to_string(global_version_file).unwrap().trim();
-            println!("{}", version);
+            let version = fs::read_to_string(global_version_file).unwrap();
+            println!("{}", version.trim());
         } else {
             println!("system");
         }
@@ -97,12 +99,12 @@ pub fn version_command() {
     if let Ok(jenv_version) = std::env::var("JENV_VERSION") {
         println!("{} (set by JENV_VERSION environment variable)", jenv_version);
     } else if PathBuf::from(".java-version").exists() {
-        let version = fs::read_to_string(".java-version").unwrap().trim();
-        println!("{} (set by .java-version)", version);
+        let version = fs::read_to_string(".java-version").unwrap();
+        println!("{} (set by .java-version)", version.trim());
     } else if jenv_home().join("version").exists() {
         let jenv_home = jenv_home();
-        let version = fs::read_to_string(jenv_home.join("version")).unwrap().trim();
-        println!("{}(set by global)", version);
+        let version = fs::read_to_string(jenv_home.join("version")).unwrap();
+        println!("{}(set by global)", version.trim());
     } else {
         println!("system");
     }
@@ -114,8 +116,8 @@ pub fn versions_command() {
     let (current_version, reason) = if let Ok(jenv_version) = std::env::var("JENV_VERSION") {
         (jenv_version, "set by JENV_VERSION environment variable".to_owned())
     } else if PathBuf::from(".java-version").exists() {
-        let version = fs::read_to_string(".java-version").unwrap().trim();
-        (version.to_string(), "set by .java-version".to_owned())
+        let version = fs::read_to_string(".java-version").unwrap();
+        (version.trim().to_string(), "set by .java-version".to_owned())
     } else {
         ("".to_owned(), "".to_owned())
     };
@@ -141,15 +143,85 @@ pub fn which_command(command_matches: &clap::ArgMatches) {}
 pub fn whence_command(command_matches: &clap::ArgMatches) {}
 
 pub fn add_command(command_matches: &clap::ArgMatches) {
-
+    if let Some(version_or_path) = command_matches.get_one::<String>("versionOrPath") {
+        if let Ok(num_version) = version_or_path.parse::<u32>() { // number
+            let java_version = num_version.to_string();
+            let java_home = jenv_home().join("versions").join(&java_version);
+            if java_home.exists() {
+                println!("version {} already exists", num_version);
+            } else {
+                println!("installing version {}", num_version);
+                install_jdk(&java_version, &java_home);
+                println!("version {} installed", num_version);
+            }
+        } else { // link java home with path
+            let java_install_path = PathBuf::from(version_or_path);
+            if java_install_path.exists() {
+                if let Ok(output) = capture_command(&java_exec(&java_install_path), &["-version"]) {
+                    let result = String::from_utf8_lossy(&output.stdout);
+                    let java_version = extract_java_version(&result);
+                    if java_install_path.exists() {
+                        let java_home = jenv_home().join("versions").join(&java_version);
+                        symlink::symlink_dir(&java_install_path, &java_home).unwrap();
+                    } else {
+                        println!("path {} not exists", version_or_path);
+                    }
+                } else {
+                    println!("path {} is not a valid Java home", version_or_path);
+                }
+            } else {
+                println!("path {} not exists", version_or_path);
+            }
+        }
+    }
 }
 
-pub fn remove_command(command_matches: &clap::ArgMatches) {}
+fn extract_java_version(text: &str) -> String {
+    let first_line = text.lines().next().unwrap();
+    if let Some(pos) = first_line.find("\"") {
+        let end_pos = first_line.rfind("\"").unwrap();
+        text[pos + 1..end_pos].to_string()
+    } else {
+        "".to_string()
+    }
+}
 
+pub fn remove_command(command_matches: &clap::ArgMatches) {
+    let java_version = command_matches.get_one::<String>("version").unwrap();
+    let java_home = jenv_home().join("versions").join(&java_version);
+    if java_home.exists() {
+        if java_home.is_symlink() {
+            symlink::remove_symlink_dir(&java_home).unwrap();
+        } else {
+            fs::remove_dir_all(java_home).unwrap();
+        }
+    } else {
+        println!("version {} not exists", java_version);
+    }
+}
+
+fn java_exec(java_home: &PathBuf) -> String {
+    if cfg!(target_os = "windows") {
+        java_home.join("bin").join("java.exe").to_str().unwrap().to_string()
+    } else {
+        java_home.join("bin").join("java").to_str().unwrap().to_string()
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    #[test]
+    fn test_extract_java_version() {
+        let text = r#"openjdk version "1.8.0_332"
+OpenJDK Runtime Environment (Temurin)(build 1.8.0_332-b09)
+OpenJDK 64-Bit Server VM (Temurin)(build 25.332-b09, mixed mode)"#;
+        println!("{}", extract_java_version(text));
+        let text = r#"openjdk version "21" 2023-09-19
+OpenJDK Runtime Environment (build 21+35-2513)
+OpenJDK 64-Bit Server VM (build 21+35-2513, mixed mode, sharing)"#;
+        println!("{}", extract_java_version(text));
+    }
     #[test]
     fn test_add() {
         println!("add");
