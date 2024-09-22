@@ -5,24 +5,24 @@ mod foojay;
 mod jbang_cli;
 
 use std::path::PathBuf;
-use clap::{Command, Arg, ArgAction, ArgMatches};
-use crate::jbang_cli::config::{build_config_command, manage_config};
-use crate::jbang_cli::init::{build_init_command, manage_init};
+use clap::{ArgMatches};
+use crate::jbang_cli::config::{manage_config};
+use crate::jbang_cli::init::{manage_init};
 use crate::jbang_cli::{jbang_home, print_command_help, JBANG_DEFAULT_JAVA_VERSION};
-use crate::jbang_cli::jdk::{build_jdk_command, manage_jdk};
-use crate::jbang_cli::template::{build_template_command, manage_template};
-use crate::jbang_cli::trust::{build_trust_command, manage_trust};
+use crate::jbang_cli::jdk::{manage_jdk};
+use crate::jbang_cli::template::{manage_template};
+use crate::jbang_cli::trust::{manage_trust};
 use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
 use crate::foojay::install_jdk;
-use crate::jbang_cli::alias::{build_alias_command, manage_alias};
-use crate::jbang_cli::cache::{build_cache_command, manage_cache};
-use crate::jbang_cli::catalog::{build_catalog_command, manage_catalog};
-use crate::jbang_cli::export::{build_export_command, manage_export};
-use crate::jbang_cli::info::{build_info_command, manage_info};
+use crate::jbang_cli::alias::{manage_alias};
+use crate::jbang_cli::app::{build_jbang_app, VERSION};
+use crate::jbang_cli::cache::{manage_cache};
+use crate::jbang_cli::catalog::{manage_catalog};
+use crate::jbang_cli::export::{manage_export};
+use crate::jbang_cli::info::{manage_info};
 use crate::jbang_cli::run::{manage_run, jbang_run};
 
-pub const VERSION: &str = "0.1.0";
 pub const JBANG_SUB_COMMANDS: [&str; 17] = ["run", "build", "init", "edit", "cache", "export",
     "jdk", "config", "trust", "alias", "template", "catalog", "app", "completion", "info", "version", "wrapper"];
 
@@ -97,140 +97,6 @@ fn display_version(jbang_home: &PathBuf) {
     println!("JBang-rs: {}", VERSION);
 }
 
-pub fn build_jbang_app() -> Command {
-    let run_command = Command::new("run")
-        .about("Builds and runs provided script.")
-        .arg(
-            Arg::new("main")
-                .short('m')
-                .long("main")
-                .help("Main class to use when running. Used primarily for running jar's.")
-                .required(true)
-        )
-        .arg(
-            Arg::new("scriptOrFile")
-                .help("A reference to a source file")
-                .index(1)
-                .required(false)
-        )
-        .arg(
-            Arg::new("userParams")
-                .help("Parameters to pass on to the script.")
-                .required(false)
-                .index(2)
-                .num_args(1..)
-        );
-    let build_command = Command::new("build")
-        .about("Compiles and stores script in the cache.")
-        .arg(
-            Arg::new("build-dir")
-                .long("build-dir")
-                .num_args(1)
-                .help("Use given directory for build results")
-                .required(false)
-        )
-        .arg(
-            Arg::new("scriptOrFile")
-                .help("A reference to a source file")
-                .index(1)
-                .required(false)
-        );
-    let version_command = Command::new("version")
-        .about("Display version info.");
-    let jdk_command = build_jdk_command();
-    let config_command = build_config_command();
-    let trust_command = build_trust_command();
-    let init_command = build_init_command();
-    let template_command = build_template_command();
-    let alias_command = build_alias_command();
-    let catalog_command = build_catalog_command();
-    let info_command = build_info_command();
-    let export_command = build_export_command();
-    let cache_command = build_cache_command();
-    let upgrade_command = Command::new("upgrade")
-        .about("Upgrade jbang to the latest version.");
-    Command::new("jbang")
-        .version(VERSION)
-        .about("jbang - Unleash the power of Java")
-        .arg(
-            Arg::new("config")
-                .long("config")
-                .num_args(1)
-                .help("Path to config file to be used instead of the default")
-                .required(false),
-        )
-        .arg(
-            Arg::new("fresh")
-                .long("fresh")
-                .action(ArgAction::SetTrue)
-                .help("Make sure we use fresh (i.e. non-cached) resources.")
-                .required(false),
-        )
-        .arg(
-            Arg::new("insecure")
-                .long("insecure")
-                .action(ArgAction::SetTrue)
-                .help("Enable insecure trust of all SSL certificates.")
-                .required(false),
-        )
-        .arg(
-            Arg::new("offline")
-                .short('o')
-                .long("offline")
-                .action(ArgAction::SetTrue)
-                .help("Work offline. Fail-fast if dependencies are missing.")
-                .required(false),
-        )
-        .arg(
-            Arg::new("preview")
-                .long("preview")
-                .action(ArgAction::SetTrue)
-                .help("Enable jbang preview features.")
-                .required(false),
-        )
-        .arg(
-            Arg::new("quiet")
-                .long("quiet")
-                .action(ArgAction::SetTrue)
-                .help("jbang will be quiet, only print when error occurs.")
-                .required(false),
-        )
-        .arg(
-            Arg::new("verbose")
-                .long("verbose")
-                .action(ArgAction::SetTrue)
-                .help("jbang will be verbose on what it does.")
-                .required(false),
-        )
-        .arg(
-            Arg::new("scriptOrFile")
-                .help("A reference to a source file")
-                .index(1)
-                .required(false)
-        )
-        .arg(
-            Arg::new("userParams")
-                .help("Parameters to pass on to the script")
-                .index(2)
-                .num_args(1..)
-                .action(ArgAction::Append)
-                .required(false)
-        )
-        .subcommand(run_command)
-        .subcommand(build_command)
-        .subcommand(jdk_command)
-        .subcommand(config_command)
-        .subcommand(trust_command)
-        .subcommand(init_command)
-        .subcommand(template_command)
-        .subcommand(upgrade_command)
-        .subcommand(version_command)
-        .subcommand(alias_command)
-        .subcommand(catalog_command)
-        .subcommand(info_command)
-        .subcommand(export_command)
-        .subcommand(cache_command)
-}
 #[cfg(test)]
 mod tests {
     use super::*;
