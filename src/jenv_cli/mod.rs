@@ -134,9 +134,41 @@ pub fn versions_command() {
     }
 }
 
-pub fn which_command(command_matches: &clap::ArgMatches) {}
+pub fn which_command(command_matches: &clap::ArgMatches) {
+    if let Some(command) = command_matches.get_one::<String>("command") {
+        if let Some(jenv_version) = std::env::var("JENV_VERSION").ok() {
+            let jenv_home = jenv_home();
+            let java_home = jenv_home.join("versions").join(&jenv_version);
+            println!("{}", java_home.join("bin").join(command).to_str().unwrap());
+        } else if PathBuf::from(".java-version").exists() {
+            let version = fs::read_to_string(".java-version").unwrap();
+            let jenv_home = jenv_home();
+            let java_home = jenv_home.join("versions").join(version.trim());
+            println!("{}", java_home.join("bin").join(command).to_str().unwrap());
+        } else if jenv_home().join("version").exists() {
+            let jenv_home = jenv_home();
+            let version = fs::read_to_string(jenv_home.join("version")).unwrap();
+            let java_home = jenv_home.join("versions").join(version.trim());
+            println!("{}", java_home.join("bin").join(command).to_str().unwrap());
+        }
+    }
+}
 
-pub fn whence_command(command_matches: &clap::ArgMatches) {}
+pub fn whence_command(command_matches: &clap::ArgMatches) {
+    if let Some(command) = command_matches.get_one::<String>("command") {
+        let jenv_home = jenv_home();
+        let versions_dir = jenv_home.join("versions");
+        if versions_dir.exists() {
+            for entry in fs::read_dir(versions_dir).unwrap() {
+                let entry = entry.unwrap();
+                let command_path = entry.path().join("bin").join(command);
+                if command_path.exists() {
+                    println!("{}", entry.file_name().to_str().unwrap());
+                }
+            }
+        }
+    }
+}
 
 pub fn add_command(command_matches: &clap::ArgMatches) {
     if let Some(version_or_path) = command_matches.get_one::<String>("versionOrPath") {
@@ -237,5 +269,13 @@ OpenJDK 64-Bit Server VM (build 21+35-2513, mixed mode, sharing)"#;
         let app = build_jenv_app();
         let matches = app.try_get_matches_from(vec!["jenv", "remove", "21"]).unwrap();
         remove_command(matches.subcommand_matches("remove").unwrap());
+    }
+
+    #[test]
+    fn test_which() {
+        let command = "javac";
+        let app = build_jenv_app();
+        let matches = app.try_get_matches_from(vec!["jenv", "which", command]).unwrap();
+        which_command(matches.subcommand_matches("which").unwrap());
     }
 }
