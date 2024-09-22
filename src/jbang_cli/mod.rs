@@ -8,6 +8,7 @@ pub mod run;
 pub mod models;
 pub mod alias;
 pub mod catalog;
+pub mod info;
 
 use std::fs::File;
 use std::path::{Path, PathBuf};
