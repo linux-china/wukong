@@ -9,6 +9,22 @@ use reqwest::redirect::Policy;
 use tar::Archive;
 use zip::ZipArchive;
 
+pub fn jbang_home() -> PathBuf {
+    if let Ok(jbang_home) = std::env::var("JBANG_DIR") {
+        PathBuf::from(jbang_home)
+    } else {
+        dirs::home_dir().unwrap().join(".jbang")
+    }
+}
+
+pub fn sdkman_home() -> PathBuf {
+    if let Ok(jbang_home) = std::env::var("SDKMAN_DIR") {
+        PathBuf::from(jbang_home)
+    } else {
+        dirs::home_dir().unwrap().join(".sdkman")
+    }
+}
+
 pub fn http_text(http_url: &str) -> String {
     let resp = reqwest::blocking::get(http_url).unwrap();
     if resp.status().is_success() {
