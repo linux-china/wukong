@@ -7,9 +7,24 @@ use crate::jbang_cli::models::{CatalogRef, JBangCatalog};
 pub fn manage_catalog(catalog_matches: &clap::ArgMatches) {
     if let Some((sub_command, matches)) = catalog_matches.subcommand() {
         match sub_command {
-            "add" => {}
-            "remove" => {}
-            "list" => {}
+            "add" => {
+                let name = matches.get_one::<String>("name").unwrap();
+                let file = matches.get_one::<String>("file").unwrap();
+                let description = matches.get_one::<String>("description").map(|d| d.to_string());
+                let catalog_ref = CatalogRef {
+                    catalog_ref: file.clone(),
+                    description,
+                    import_items: true,
+                };
+                add_catalog(name, catalog_ref);
+            }
+            "remove" => {
+                let name = matches.get_one::<String>("name").unwrap();
+                remove_catalog(name);
+            }
+            "list" => {
+                list_catalogs();
+            }
             _ => {}
         }
     }
