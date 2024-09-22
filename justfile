@@ -88,3 +88,15 @@ jenv-init:
 # jenv help
 jenv-versions:
   cargo run --bin jenv -- versions
+
+# mt list all jdks
+mt-list:
+  cargo run --bin mt -- list
+
+# mt list all jdks
+mt-vendors:
+  cargo run --bin mt -- vendors
+
+# mt list all jdks
+mt-jdks:
+  cargo run --bin mt -- jdks
