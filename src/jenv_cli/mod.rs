@@ -1,3 +1,5 @@
+pub mod app;
+
 use std::fs;
 use std::path::PathBuf;
 use crate::common::capture_command;
