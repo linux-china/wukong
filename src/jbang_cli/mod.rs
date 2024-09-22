@@ -10,7 +10,7 @@ pub mod alias;
 pub mod catalog;
 
 use std::fs::File;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use crate::common::run_command;
 use crate::jbang_cli::models::JBangCatalog;
 
@@ -38,6 +38,16 @@ pub fn jbang_catalog() -> JBangCatalog {
         }
     } else {
         serde_json::from_reader(File::open(jbang_catalog_json).unwrap()).unwrap()
+    }
+}
+
+pub fn find_jbang_catalog_from_path(path: &PathBuf) -> Option<JBangCatalog> {
+    if path.join("jbang-catalog.json").exists() {
+        serde_json::from_reader(File::open(path.join("jbang-catalog.json")).unwrap()).ok()
+    } else if let Some(parent) = path.parent() {
+        find_jbang_catalog_from_path(&PathBuf::from(parent))
+    } else {
+        None
     }
 }
 
@@ -83,5 +93,10 @@ mod tests {
     #[test]
     fn test_print_command_help() {
         print_command_help("run");
+    }
+
+    #[test]
+    fn test_find_jbang_catalog() {
+        assert!(find_jbang_catalog_from_path(&PathBuf::from(".")).is_none());
     }
 }
