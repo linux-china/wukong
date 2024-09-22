@@ -3,7 +3,6 @@ use clap::{Arg, Command};
 use colored::Colorize;
 use crate::jbang_cli::{call_jbang_sub_command, find_jbang_catalog_from_path, jbang_catalog};
 use crate::jbang_cli::models::{CatalogRef, JBangCatalog};
-use crate::jbang_cli::run::jbang_run;
 
 pub fn manage_catalog(catalog_matches: &clap::ArgMatches) {
     if let Some((sub_command, matches)) = catalog_matches.subcommand() {
