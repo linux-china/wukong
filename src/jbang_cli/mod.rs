@@ -76,6 +76,17 @@ pub fn ensure_jdk_available(jdk_version: &str) -> PathBuf {
     jdk_home
 }
 
+pub fn call_jbang_sub_command(commands: &[&str]) {
+    let java_home = ensure_jdk_available(JBANG_DEFAULT_JAVA_VERSION);
+    std::env::set_var("CLICOLOR_FORCE", "1");
+    let jbang_home = jbang_home();
+    let jbang_jar_path = jbang_home.join("bin").join("jbang.jar");
+    let jbang_jar = jbang_jar_path.to_str().unwrap();
+    let mut jbang_params = vec!["-classpath", jbang_jar, "dev.jbang.Main"];
+    jbang_params.extend(commands);
+    run_command(&java_exec(&java_home), &jbang_params).unwrap();
+}
+
 pub fn print_command_help(sub_command: &str) {
     let java_home = ensure_jdk_available(JBANG_DEFAULT_JAVA_VERSION);
     std::env::set_var("CLICOLOR_FORCE", "1");
