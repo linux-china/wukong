@@ -83,7 +83,7 @@ pub fn global_command(command_matches: &clap::ArgMatches) {
         let jenv_home = jenv_home();
         let global_version_file = jenv_home.join("version");
         if global_version_file.exists() {
-            let version = fs::read_to_string(global_version_file).unwrap();
+            let version = fs::read_to_string(global_version_file).unwrap().trim();
             println!("{}", version);
         } else {
             println!("system");
@@ -97,11 +97,11 @@ pub fn version_command() {
     if let Ok(jenv_version) = std::env::var("JENV_VERSION") {
         println!("{} (set by JENV_VERSION environment variable)", jenv_version);
     } else if PathBuf::from(".java-version").exists() {
-        let version = fs::read_to_string(".java-version").unwrap();
+        let version = fs::read_to_string(".java-version").unwrap().trim();
         println!("{} (set by .java-version)", version);
     } else if jenv_home().join("version").exists() {
         let jenv_home = jenv_home();
-        let version = fs::read_to_string(jenv_home.join("version")).unwrap();
+        let version = fs::read_to_string(jenv_home.join("version")).unwrap().trim();
         println!("{}(set by global)", version);
     } else {
         println!("system");
@@ -114,8 +114,8 @@ pub fn versions_command() {
     let (current_version, reason) = if let Ok(jenv_version) = std::env::var("JENV_VERSION") {
         (jenv_version, "set by JENV_VERSION environment variable".to_owned())
     } else if PathBuf::from(".java-version").exists() {
-        let version = fs::read_to_string(".java-version").unwrap();
-        (version, "set by .java-version".to_owned())
+        let version = fs::read_to_string(".java-version").unwrap().trim();
+        (version.to_string(), "set by .java-version".to_owned())
     } else {
         ("".to_owned(), "".to_owned())
     };
@@ -140,7 +140,9 @@ pub fn which_command(command_matches: &clap::ArgMatches) {}
 
 pub fn whence_command(command_matches: &clap::ArgMatches) {}
 
-pub fn add_command(command_matches: &clap::ArgMatches) {}
+pub fn add_command(command_matches: &clap::ArgMatches) {
+
+}
 
 pub fn remove_command(command_matches: &clap::ArgMatches) {}
 
