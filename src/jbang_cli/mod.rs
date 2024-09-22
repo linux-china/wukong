@@ -9,8 +9,10 @@ pub mod models;
 pub mod alias;
 pub mod catalog;
 
+use std::fs::File;
 use std::path::PathBuf;
 use crate::common::run_command;
+use crate::jbang_cli::models::JBangCatalog;
 
 pub const JBANG_DEFAULT_JAVA_VERSION: &str = "17";
 
@@ -24,6 +26,19 @@ pub fn jbang_home() -> PathBuf {
 
 pub fn jdk_home(jdk_version: &str) -> PathBuf {
     jbang_home().join("cache").join("jdks").join(jdk_version)
+}
+
+pub fn jbang_catalog() -> JBangCatalog {
+    let jbang_catalog_json = jbang_home().join("jbang-catalog.json");
+    if !jbang_catalog_json.exists() {
+        JBangCatalog {
+            catalogs: None,
+            aliases: None,
+            templates: None,
+        }
+    } else {
+        serde_json::from_reader(File::open(jbang_catalog_json).unwrap()).unwrap()
+    }
 }
 
 pub fn java_exec(java_home: &PathBuf) -> String {
