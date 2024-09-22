@@ -16,6 +16,7 @@ use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
 use crate::foojay::install_jdk;
 use crate::jbang_cli::alias::{build_alias_command, manage_alias};
+use crate::jbang_cli::cache::{build_cache_command, manage_cache};
 use crate::jbang_cli::catalog::{build_catalog_command, manage_catalog};
 use crate::jbang_cli::export::{build_export_command, manage_export};
 use crate::jbang_cli::info::{build_info_command, manage_info};
@@ -69,6 +70,7 @@ fn main() {
             "alias" => manage_alias(command_matches),
             "info" => manage_info(command_matches),
             "export" => manage_export(command_matches),
+            "cache" => manage_cache(command_matches),
             "upgrade" => upgrade_jbang(),
             "version" => display_version(&jbang_home),
             &_ => println!("Unknown command"),
@@ -144,6 +146,7 @@ pub fn build_jbang_app() -> Command {
     let catalog_command = build_catalog_command();
     let info_command = build_info_command();
     let export_command = build_export_command();
+    let cache_command = build_cache_command();
     let upgrade_command = Command::new("upgrade")
         .about("Upgrade jbang to the latest version.");
     Command::new("jbang")
@@ -226,6 +229,7 @@ pub fn build_jbang_app() -> Command {
         .subcommand(catalog_command)
         .subcommand(info_command)
         .subcommand(export_command)
+        .subcommand(cache_command)
 }
 #[cfg(test)]
 mod tests {
