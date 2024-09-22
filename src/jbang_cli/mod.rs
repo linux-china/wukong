@@ -11,6 +11,7 @@ pub mod catalog;
 pub mod info;
 pub mod export;
 pub mod cache;
+pub mod app;
 
 use std::fs::File;
 use std::path::{Path, PathBuf};
@@ -20,11 +21,7 @@ use crate::jbang_cli::models::JBangCatalog;
 pub const JBANG_DEFAULT_JAVA_VERSION: &str = "17";
 
 pub fn jbang_home() -> PathBuf {
-    if let Ok(jbang_home) = std::env::var("JBANG_DIR") {
-        PathBuf::from(jbang_home)
-    } else {
-        dirs::home_dir().unwrap().join(".jbang")
-    }
+    crate::common::sdkman_home()
 }
 
 pub fn jdk_home(jdk_version: &str) -> PathBuf {
