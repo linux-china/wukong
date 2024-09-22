@@ -60,7 +60,7 @@ impl JBangCatalog {
     }
 
     pub fn write<P: AsRef<Path>>(&self, catalog_file: P) {
-        serde_json::to_writer(std::fs::File::create(catalog_file).unwrap(), self).unwrap();
+        serde_json::to_writer_pretty(std::fs::File::create(catalog_file).unwrap(), self).unwrap();
     }
 
     pub fn write_default(&self) {
