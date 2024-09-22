@@ -3,6 +3,7 @@ build:
   cargo build
   cp target/debug/jbang ~/bin/jbang
   cp target/debug/sdk ~/bin/sdk
+  cp target/debug/jenv ~/bin/jenv
 
 # display jbang help
 jbang-help:
@@ -75,3 +76,15 @@ sdkman-use-java:
 # sdk home java
 sdkman-home-java:
   cargo run --bin sdk -- home java 22.0.2-tem
+
+# jenv help
+jenv-help:
+  cargo run --bin jenv -- --help
+
+# jenv help
+jenv-init:
+  cargo run --bin jenv -- init -
+
+# jenv help
+jenv-versions:
+  cargo run --bin jenv -- versions
