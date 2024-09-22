@@ -18,8 +18,13 @@ pub fn jbang_run(script_or_file: &str, user_params: &[&str]) {
     let mut args = vec!["-classpath", jbang_jar.to_str().unwrap(), "dev.jbang.Main", "run", script_or_file];
     args.extend(user_params);
     let output = capture_command(&java_exec, &args).unwrap();
-    let app_command_line = String::from_utf8_lossy(&output.stdout);
-    run_command_line(app_command_line.trim()).unwrap();
+    if output.status.success() {
+        let app_command_line = String::from_utf8_lossy(&output.stdout);
+        run_command_line(app_command_line.trim()).unwrap();
+    } else {
+        eprintln!("{}", String::from_utf8_lossy(&output.stderr));
+        std::process::exit(output.status.code().unwrap());
+    }
 }
 
 pub fn build_run_command() -> Command {
