@@ -15,8 +15,8 @@ use crate::jbang_cli::trust::{build_trust_command, manage_trust};
 use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
 use crate::foojay::install_jdk;
-use crate::jbang_cli::alias::build_alias_command;
-use crate::jbang_cli::catalog::build_catalog_command;
+use crate::jbang_cli::alias::{build_alias_command, manage_alias};
+use crate::jbang_cli::catalog::{build_catalog_command, manage_catalog};
 use crate::jbang_cli::run::{manage_run, jbang_run};
 
 pub const VERSION: &str = "0.1.0";
@@ -63,6 +63,8 @@ fn main() {
             "init" => manage_init(command_matches),
             "template" => manage_template(command_matches),
             "run" => manage_run(command_matches),
+            "catalog" => manage_catalog(command_matches),
+            "alias" => manage_alias(command_matches),
             "upgrade" => upgrade_jbang(),
             "version" => display_version(&jbang_home),
             &_ => println!("Unknown command"),
