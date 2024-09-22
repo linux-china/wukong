@@ -1,7 +1,8 @@
+use std::path::PathBuf;
 use clap::{Arg, Command};
 use colored::Colorize;
-use crate::jbang_cli::jbang_catalog;
-use crate::jbang_cli::models::Alias;
+use crate::jbang_cli::{find_jbang_catalog_from_path, jbang_catalog};
+use crate::jbang_cli::models::{Alias, JBangCatalog};
 
 pub fn manage_alias(alias_matches: &clap::ArgMatches) {
     if let Some((sub_command, matches)) = alias_matches.subcommand() {
@@ -29,10 +30,18 @@ pub fn manage_alias(alias_matches: &clap::ArgMatches) {
 }
 
 pub fn list_aliases() {
-    let catalog = jbang_catalog();
-    if let Some(alias_map) = catalog.aliases {
+    let jbang_catalog = jbang_catalog();
+    print_catalog_alias(&jbang_catalog);
+    // list catalog from current directory
+    if let Some(project_catalog) = find_jbang_catalog_from_path(&PathBuf::from(".")) {
+        print_catalog_alias(&project_catalog);
+    }
+}
+
+fn print_catalog_alias(catalog: &JBangCatalog) {
+    if let Some(alias_map) = &catalog.aliases {
         for (name, alias) in alias_map {
-            if let Some(description) = alias.description {
+            if let Some(description) = &alias.description {
                 println!("{}: {}\n  {}\n", name.yellow(), description, alias.script_ref);
             } else {
                 println!("{}\n  {}", name.yellow(), alias.script_ref);
