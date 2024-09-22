@@ -10,6 +10,7 @@ pub mod alias;
 pub mod catalog;
 pub mod info;
 pub mod export;
+pub mod cache;
 
 use std::fs::File;
 use std::path::{Path, PathBuf};
