@@ -147,15 +147,20 @@ pub fn add_command(command_matches: &clap::ArgMatches) {
         } else { // link java home with path
             let java_install_path = PathBuf::from(version_or_path);
             if java_install_path.exists() {
-                if let Ok(output) = capture_command(&java_exec(&java_install_path), &["-version"]) {
-                    let result = String::from_utf8_lossy(&output.stdout);
-                    let java_version = extract_java_version(&result);
-                    if java_install_path.exists() {
-                        let java_home = jenv_home().join("versions").join(&java_version);
-                        symlink::symlink_dir(&java_install_path, &java_home).unwrap();
+                let java_exec = java_exec(&java_install_path);
+                if let Ok(output) = capture_command(&java_exec, &["-version"]) {
+                    let result = if !output.stdout.is_empty() {
+                        String::from_utf8_lossy(&output.stdout)
                     } else {
-                        println!("path {} not exists", version_or_path);
+                        String::from_utf8_lossy(&output.stderr)
+                    };
+                    if result.is_empty() {
+                        println!("Failed to execute {} -version", java_exec);
+                        return;
                     }
+                    let java_version = extract_java_version(&result);
+                    let java_home = jenv_home().join("versions").join(&java_version);
+                    symlink::symlink_dir(&java_install_path, &java_home).unwrap();
                 } else {
                     println!("path {} is not a valid Java home", version_or_path);
                 }
@@ -199,6 +204,7 @@ fn java_exec(java_home: &PathBuf) -> String {
 }
 #[cfg(test)]
 mod tests {
+    use crate::build_jenv_app;
     use super::*;
 
     #[test]
@@ -214,6 +220,16 @@ OpenJDK 64-Bit Server VM (build 21+35-2513, mixed mode, sharing)"#;
     }
     #[test]
     fn test_add() {
-        println!("add");
+        let app = build_jenv_app();
+        let java_21_home = dirs::home_dir().unwrap().join(".jbang").join("cache").join("jdks").join("21");
+        let matches = app.try_get_matches_from(vec!["jenv", "add", java_21_home.to_str().unwrap()]).unwrap();
+        add_command(matches.subcommand_matches("add").unwrap());
+    }
+
+    #[test]
+    fn test_remove() {
+        let app = build_jenv_app();
+        let matches = app.try_get_matches_from(vec!["jenv", "remove", "21"]).unwrap();
+        remove_command(matches.subcommand_matches("remove").unwrap());
     }
 }
