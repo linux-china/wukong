@@ -13,6 +13,7 @@ pub mod home;
 pub mod current;
 pub mod env;
 pub mod upgrade;
+pub mod app;
 
 const SDKMAN_CANDIDATES_API: &str = "https://api.sdkman.io/2";
 pub fn get_sdkman_platform() -> String {
@@ -35,11 +36,7 @@ pub fn get_sdkman_platform() -> String {
 }
 
 pub fn sdkman_home() -> PathBuf {
-    if let Ok(jbang_home) = std::env::var("SDKMAN_DIR") {
-        PathBuf::from(jbang_home)
-    } else {
-        dirs::home_dir().unwrap().join(".sdkman")
-    }
+    crate::common::sdkman_home()
 }
 
 pub fn read_sdkman_config() -> HashMap<String, String> {
