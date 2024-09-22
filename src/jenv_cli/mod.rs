@@ -85,7 +85,13 @@ pub fn global_command(command_matches: &clap::ArgMatches) {
     }
 }
 
-pub fn shell_command(command_matches: &clap::ArgMatches) {}
+pub fn shell_command() {
+    if let Some(jenv_version) = std::env::var("JENV_VERSION").ok() {
+        println!("{}", jenv_version);
+    } else {
+        println!("jenv: no shell-specific version configured");
+    }
+}
 
 pub fn version_command() {
     if let Ok(jenv_version) = std::env::var("JENV_VERSION") {
