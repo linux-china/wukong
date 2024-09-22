@@ -21,10 +21,11 @@ fn main() {
             "commands" => commands_command(),
             "local" => local_command(command_matches),
             "global" => global_command(command_matches),
-            "shell" => shell_command(command_matches),
+            "shell" => shell_command(),
             "version" => version_command(),
             "versions" => versions_command(),
             "which" => which_command(command_matches),
+            "whence" => which_command(command_matches),
             "add" => add_command(command_matches),
             "remove" => remove_command(command_matches),
             "completion" => completion_command(command_matches),
@@ -111,6 +112,7 @@ pub fn build_jenv_app() -> Command {
         .subcommand(version_command)
         .subcommand(versions_command)
         .subcommand(which_command)
+        .subcommand(whence_command)
         .subcommand(add_command)
         .subcommand(remove_command)
         .subcommand(completion_command)
