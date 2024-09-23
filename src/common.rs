@@ -25,6 +25,17 @@ pub fn sdkman_home() -> PathBuf {
     }
 }
 
+pub fn is_java_home(java_home: &PathBuf) -> bool {
+    if cfg!(target_os = "windows") {
+        java_home.join("bin").join("java.exe").exists()
+    } else if cfg!(target_os = "macos") {
+        java_home.join("bin").join("java").exists()
+            || java_home.join("Contents").join("Home").join("bin").join("java").exists()
+    } else {
+        java_home.join("bin").join("java").exists()
+    }
+}
+
 pub fn http_text(http_url: &str) -> String {
     let resp = reqwest::blocking::get(http_url).unwrap();
     if resp.status().is_success() {
