@@ -1,6 +1,7 @@
+use std::fmt::format;
 use std::path::PathBuf;
 use colored::Colorize;
-use crate::common::{jbang_home, sdkman_home};
+use crate::common::{is_java_home, jbang_home, sdkman_home};
 use crate::mt_cli::models::Toolchains;
 use crate::sdkman_cli::list::list_candidate;
 
@@ -12,35 +13,107 @@ pub fn m2_dir() -> PathBuf {
 }
 
 pub fn jdks_command() {
-    // list all JDK on host
+    // list all JDKs on from JBang
     let jbang_home = jbang_home();
     if jbang_home.exists() {
         let jdks = jbang_home.join("cache").join("jdks");
         if jdks.exists() {
-            println!("===== JBang jdks =====");
-            jdks.read_dir().unwrap().for_each(|entry| {
-                if let Ok(entry) = entry {
-                    let java_version = entry.file_name();
-                    println!("{}:\n {}", java_version.to_str().unwrap().yellow(), entry.path().display());
+            let lines = list_jdks(&jdks);
+            if lines.len() > 0 {
+                println!("===== JBang JDKs =====");
+                for line in lines {
+                    println!("{}", line);
                 }
-            });
+            }
         }
     }
+    // list all JDKs from SDKMAN
     let sdkman_home = sdkman_home();
     if sdkman_home.exists() {
         let jdks = sdkman_home.join("candidates").join("java");
         if jdks.exists() {
-            println!("===== SDKMAN jdks =====");
-            jdks.read_dir().unwrap().for_each(|entry| {
-                if let Ok(entry) = entry {
-                    let java_version = entry.file_name();
-                    if java_version != "current" {
-                        println!("{}:\n {}", java_version.to_str().unwrap().yellow(), entry.path().display());
-                    }
+            let lines = list_jdks(&jdks);
+            if lines.len() > 0 {
+                println!("===== SDKMAN JDKs =====");
+                for line in lines {
+                    println!("{}", line);
                 }
-            });
+            }
         }
     }
+    // list all JDKs from Gradle
+    let gradle_jdks = dirs::home_dir().unwrap().join(".gradle").join("jdks");
+    if gradle_jdks.exists() {
+        let lines = list_jdks(&gradle_jdks);
+        if lines.len() > 0 {
+            println!("===== Gradle JDKs =====");
+            for line in lines {
+                println!("{}", line);
+            }
+        }
+    }
+    if cfg!(target_os = "macos") {
+        // list all JDKs from /Library/Java/JavaVirtualMachines
+        let jdks = PathBuf::from("/Library/Java/JavaVirtualMachines");
+        if jdks.exists() {
+            let lines = list_jdks(&gradle_jdks);
+            if lines.len() > 0 {
+                println!("===== System JDKs =====");
+                for line in lines {
+                    println!("{}", line);
+                }
+            }
+        }
+        let jdks = dirs::home_dir().unwrap().join("Library").join("Java").join("JavaVirtualMachines");
+        if jdks.exists() {
+            let lines = list_jdks(&jdks);
+            if lines.len() > 0 {
+                println!("===== User JDKs =====");
+                for line in lines {
+                    println!("{}", line);
+                }
+            }
+        }
+        // homebrew
+        let cellar_dirs = ["/opt/homebrew/Cellar", "/usr/local/Cellar"];
+        let mut lines: Vec<String> = Vec::new();
+        for cellar_dir in cellar_dirs.iter() {
+            let cellar_path = PathBuf::from(*cellar_dir);
+            if cellar_path.exists() {
+                cellar_path.read_dir().unwrap().for_each(|entry| {
+                    if let Ok(entry) = entry {
+                        let child = entry.path();
+                        let file_name = child.file_name().unwrap().to_str().unwrap();
+                        if file_name.starts_with("openjdk") {
+                            lines.extend(list_jdks(&child))
+                        }
+                    }
+                });
+            }
+        }
+        if lines.len() > 0 {
+            println!("===== Homebrew JDKs =====");
+            for line in lines {
+                println!("{}", line);
+            }
+        }
+    }
+}
+
+fn list_jdks(base_path: &PathBuf) -> Vec<String> {
+    let mut lines = Vec::new();
+    base_path.read_dir().unwrap().for_each(|entry| {
+        if let Ok(entry) = entry {
+            let child = entry.path();
+            if child.is_dir() && is_java_home(&child) {
+                let java_version = entry.file_name();
+                if java_version != "current" {
+                    lines.push(format!("{}:\n {}", java_version.to_str().unwrap().yellow(), entry.path().display()));
+                }
+            }
+        }
+    });
+    lines
 }
 
 pub fn list_command() {
@@ -115,5 +188,10 @@ mod tests {
     #[test]
     fn test_list_command() {
         list_command();
+    }
+
+    #[test]
+    fn test_jdks() {
+        jdks_command();
     }
 }
