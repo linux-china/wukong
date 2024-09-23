@@ -19,12 +19,7 @@ pub fn jdks_command() {
         let jdks = jbang_home.join("cache").join("jdks");
         if jdks.exists() {
             let lines = list_jdks(&jdks);
-            if lines.len() > 0 {
-                println!("===== JBang JDKs =====");
-                for line in lines {
-                    println!("{}", line);
-                }
-            }
+            print_jdks(&lines, "JBang");
         }
     }
     // list all JDKs from SDKMAN
@@ -33,46 +28,26 @@ pub fn jdks_command() {
         let jdks = sdkman_home.join("candidates").join("java");
         if jdks.exists() {
             let lines = list_jdks(&jdks);
-            if lines.len() > 0 {
-                println!("===== SDKMAN JDKs =====");
-                for line in lines {
-                    println!("{}", line);
-                }
-            }
+            print_jdks(&lines, "SDKMAN");
         }
     }
     // list all JDKs from Gradle
     let gradle_jdks = dirs::home_dir().unwrap().join(".gradle").join("jdks");
     if gradle_jdks.exists() {
         let lines = list_jdks(&gradle_jdks);
-        if lines.len() > 0 {
-            println!("===== Gradle JDKs =====");
-            for line in lines {
-                println!("{}", line);
-            }
-        }
+        print_jdks(&lines, "Gradle");
     }
     if cfg!(target_os = "macos") {
         // list all JDKs from /Library/Java/JavaVirtualMachines
         let jdks = PathBuf::from("/Library/Java/JavaVirtualMachines");
         if jdks.exists() {
             let lines = list_jdks(&gradle_jdks);
-            if lines.len() > 0 {
-                println!("===== System JDKs =====");
-                for line in lines {
-                    println!("{}", line);
-                }
-            }
+            print_jdks(&lines, "System");
         }
         let jdks = dirs::home_dir().unwrap().join("Library").join("Java").join("JavaVirtualMachines");
         if jdks.exists() {
             let lines = list_jdks(&jdks);
-            if lines.len() > 0 {
-                println!("===== User JDKs =====");
-                for line in lines {
-                    println!("{}", line);
-                }
-            }
+            print_jdks(&lines, "User");
         }
         // homebrew
         let cellar_dirs = ["/opt/homebrew/Cellar", "/usr/local/Cellar"];
@@ -91,11 +66,29 @@ pub fn jdks_command() {
                 });
             }
         }
-        if lines.len() > 0 {
-            println!("===== Homebrew JDKs =====");
-            for line in lines {
-                println!("{}", line);
-            }
+        print_jdks(&lines, "Homebrew");
+    } else if cfg!(target_os = "windows") {
+        // list all JDKs from C:\Program Files\Java
+        let jdks = PathBuf::from("C:\\Program Files\\Java");
+        if jdks.exists() {
+            let lines = list_jdks(&jdks);
+            print_jdks(&lines, "System");
+        }
+    } else if cfg!(target_os = "linux") {
+        // list all JDKs from /usr/lib/jvm
+        let jdks = PathBuf::from("/usr/lib/jvm");
+        if jdks.exists() {
+            let lines = list_jdks(&jdks);
+            print_jdks(&lines, "System");
+        }
+    }
+}
+
+fn print_jdks(lines: &[String], title: &str) {
+    if lines.len() > 0 {
+        println!("===== {} JDKs =====", title);
+        for line in lines {
+            println!("{}", line);
         }
     }
 }
