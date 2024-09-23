@@ -21,7 +21,7 @@ use crate::jbang_cli::models::JBangCatalog;
 pub const JBANG_DEFAULT_JAVA_VERSION: &str = "17";
 
 pub fn jbang_home() -> PathBuf {
-    crate::common::sdkman_home()
+    crate::common::jbang_home()
 }
 
 pub fn jdk_home(jdk_version: &str) -> PathBuf {
