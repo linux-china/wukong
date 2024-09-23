@@ -71,7 +71,7 @@ pub fn build_jenv_app() -> Command {
                 .value_parser(["bash", "zsh", "fish"])
         );
     Command::new("jenv")
-        .version(crate::VERSION)
+        .version(VERSION)
         .about("sdk - Manage your Java environment")
         .subcommand(commands_command)
         .subcommand(local_command)
