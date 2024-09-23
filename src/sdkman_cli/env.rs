@@ -3,7 +3,7 @@ use std::io::{BufReader, Write};
 use std::path::PathBuf;
 use clap::{Command};
 use crate::sdkman_cli::install::install_candidate;
-use crate::sdkman_cli::{get_installed_candidate_default_version, sdkman_home};
+use crate::sdkman_cli::{get_installed_candidate_default_version};
 
 pub fn manage_env(env_matches: &clap::ArgMatches) {
     if let Some((command, _)) = env_matches.subcommand() {

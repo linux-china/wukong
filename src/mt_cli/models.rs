@@ -63,7 +63,6 @@ pub struct Provides {
 
 #[cfg(test)]
 mod tests {
-    use quick_xml::se::Serializer;
     use super::*;
 
     #[test]

@@ -1,4 +1,4 @@
-use crate::sdkman_cli::{find_candidate_home, sdkman_home};
+use crate::sdkman_cli::{find_candidate_home};
 
 pub fn manage_use(use_matches: &clap::ArgMatches) {
     let candidate_name = use_matches.get_one::<String>("candidate").unwrap();
