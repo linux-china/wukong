@@ -64,6 +64,13 @@ fn find_installed_jdks() -> Vec<JBangJDK> {
             }
         }
     }
+    jdks.sort_by(|a, b| {
+        if a.version.parse::<u32>().is_ok() && b.version.parse::<u32>().is_ok() {
+            a.version.parse::<u32>().unwrap().cmp(&b.version.parse::<u32>().unwrap())
+        } else {
+            a.version.cmp(&b.version)
+        }
+    });
     jdks
 }
 
