@@ -217,7 +217,7 @@ mod tests {
 
     #[test]
     fn test_extract_major_version() {
-        let version = "17.0.7-graalce\n /Users/linux_china/.sdkman/candidates/java/17.0.7-graalce";
+        let version = "17.0.7-graalce:\n ~/.sdkman/candidates/java/17.0.7-graalce";
         println!("{}", extract_major_version(version));
     }
 }
