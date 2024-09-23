@@ -1,4 +1,3 @@
-use std::fmt::format;
 use std::path::PathBuf;
 use colored::Colorize;
 use crate::common::{is_java_home, jbang_home, sdkman_home};
@@ -101,12 +100,40 @@ fn list_jdks(base_path: &PathBuf) -> Vec<String> {
             if child.is_dir() && is_java_home(&child) {
                 let java_version = entry.file_name();
                 if java_version != "current" {
-                    lines.push(format!("{}:\n {}", java_version.to_str().unwrap().yellow(), entry.path().display()));
+                    lines.push(format!("{}:\n {}", java_version.to_str().unwrap(), entry.path().display()));
                 }
             }
         }
     });
+    lines.sort_by(|a, b| compare_java_version(a, b));
     lines
+}
+
+fn compare_java_version(version1: &str, version2: &str) -> core::cmp::Ordering {
+    let major_version1 = extract_major_version(version1);
+    let major_version2 = extract_major_version(version2);
+    if major_version1.parse::<u32>().is_ok() && major_version2.parse::<u32>().is_ok() {
+        return major_version1.parse::<u32>().unwrap().cmp(&major_version2.parse::<u32>().unwrap());
+    }
+    major_version1.cmp(major_version2)
+}
+
+fn extract_major_version(version: &str) -> &str {
+    let version = if version.contains(':') {
+        &version[..version.find(':').unwrap()]
+    } else {
+        version
+    };
+    if version.starts_with("1.") {
+        let version = &version[2..];
+        &version[..version.find('.').unwrap()]
+    } else if version.contains('.') {
+        &version[..version.find('.').unwrap()]
+    } else if version.contains('-') {
+        &version[..version.find('-').unwrap()]
+    } else {
+        version
+    }
 }
 
 pub fn list_command() {
@@ -186,5 +213,11 @@ mod tests {
     #[test]
     fn test_jdks() {
         jdks_command();
+    }
+
+    #[test]
+    fn test_extract_major_version() {
+        let version = "17.0.7-graalce\n /Users/linux_china/.sdkman/candidates/java/17.0.7-graalce";
+        println!("{}", extract_major_version(version));
     }
 }
