@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use colored::Colorize;
-use crate::common::{is_java_home, jbang_home, sdkman_home};
+use wukong::common::{is_java_home, jbang_home, sdkman_home};
 use crate::mt_cli::models::Toolchains;
 use crate::sdkman_cli::list::list_candidate;
 

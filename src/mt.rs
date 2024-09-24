@@ -1,7 +1,6 @@
 use crate::mt_cli::{add_command, jdks_command, list_command, remove_command, vendors_command};
 use crate::mt_cli::app::build_mt_app;
 
-mod common;
 mod mt_cli;
 mod sdkman_cli;
 
