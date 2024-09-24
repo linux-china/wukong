@@ -17,8 +17,10 @@ use itertools::Itertools;
 use crate::foojay::install_jdk;
 use crate::jbang_cli::alias::{manage_alias};
 use crate::jbang_cli::app::{build_jbang_app, VERSION};
+use crate::jbang_cli::build::manage_build;
 use crate::jbang_cli::cache::{manage_cache};
 use crate::jbang_cli::catalog::{manage_catalog};
+use crate::jbang_cli::edit::manage_edit;
 use crate::jbang_cli::export::{manage_export};
 use crate::jbang_cli::info::{manage_info};
 use crate::jbang_cli::run::{manage_run, jbang_run};
@@ -60,12 +62,14 @@ fn main() {
     inject_insecure(&matches);
     if let Some((command, command_matches)) = matches.subcommand() {
         match command {
+            "run" => manage_run(command_matches),
+            "build" => manage_build(command_matches),
+            "init" => manage_init(command_matches),
+            "edit" => manage_edit(command_matches),
             "jdk" => manage_jdk(command_matches),
             "config" => manage_config(command_matches),
             "trust" => manage_trust(command_matches),
-            "init" => manage_init(command_matches),
             "template" => manage_template(command_matches),
-            "run" => manage_run(command_matches),
             "catalog" => manage_catalog(command_matches),
             "alias" => manage_alias(command_matches),
             "info" => manage_info(command_matches),
