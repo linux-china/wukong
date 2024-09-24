@@ -1,11 +1,8 @@
-mod common;
 mod sdkman_cli;
-
-use clap::{Command, Arg};
 use crate::sdkman_cli::app::build_sdkman_app;
 use crate::sdkman_cli::default::manage_default;
 use crate::sdkman_cli::direnv::manage_direnv;
-use crate::sdkman_cli::env::{build_env_command, manage_env};
+use crate::sdkman_cli::env::{manage_env};
 use crate::sdkman_cli::home::manage_home;
 use crate::sdkman_cli::install::manage_install;
 use crate::sdkman_cli::list::manage_list;
