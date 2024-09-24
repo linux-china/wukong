@@ -12,6 +12,7 @@ pub mod info;
 pub mod export;
 pub mod cache;
 pub mod app;
+pub mod build;
 
 use std::fs::File;
 use std::path::{Path, PathBuf};
