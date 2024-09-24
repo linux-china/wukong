@@ -1,5 +1,6 @@
 use clap::{Arg, ArgAction, Command};
 use crate::jbang_cli::alias::build_alias_command;
+use crate::jbang_cli::build::build_build_command;
 use crate::jbang_cli::cache::build_cache_command;
 use crate::jbang_cli::catalog::build_catalog_command;
 use crate::jbang_cli::config::build_config_command;
@@ -7,49 +8,15 @@ use crate::jbang_cli::export::build_export_command;
 use crate::jbang_cli::info::build_info_command;
 use crate::jbang_cli::init::build_init_command;
 use crate::jbang_cli::jdk::build_jdk_command;
+use crate::jbang_cli::run::build_run_command;
 use crate::jbang_cli::template::build_template_command;
 use crate::jbang_cli::trust::build_trust_command;
 
 pub const VERSION: &str = "0.1.0";
 
 pub fn build_jbang_app() -> Command {
-    let run_command = Command::new("run")
-        .about("Builds and runs provided script.")
-        .arg(
-            Arg::new("main")
-                .short('m')
-                .long("main")
-                .help("Main class to use when running. Used primarily for running jar's.")
-                .required(true)
-        )
-        .arg(
-            Arg::new("scriptOrFile")
-                .help("A reference to a source file")
-                .index(1)
-                .required(false)
-        )
-        .arg(
-            Arg::new("userParams")
-                .help("Parameters to pass on to the script.")
-                .required(false)
-                .index(2)
-                .num_args(1..)
-        );
-    let build_command = Command::new("build")
-        .about("Compiles and stores script in the cache.")
-        .arg(
-            Arg::new("build-dir")
-                .long("build-dir")
-                .num_args(1)
-                .help("Use given directory for build results")
-                .required(false)
-        )
-        .arg(
-            Arg::new("scriptOrFile")
-                .help("A reference to a source file")
-                .index(1)
-                .required(false)
-        );
+    let run_command = build_run_command();
+    let build_command = build_build_command();
     let version_command = Command::new("version")
         .about("Display version info.");
     let jdk_command = build_jdk_command();
@@ -65,7 +32,7 @@ pub fn build_jbang_app() -> Command {
     let upgrade_command = Command::new("upgrade")
         .about("Upgrade jbang to the latest version.");
     Command::new("jbang")
-        .version(crate::VERSION)
+        .version(VERSION)
         .about("jbang - Unleash the power of Java")
         .arg(
             Arg::new("config")
