@@ -1,7 +1,5 @@
 //! clap App for JBang command cli
 
-mod common;
-mod foojay;
 mod jbang_cli;
 
 use std::path::PathBuf;
@@ -14,7 +12,7 @@ use crate::jbang_cli::template::{manage_template};
 use crate::jbang_cli::trust::{manage_trust};
 use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
-use crate::foojay::install_jdk;
+use wukong::foojay::install_jdk;
 use crate::jbang_cli::alias::{manage_alias};
 use crate::jbang_cli::app::{build_jbang_app, VERSION};
 use crate::jbang_cli::build::manage_build;
