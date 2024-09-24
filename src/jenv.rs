@@ -2,9 +2,6 @@ use crate::jenv_cli::{add_command, commands_command, completion_command, global_
 use crate::jenv_cli::app::build_jenv_app;
 
 mod jenv_cli;
-mod foojay;
-mod common;
-
 fn main() {
     let args = std::env::args().collect::<Vec<String>>();
     // jenv init scripts

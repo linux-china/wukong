@@ -2,8 +2,8 @@ pub mod app;
 
 use std::fs;
 use std::path::PathBuf;
-use crate::common::capture_command;
-use crate::foojay::install_jdk;
+use wukong::common::capture_command;
+use wukong::foojay::install_jdk;
 
 pub fn jenv_home() -> PathBuf {
     let home = dirs::home_dir().unwrap();
