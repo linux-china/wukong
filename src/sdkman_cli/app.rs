@@ -1,4 +1,5 @@
 use clap::{Arg, Command};
+use crate::sdkman_cli::direnv::build_direnv_command;
 use crate::sdkman_cli::env::build_env_command;
 
 pub const VERSION: &str = "0.1.0";
@@ -126,6 +127,7 @@ Java has a custom list view with vendor-specific details. "#)
                 .required(true)
         );
     let env_command = build_env_command();
+    let direnv_command = build_direnv_command();
     let upgrade_command = Command::new("upgrade")
         .about("upgrade installed candidate versions.")
         .arg(
@@ -153,5 +155,6 @@ Java has a custom list view with vendor-specific details. "#)
         .subcommand(default_command)
         .subcommand(current_command)
         .subcommand(env_command)
+        .subcommand(direnv_command)
         .subcommand(upgrade_command)
 }
