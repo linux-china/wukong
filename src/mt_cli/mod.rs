@@ -2,6 +2,7 @@ use std::path::PathBuf;
 use colored::Colorize;
 use wukong::common::{is_java_home, jbang_home, sdkman_home};
 use crate::mt_cli::models::Toolchains;
+use crate::sdkman_cli;
 use crate::sdkman_cli::list::list_candidate;
 
 pub mod models;
@@ -168,14 +169,16 @@ pub fn add_command(command_matches: &clap::ArgMatches) {
     } else if let Ok(_) = version.parse::<u32>() { // jbang JDK
         let java_home = jbang_home().join("cache").join("jdks").join(version);
         if !java_home.exists() {
-            None
+            let installed_path = install_jdk(version);
+            Some(installed_path.to_str().unwrap().to_string())
         } else {
             Some(java_home.to_str().unwrap().to_string())
         }
     } else { // sdkman
         let java_home = sdkman_home().join("candidates").join("java").join(version);
         if !java_home.exists() {
-            None
+            let installed_path = install_jdk(version);
+            Some(installed_path.to_str().unwrap().to_string())
         } else {
             Some(java_home.to_str().unwrap().to_string())
         }
@@ -187,6 +190,17 @@ pub fn add_command(command_matches: &clap::ArgMatches) {
     let mut toolchains = Toolchains::load();
     toolchains.add_jdk(version, vendor, jdk_home.unwrap());
     toolchains.write();
+}
+
+pub fn install_jdk(version: &str) -> PathBuf {
+    if version.parse::<u32>().is_ok() { // jbang
+        let java_home = jbang_home().join("cache").join("jdks").join(version);
+        wukong::foojay::install_jdk(version, &java_home);
+        java_home
+    } else { // SDKMAN
+        sdkman_cli::install::install_candidate("java", version);
+        sdkman_home().join("candidates").join("java").join(version)
+    }
 }
 
 pub fn remove_command(command_matches: &clap::ArgMatches) {
