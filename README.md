@@ -28,6 +28,13 @@ Wukong is a Java toolchain written with Rust.
 - `mt add 17.0.4-tem`: add JDK from `$HOME/.sdk/candidates/java/17.0.4-tem`
 - `mt add /path/to/java-home`: add JDK from `/path/to/java-home`
 
+# direnv integration
+
+Integration with [direnv](https://direnv.net/):
+
+- Java Home: `.java-version`, `.sdkmanrc`
+- Aut candidate home and path for SDKMAN: `.sdkmanrc`
+
 # References
 
 * [SDKMAN CLI](https://github.com/sdkman/sdkman-cli-native): SDKMAN CLI Native with Rust
