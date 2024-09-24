@@ -14,6 +14,7 @@ pub mod current;
 pub mod env;
 pub mod upgrade;
 pub mod app;
+pub mod direnv;
 
 const SDKMAN_CANDIDATES_API: &str = "https://api.sdkman.io/2";
 pub fn get_sdkman_platform() -> String {
