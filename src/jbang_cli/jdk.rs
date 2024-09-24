@@ -7,7 +7,7 @@ use clap::{Arg, Command};
 use java_properties::PropertiesError;
 use serde::Serialize;
 use crate::build_jbang_app;
-use crate::foojay::install_jdk;
+use wukong::foojay::install_jdk;
 use crate::jbang_cli::jbang_home;
 
 fn get_current_jdk_path() -> String {

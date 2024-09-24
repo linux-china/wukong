@@ -17,13 +17,13 @@ pub mod edit;
 
 use std::fs::File;
 use std::path::{Path, PathBuf};
-use crate::common::run_command;
+use wukong::common::run_command;
 use crate::jbang_cli::models::JBangCatalog;
 
 pub const JBANG_DEFAULT_JAVA_VERSION: &str = "17";
 
 pub fn jbang_home() -> PathBuf {
-    crate::common::jbang_home()
+    wukong::common::jbang_home()
 }
 
 pub fn jdk_home(jdk_version: &str) -> PathBuf {
@@ -73,7 +73,7 @@ pub fn jbang_exec() -> PathBuf {
 pub fn ensure_jdk_available(jdk_version: &str) -> PathBuf {
     let jdk_home = jbang_home().join("cache").join("jdks").join(jdk_version);
     if !jdk_home.exists() {
-        crate::foojay::install_jdk(jdk_version, &jdk_home);
+        wukong::foojay::install_jdk(jdk_version, &jdk_home);
     }
     jdk_home
 }

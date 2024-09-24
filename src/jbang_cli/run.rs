@@ -1,6 +1,6 @@
 use clap::{Arg, ArgAction, Command};
 use itertools::Itertools;
-use crate::common::{capture_command, run_command_line};
+use wukong::common::{capture_command, run_command_line};
 use crate::jbang_cli::{ensure_jdk_available, java_exec, jbang_home, JBANG_DEFAULT_JAVA_VERSION};
 
 pub fn manage_run(run_matches: &clap::ArgMatches) {
