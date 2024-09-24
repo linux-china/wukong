@@ -4,6 +4,7 @@ use crate::jbang_cli::build::build_build_command;
 use crate::jbang_cli::cache::build_cache_command;
 use crate::jbang_cli::catalog::build_catalog_command;
 use crate::jbang_cli::config::build_config_command;
+use crate::jbang_cli::edit::build_edit_command;
 use crate::jbang_cli::export::build_export_command;
 use crate::jbang_cli::info::build_info_command;
 use crate::jbang_cli::init::build_init_command;
@@ -23,6 +24,7 @@ pub fn build_jbang_app() -> Command {
     let config_command = build_config_command();
     let trust_command = build_trust_command();
     let init_command = build_init_command();
+    let edit_command = build_edit_command();
     let template_command = build_template_command();
     let alias_command = build_alias_command();
     let catalog_command = build_catalog_command();
@@ -104,6 +106,7 @@ pub fn build_jbang_app() -> Command {
         .subcommand(config_command)
         .subcommand(trust_command)
         .subcommand(init_command)
+        .subcommand(edit_command)
         .subcommand(template_command)
         .subcommand(upgrade_command)
         .subcommand(version_command)
