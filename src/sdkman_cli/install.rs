@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 use fs_extra::dir::CopyOptions;
-use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, get_redirect_url, http_download};
+use wukong::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, get_redirect_url, http_download};
 use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, get_sdkman_platform, read_sdkman_config, SDKMAN_CANDIDATES_API};
 use crate::sdkman_cli::default::make_candidate_default;
 

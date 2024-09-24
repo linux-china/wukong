@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
-use crate::common::http_text;
 
 pub mod list;
 pub mod install;
@@ -37,7 +36,7 @@ pub fn get_sdkman_platform() -> String {
 }
 
 pub fn sdkman_home() -> PathBuf {
-    crate::common::sdkman_home()
+    wukong::common::sdkman_home()
 }
 
 pub fn read_sdkman_config() -> HashMap<String, String> {
@@ -65,7 +64,7 @@ pub fn get_installed_candidate_default_version(candidate_name: &str) -> String {
 
 pub fn get_remote_candidate_default_version(candidate_name: &str) -> String {
     let default_version_url = format!("{}/candidates/default/{}", SDKMAN_CANDIDATES_API, candidate_name);
-    http_text(&default_version_url).trim().to_string()
+    wukong::common::http_text(&default_version_url).trim().to_string()
 }
 
 #[cfg(test)]

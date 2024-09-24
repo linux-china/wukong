@@ -1,4 +1,3 @@
-use crate::common::http_text;
 use crate::sdkman_cli::{get_installed_candidate_default_version, get_sdkman_platform, sdkman_home, SDKMAN_CANDIDATES_API};
 
 pub fn manage_list(list_matches: &clap::ArgMatches) {
@@ -11,7 +10,7 @@ pub fn manage_list(list_matches: &clap::ArgMatches) {
 
 pub fn list_all_candidates() {
     let list_url = format!("{}/candidates/list", SDKMAN_CANDIDATES_API);
-    println!("{}", http_text(&list_url));
+    println!("{}", wukong::common::http_text(&list_url));
 }
 
 pub fn list_candidate(candidate_name: &str) {
@@ -38,7 +37,7 @@ pub fn list_candidate(candidate_name: &str) {
                            current_version,
                            installed_versions.join(",")
     );
-    println!("{}", http_text(&list_url));
+    println!("{}", wukong::common::http_text(&list_url));
 }
 
 #[cfg(test)]

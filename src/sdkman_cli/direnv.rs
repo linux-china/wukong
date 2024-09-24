@@ -2,7 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
 use clap::Command;
-use crate::common::jbang_home;
+use wukong::common::jbang_home;
 use crate::sdkman_cli::install::install_candidate;
 use crate::sdkman_cli::sdkman_home;
 
