@@ -4,6 +4,7 @@ mod sdkman_cli;
 use clap::{Command, Arg};
 use crate::sdkman_cli::app::build_sdkman_app;
 use crate::sdkman_cli::default::manage_default;
+use crate::sdkman_cli::direnv::manage_direnv;
 use crate::sdkman_cli::env::{build_env_command, manage_env};
 use crate::sdkman_cli::home::manage_home;
 use crate::sdkman_cli::install::manage_install;
@@ -24,6 +25,7 @@ fn main() {
             "use" => manage_use(command_matches),
             "home" => manage_home(command_matches),
             "env" => manage_env(command_matches),
+            "direnv" => manage_direnv(command_matches),
             "upgrade" => manage_upgrade(command_matches),
             &_ => println!("Unknown command"),
         }
