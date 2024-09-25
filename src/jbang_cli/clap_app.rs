@@ -1,5 +1,6 @@
 use clap::{Arg, ArgAction, Command};
 use crate::jbang_cli::alias::build_alias_command;
+use crate::jbang_cli::app::build_app_command;
 use crate::jbang_cli::build::build_build_command;
 use crate::jbang_cli::cache::build_cache_command;
 use crate::jbang_cli::catalog::build_catalog_command;
@@ -27,6 +28,7 @@ pub fn build_jbang_app() -> Command {
     let edit_command = build_edit_command();
     let template_command = build_template_command();
     let alias_command = build_alias_command();
+    let app_command = build_app_command();
     let catalog_command = build_catalog_command();
     let info_command = build_info_command();
     let export_command = build_export_command();
@@ -111,6 +113,7 @@ pub fn build_jbang_app() -> Command {
         .subcommand(upgrade_command)
         .subcommand(version_command)
         .subcommand(alias_command)
+        .subcommand(app_command)
         .subcommand(catalog_command)
         .subcommand(info_command)
         .subcommand(export_command)

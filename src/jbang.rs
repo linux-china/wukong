@@ -14,6 +14,7 @@ use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
 use wukong::foojay::install_jdk;
 use crate::jbang_cli::alias::{manage_alias};
+use crate::jbang_cli::app::manage_app;
 use crate::jbang_cli::clap_app::{build_jbang_app, VERSION};
 use crate::jbang_cli::build::manage_build;
 use crate::jbang_cli::cache::{manage_cache};
@@ -70,6 +71,7 @@ fn main() {
             "template" => manage_template(command_matches),
             "catalog" => manage_catalog(command_matches),
             "alias" => manage_alias(command_matches),
+            "app" => manage_app(command_matches),
             "info" => manage_info(command_matches),
             "export" => manage_export(command_matches),
             "cache" => manage_cache(command_matches),
