@@ -1,6 +1,6 @@
 use clap::{Arg, Command};
 
-pub const VERSION: &str = "0.1.0";
+pub const VERSION: &str = "0.2.0";
 
 pub fn build_jenv_app() -> Command {
     let local_command = Command::new("local")
