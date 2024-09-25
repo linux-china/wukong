@@ -9,3 +9,9 @@ Nothing Yet!
 * sdkman: implement commands and add `direnv` command
 * jenv: implement commands
 * mt(Maven Toolchains): initial version
+
+
+# Version 0.1.3 (2024-09-19)
+
+* jbang-rs: initial version
+* sdkman: initial version
