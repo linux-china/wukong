@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use std::fs::Permissions;
 use clap::{Arg, Command};
 use handlebars::{Handlebars};
+use crate::jbang_cli::set_executable;
 
 const TEMPLATES: &[&str] = &["hello", "cli"];
 
@@ -39,15 +39,6 @@ pub fn manage_init(init_matches: &clap::ArgMatches) {
     set_executable(&script_file);
     println!("Script file: {}", script_file);
 }
-
-#[cfg(unix)]
-fn set_executable(path: &str) {
-    use std::os::unix::fs::PermissionsExt;
-    std::fs::set_permissions(path, Permissions::from_mode(0o755)).unwrap();
-}
-
-#[cfg(not(unix))]
-fn set_executable(path: &str) {}
 
 pub fn build_init_command() -> Command {
     Command::new("init")
