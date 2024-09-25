@@ -8,6 +8,7 @@ use crate::sdkman_cli::default::manage_default;
 use crate::sdkman_cli::direnv::manage_direnv;
 use crate::sdkman_cli::env::{manage_env};
 use crate::sdkman_cli::home::manage_home;
+use crate::sdkman_cli::init::shell_hook;
 use crate::sdkman_cli::install::manage_install;
 use crate::sdkman_cli::list::manage_list;
 use crate::sdkman_cli::read_sdkman_config;
@@ -21,6 +22,7 @@ fn main() {
     if let Some((command, command_matches)) = matches.subcommand() {
         load_config();
         match command {
+            "init" => shell_hook(),
             "list" => manage_list(command_matches),
             "install" => manage_install(command_matches),
             "uninstall" => manage_uninstall(command_matches),
