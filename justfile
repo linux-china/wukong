@@ -8,7 +8,7 @@ build:
 
 # display jbang help
 jbang-help:
-  cargo run --bin jbang -- help
+  cargo run --bin jbang -- --help
 
 # display jbang help
 jbang-jdk-list:
