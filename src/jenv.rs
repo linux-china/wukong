@@ -1,5 +1,5 @@
 use crate::jenv_cli::{add_command, commands_command, completion_command, global_command, local_command, remove_command, shell_command, version_command, versions_command, which_command};
-use crate::jenv_cli::app::build_jenv_app;
+use crate::jenv_cli::clap_app::build_jenv_app;
 
 mod jenv_cli;
 fn main() {

@@ -1,4 +1,4 @@
-pub mod app;
+pub mod clap_app;
 
 use std::fs;
 use std::path::PathBuf;

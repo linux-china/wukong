@@ -14,7 +14,7 @@ use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
 use wukong::foojay::install_jdk;
 use crate::jbang_cli::alias::{manage_alias};
-use crate::jbang_cli::app::{build_jbang_app, VERSION};
+use crate::jbang_cli::clap_app::{build_jbang_app, VERSION};
 use crate::jbang_cli::build::manage_build;
 use crate::jbang_cli::cache::{manage_cache};
 use crate::jbang_cli::catalog::{manage_catalog};

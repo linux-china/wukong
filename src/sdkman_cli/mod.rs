@@ -12,7 +12,7 @@ pub mod home;
 pub mod current;
 pub mod env;
 pub mod upgrade;
-pub mod app;
+pub mod clap_app;
 pub mod direnv;
 pub mod init;
 

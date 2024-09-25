@@ -21,7 +21,7 @@ pub fn manage_uninstall(uninstall_matches: &clap::ArgMatches) {
 
 #[cfg(test)]
 mod tests {
-    use crate::sdkman_cli::app::build_sdkman_app;
+    use crate::sdkman_cli::clap_app::build_sdkman_app;
     use super::*;
 
     #[test]

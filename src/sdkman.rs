@@ -3,7 +3,7 @@ mod sdkman_cli;
 use std::fs::File;
 use std::io::BufReader;
 use wukong::common::sdkman_home;
-use crate::sdkman_cli::app::build_sdkman_app;
+use crate::sdkman_cli::clap_app::build_sdkman_app;
 use crate::sdkman_cli::default::manage_default;
 use crate::sdkman_cli::direnv::manage_direnv;
 use crate::sdkman_cli::env::{manage_env};

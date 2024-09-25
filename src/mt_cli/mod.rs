@@ -6,7 +6,7 @@ use crate::sdkman_cli;
 use crate::sdkman_cli::list::list_candidate;
 
 pub mod models;
-pub mod app;
+pub mod clap_app;
 
 pub fn m2_dir() -> PathBuf {
     dirs::home_dir().unwrap().join(".m2")

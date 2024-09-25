@@ -11,7 +11,7 @@ pub mod catalog;
 pub mod info;
 pub mod export;
 pub mod cache;
-pub mod app;
+pub mod clap_app;
 pub mod build;
 pub mod edit;
 

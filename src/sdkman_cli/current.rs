@@ -14,7 +14,7 @@ pub fn manage_current(current_matches: &clap::ArgMatches) {
 
 #[cfg(test)]
 mod tests {
-    use crate::sdkman_cli::app::build_sdkman_app;
+    use crate::sdkman_cli::clap_app::build_sdkman_app;
     use super::*;
 
     #[test]

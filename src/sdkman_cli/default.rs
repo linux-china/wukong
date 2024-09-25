@@ -23,7 +23,7 @@ pub fn make_candidate_default(candidate_name: &str, candidate_version: &str) {
 
 #[cfg(test)]
 mod tests {
-    use crate::sdkman_cli::app::build_sdkman_app;
+    use crate::sdkman_cli::clap_app::build_sdkman_app;
     use super::*;
 
     #[test]
