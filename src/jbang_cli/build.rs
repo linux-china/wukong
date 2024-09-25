@@ -1,5 +1,4 @@
 use clap::{Arg, Command};
-use itertools::Itertools;
 use crate::jbang_cli::call_jbang_sub_command;
 
 pub fn manage_build(build_matches: &clap::ArgMatches) {
