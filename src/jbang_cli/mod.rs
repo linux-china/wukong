@@ -14,8 +14,9 @@ pub mod cache;
 pub mod clap_app;
 pub mod build;
 pub mod edit;
+pub mod app;
 
-use std::fs::File;
+use std::fs::{File, Permissions};
 use std::path::{Path, PathBuf};
 use wukong::common::run_command;
 use crate::jbang_cli::models::JBangCatalog;
@@ -98,6 +99,16 @@ pub fn print_command_help(sub_command: &str) {
     let jbang_params = vec!["-classpath", jbang_jar, "dev.jbang.Main", sub_command, "--help"];
     run_command(&java_exec(&java_home), &jbang_params).unwrap();
 }
+
+#[cfg(unix)]
+pub fn set_executable<P: AsRef<Path>>(path: P) {
+    use std::os::unix::fs::PermissionsExt;
+    std::fs::set_permissions(path, Permissions::from_mode(0o755)).unwrap();
+}
+
+#[cfg(not(unix))]
+pub fn set_executable<P: AsRef<Path>>(path: P) {}
+
 
 #[cfg(test)]
 mod tests {
