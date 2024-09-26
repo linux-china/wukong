@@ -10,14 +10,14 @@ pub fn manage_install(install_matches: &clap::ArgMatches) {
         accept_as_default = read_sdkman_config().contains_key("sdkman_auto_answer");
     }
     if let Some(candidate_name) = install_matches.get_one::<String>("candidate") {
-        let installed_version = if let Some(install_path) = install_matches.get_one::<String>("candidate") {
+        let installed_version = if let Some(install_path) = install_matches.get_one::<String>("path") {
             let candidate_version = install_matches.get_one::<String>("version").unwrap();
             let source_path = PathBuf::from(install_path);
-            if !source_path.exists() {
-                eprintln!("Source path not exists: {}", source_path.to_str().unwrap());
-                return;
+            if source_path.exists() {
+                install_candidate_from_path(&candidate_name, &candidate_version, &source_path);
+            } else {
+                install_candidate(candidate_name, candidate_version);
             }
-            install_candidate_from_path(&candidate_name, &candidate_version, &source_path);
             candidate_version.clone()
         } else {
             let candidate_version = if let Some(version) = install_matches.get_one::<String>("version") {
