@@ -95,7 +95,7 @@ fn generate_code_from_openai(api_key: &str, question: &str) -> String {
   "messages": [
     {
       "role": "system",
-      "content": "You are an Java expert. You are writing Java code with JBang style. Add no additional text. You can add jbang shebang, dependencies, comments in the code."
+      "content": "You are an Java expert. You are writing Java code with [JBang](https://www.jbang.dev/) support. Add no additional text. Please add dependencies, javadoc in the code."
     },
     {
       "role": "user",
