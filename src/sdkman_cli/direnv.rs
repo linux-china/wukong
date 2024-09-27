@@ -24,6 +24,7 @@ pub fn direnv_init() {
             std::fs::write(".envrc", format!("{}\neval $(sdk direnv)", code)).unwrap();
         }
     }
+    println!("direnv initialized");
 }
 
 pub fn direnv_hook() {

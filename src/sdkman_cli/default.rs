@@ -14,6 +14,10 @@ pub fn manage_default(default_matches: &clap::ArgMatches) {
 
 pub fn make_candidate_default(candidate_name: &str, candidate_version: &str) {
     let candidate_home = find_candidate_home(candidate_name, &candidate_version);
+    if !candidate_home.exists() {
+        eprintln!("{candidate_name}@{candidate_name} not installed, please use `sdk install {candidate_name} {candidate_name}` to install.", );
+        return;
+    }
     let candidate_current_link = candidate_home.parent().unwrap().join("current");
     if candidate_current_link.exists() && candidate_current_link.is_symlink() {
         symlink::remove_symlink_dir(&candidate_current_link).unwrap();
