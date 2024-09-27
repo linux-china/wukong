@@ -69,9 +69,10 @@ pub fn install_candidate(candidate_name: &str, candidate_version: &str) {
     let archive_file_name = &real_download_url[real_download_url.rfind("/").unwrap() + 1..];
     let temp_dir = std::env::temp_dir();
     let archive_file_path = temp_dir.join(archive_file_name);
-    if !archive_file_path.exists() {
-        http_download(&real_download_url, archive_file_path.to_str().unwrap());
+    if archive_file_path.exists() { // remove broken downloaded file
+        std::fs::remove_file(&archive_file_path).unwrap();
     }
+    http_download(&real_download_url, archive_file_path.to_str().unwrap());
     if archive_file_name.ends_with("tar.gz") {
         if candidate_name == "java" && sdkman_platform.starts_with("darwin") { // JDK on Mac
             extract_tgz_from_sub_path(&archive_file_path, &candidate_home, "Contents/Home/");
