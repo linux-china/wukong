@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use colored::Colorize;
 use fs_extra::dir::CopyOptions;
 use wukong::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, get_redirect_url, http_download};
 use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, get_sdkman_platform, read_sdkman_config, SDKMAN_CANDIDATES_API};
@@ -14,9 +15,11 @@ pub fn manage_install(install_matches: &clap::ArgMatches) {
             let candidate_version = install_matches.get_one::<String>("version").unwrap();
             let source_path = PathBuf::from(install_path);
             if source_path.exists() {
+                println!("Installing from {}: {} {} ", source_path.to_str().unwrap(), candidate_name, candidate_version);
                 install_candidate_from_path(&candidate_name, &candidate_version, &source_path);
             } else {
-                install_candidate(candidate_name, candidate_version);
+                eprintln!("{}", "Invalid path! Refusing to link".red());
+                return;
             }
             candidate_version.clone()
         } else {
@@ -29,15 +32,18 @@ pub fn manage_install(install_matches: &clap::ArgMatches) {
                 eprintln!("Failed to find default version for : {}", candidate_name);
                 return;
             }
+            println!("Installing: {} {}", candidate_name, candidate_version);
             install_candidate(candidate_name, &candidate_version);
             candidate_version
         };
+        println!("Done installing!");
         if accept_as_default {
             make_candidate_default(candidate_name, &installed_version);
+            println!("Setting {} {} as default.", candidate_name, installed_version);
         }
     } else {
-        println!("No candidate supplied!");
-        println!("Please use `sdk install candidate_name` to install candidate.")
+        println!("{}", "No candidate supplied!".red());
+        println!("{}", "Please use `sdk install candidate_name` to install candidate.".red());
     }
 }
 
@@ -47,12 +53,7 @@ pub fn install_candidate_from_path(candidate_name: &str, candidate_version: &str
         println!("{}@{} installed already: {}", candidate_name, candidate_version, candidate_home.to_str().unwrap());
         return;
     }
-    let options = CopyOptions::new(); //Initialize default values for CopyOptions
-    let parent_path = candidate_home.parent().unwrap();
-    if !parent_path.exists() {
-        std::fs::create_dir_all(parent_path).unwrap();
-    }
-    fs_extra::dir::copy(install_path, &candidate_home, &options).unwrap();
+    symlink::symlink_dir(install_path, candidate_home).unwrap();
 }
 
 pub fn install_candidate(candidate_name: &str, candidate_version: &str) {
