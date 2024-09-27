@@ -35,7 +35,7 @@ oneio = { version = "0.17", default-features = false, features = ["remote", "gz"
 url = "2.5"
 flate2 = "1"
 tar = "0.4"
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.12", features = ["json", "blocking"] }
 tokio = { version = "1", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -53,6 +53,9 @@ tempfile = "3.12.0"
 fs_extra = "1.3.0"
 exitcode = "1.1.2"
 shlex = "1.3"
+
+[dev-dependencies]
+dotenvy = "0.15"
 
 [profile.dev]
 opt-level = 0
