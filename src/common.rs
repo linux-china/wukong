@@ -118,6 +118,12 @@ pub fn extract_tgz_from_sub_path<P: AsRef<Path>>(archive_file_path: P, target_di
             let mut relative_path = entry_path.to_str().unwrap();
             relative_path = &relative_path[(relative_path.find(sub_path).unwrap() + sub_path_len)..];
             let path = target_dir.join(relative_path);
+            // create parent directory
+            if let Some(parent) = path.parent() {
+                if !parent.exists() {
+                    std::fs::create_dir_all(parent).unwrap();
+                }
+            }
             entry.unpack(&path).unwrap();
         });
 }
