@@ -17,12 +17,15 @@ Content-Type: application/json
   ]
 }
 
+
+### SDKMAN health check
+GET https://api.sdkman.io/2/healthcheck
+
 ### SDKMAN candidates list
 GET https://api.sdkman.io/2/candidates/list
 
 ### SDKMAN candidate version list
 GET https://api.sdkman.io/2/candidates/java/darwinx64/versions/list?installed=
-
 
 
 ### SDKMAN candidate default version
