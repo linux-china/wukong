@@ -117,6 +117,10 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
             "java-env" => {
                 let version = matches.get_one::<String>("version").unwrap();
                 let jbang_home = jbang_home_path.to_str().unwrap();
+                let jdk_path = jbang_home_path.join("cache").join("jdks").join(version);
+                if !jdk_path.exists() {
+                    install_jdk(version, &jdk_path);
+                }
                 println!("export PATH=\"{}/cache/jdks/{}/bin:$PATH\"", jbang_home, version);
                 println!("export JAVA_HOME=\"{}/cache/jdks/{}\"", jbang_home, version);
                 println!("# Run this command to configure your shell:");
