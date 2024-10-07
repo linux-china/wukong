@@ -20,7 +20,7 @@ pub fn get_jbang_version() -> String {
     std::fs::read_to_string(jbang_home().join("version.txt")).unwrap_or("unknown".to_string()).trim().to_string()
 }
 
-fn display_version() {
+pub fn display_version() {
     println!("JBang: {}", get_jbang_version());
     println!("JBang-rs: {}", VERSION);
 }
