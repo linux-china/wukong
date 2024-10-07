@@ -2,7 +2,6 @@
 
 mod jbang_cli;
 
-use std::path::PathBuf;
 use clap::{ArgMatches};
 use crate::jbang_cli::config::{manage_config};
 use crate::jbang_cli::init::{manage_init};
@@ -10,12 +9,11 @@ use crate::jbang_cli::{jbang_home, print_command_help, JBANG_DEFAULT_JAVA_VERSIO
 use crate::jbang_cli::jdk::{manage_jdk};
 use crate::jbang_cli::template::{manage_template};
 use crate::jbang_cli::trust::{manage_trust};
-use crate::jbang_cli::upgrade::{install_jbang, upgrade_jbang};
 use itertools::Itertools;
 use wukong::foojay::install_jdk;
 use crate::jbang_cli::alias::{manage_alias};
 use crate::jbang_cli::app::manage_app;
-use crate::jbang_cli::clap_app::{build_jbang_app, VERSION};
+use crate::jbang_cli::clap_app::{build_jbang_app};
 use crate::jbang_cli::build::manage_build;
 use crate::jbang_cli::cache::{manage_cache};
 use crate::jbang_cli::catalog::{manage_catalog};
@@ -23,6 +21,7 @@ use crate::jbang_cli::edit::manage_edit;
 use crate::jbang_cli::export::{manage_export};
 use crate::jbang_cli::info::{manage_info};
 use crate::jbang_cli::run::{manage_run, jbang_run};
+use crate::jbang_cli::version::{install_jbang, manage_version};
 
 pub const JBANG_SUB_COMMANDS: [&str; 17] = ["run", "build", "init", "edit", "cache", "export",
     "jdk", "config", "trust", "alias", "template", "catalog", "app", "completion", "info", "version", "wrapper"];
@@ -75,8 +74,7 @@ fn main() {
             "info" => manage_info(command_matches),
             "export" => manage_export(command_matches),
             "cache" => manage_cache(command_matches),
-            "upgrade" => upgrade_jbang(),
-            "version" => display_version(&jbang_home),
+            "version" => manage_version(command_matches),
             &_ => println!("Unknown command"),
         }
     } else if let Some(script_or_file) = matches.get_one::<String>("scriptOrFile") {
@@ -93,12 +91,6 @@ fn inject_insecure(matches: &ArgMatches) {
     if matches.get_flag("insecure") {
         std::env::set_var("ONEIO_ACCEPT_INVALID_CERTS", "true")
     }
-}
-
-fn display_version(jbang_home: &PathBuf) {
-    let jbang_version = std::fs::read_to_string(jbang_home.join("version.txt")).unwrap_or("unknown".to_string());
-    println!("JBang: {}", jbang_version.trim());
-    println!("JBang-rs: {}", VERSION);
 }
 
 #[cfg(test)]
