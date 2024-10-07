@@ -1,22 +1,42 @@
+use std::collections::HashMap;
 use clap::{Arg, Command};
 use itertools::Itertools;
-use crate::jbang_cli::call_jbang_sub_command;
+use wukong::common::jbang_home;
 
 pub fn manage_cache(cache_matches: &clap::ArgMatches) {
     if let Some((sub_command, matches)) = cache_matches.subcommand() {
         match sub_command {
             "clear" => {
-                let args = std::env::args().collect::<Vec<String>>();
-                let app_args = &args[3..].iter().map(|s| s.as_str()).collect_vec();
-                let mut command_args = vec!["cache", "clear"];
-                command_args.extend(app_args);
-                call_jbang_sub_command(&command_args);
+                let cache_path = jbang_home().join("cache");
+                if matches.get_flag("all") {
+                    if cache_path.exists() {
+                        std::fs::remove_dir_all(cache_path).unwrap();
+                    }
+                    return;
+                }
+                let mut names: HashMap<&str, &str> = HashMap::new();
+                names.insert("deps", "deps");
+                names.insert("groovyc", "groovycs");
+                names.insert("jar", "jars");
+                names.insert("jdk", "jdks");
+                names.insert("kotlinc", "kotlincs");
+                names.insert("project", "projects");
+                names.insert("script", "scripts");
+                names.insert("stdin", "stdins");
+                names.insert("url", "urls");
+                for (key, value) in names {
+                    if matches.get_flag(key) {
+                        let cache_path = cache_path.join(value);
+                        if cache_path.exists() {
+                            std::fs::remove_dir_all(cache_path).unwrap();
+                        }
+                    }
+                }
             }
             _ => {}
         }
     }
 }
-
 
 pub fn build_cache_command() -> Command {
     Command::new("cache")
