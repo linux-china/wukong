@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::path::{PathBuf};
 use itertools::Itertools;
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize};
 use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, http_download};
 
 pub fn get_jdk_download_url(java_version: &str) -> String {
@@ -75,7 +75,7 @@ struct PackagesResponse {
     pub result: Vec<FoojayJDK>,
 }
 #[derive(Debug, Clone, Deserialize)]
-struct FoojayJDK {
+pub struct FoojayJDK {
     #[serde(rename = "major_version")]
     pub major_version: u32,
     #[serde(rename = "java_version")]
@@ -90,7 +90,9 @@ pub fn list_jdk(distro: &str) -> Vec<FoojayJDK> {
         format!("{}={}", k, v)
     }).join("&");
     let url = format!("https://api.foojay.io/disco/v3.0/packages?release_status=ga&package_type=jdk&latest=available&{}", extra_query);
-    reqwest::blocking::get(&url).unwrap().json::<PackagesResponse>().unwrap().result
+    let mut jdks = reqwest::blocking::get(&url).unwrap().json::<PackagesResponse>().unwrap().result;
+    jdks.dedup_by(|a, b| a.major_version == b.major_version);
+    jdks
 }
 
 #[cfg(test)]
