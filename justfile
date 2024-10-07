@@ -10,6 +10,10 @@ build:
 jbang-help:
   cargo run --bin jbang -- --help
 
+# display jbang version
+jbang-version:
+  cargo run --bin jbang -- --version
+
 # display jbang help
 jbang-jdk-list:
   cargo run --bin jbang -- jdk list
@@ -29,10 +33,6 @@ jbang-init-hello:
 # jbang trust lit
 jbang-trust-list:
   cargo run --bin jbang -- trust list
-
-# display jbang version
-jbang-version:
-  cargo run --bin jbang -- version
 
 # jbang run hello.java
 jbang-run:
