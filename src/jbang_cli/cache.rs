@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use clap::{Arg, Command};
-use itertools::Itertools;
 use wukong::common::jbang_home;
 
 pub fn manage_cache(cache_matches: &clap::ArgMatches) {

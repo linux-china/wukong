@@ -13,14 +13,14 @@ use crate::jbang_cli::jdk::build_jdk_command;
 use crate::jbang_cli::run::build_run_command;
 use crate::jbang_cli::template::build_template_command;
 use crate::jbang_cli::trust::build_trust_command;
+use crate::jbang_cli::version::build_version_command;
 
 pub const VERSION: &str = "0.2.1";
 
 pub fn build_jbang_app() -> Command {
     let run_command = build_run_command();
     let build_command = build_build_command();
-    let version_command = Command::new("version")
-        .about("Display version info.");
+    let version_command = build_version_command();
     let jdk_command = build_jdk_command();
     let config_command = build_config_command();
     let trust_command = build_trust_command();
@@ -33,8 +33,6 @@ pub fn build_jbang_app() -> Command {
     let info_command = build_info_command();
     let export_command = build_export_command();
     let cache_command = build_cache_command();
-    let upgrade_command = Command::new("upgrade")
-        .about("Upgrade jbang to the latest version.");
     Command::new("jbang")
         .version(VERSION)
         .about("jbang - Unleash the power of Java")
@@ -117,6 +115,5 @@ pub fn build_jbang_app() -> Command {
         .subcommand(app_command)
         .subcommand(info_command)
         .subcommand(version_command)
-        .subcommand(upgrade_command)
 
 }
