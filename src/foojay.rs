@@ -84,12 +84,12 @@ pub struct FoojayJDK {
     pub distribution: String,
 }
 
-pub fn list_jdk(distro: &str) -> Vec<FoojayJDK> {
+pub fn list_jdk(distro: &str, release_status: &str) -> Vec<FoojayJDK> {
     let platform_params = get_platform_params(distro);
     let extra_query = platform_params.iter().map(|(k, v)| {
         format!("{}={}", k, v)
     }).join("&");
-    let url = format!("https://api.foojay.io/disco/v3.0/packages?release_status=ga&package_type=jdk&latest=available&{}", extra_query);
+    let url = format!("https://api.foojay.io/disco/v3.0/packages?release_status={}&package_type=jdk&latest=available&{}", release_status, extra_query);
     let mut jdks = reqwest::blocking::get(&url).unwrap().json::<PackagesResponse>().unwrap().result;
     jdks.dedup_by(|a, b| a.major_version == b.major_version);
     jdks
@@ -107,7 +107,7 @@ mod tests {
 
     #[test]
     fn test_list_jdk() {
-        let jdks = list_jdk("temurin");
+        let jdks = list_jdk("temurin", "ga");
         for jdk in &jdks {
             println!("{}:{}", jdk.major_version, jdk.java_version);
         }
