@@ -2,7 +2,7 @@ use std::path::PathBuf;
 use colored::Colorize;
 use fs_extra::dir::CopyOptions;
 use wukong::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, get_redirect_url, http_download};
-use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, get_sdkman_platform, read_sdkman_config, SDKMAN_CANDIDATES_API};
+use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, get_sdkman_platform, read_sdkman_config, sdkman_home, SDKMAN_CANDIDATES_API};
 use crate::sdkman_cli::default::make_candidate_default;
 
 pub fn manage_install(install_matches: &clap::ArgMatches) {
@@ -68,7 +68,7 @@ pub fn install_candidate(candidate_name: &str, candidate_version: &str) {
                                sdkman_platform);
     let real_download_url = get_redirect_url(&download_url).unwrap();
     let archive_file_name = &real_download_url[real_download_url.rfind("/").unwrap() + 1..];
-    let temp_dir = std::env::temp_dir();
+    let temp_dir = sdkman_home().join("tmp");
     let archive_file_path = temp_dir.join(archive_file_name);
     if archive_file_path.exists() { // remove broken downloaded file
         std::fs::remove_file(&archive_file_path).unwrap();
