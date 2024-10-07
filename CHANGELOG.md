@@ -2,6 +2,9 @@
 
 Nothing Yet!
 
+* jbang-rs: implement `version` sub command
+* jbang-rs: add `-V`, `-v` and `--version` options
+
 # Version 0.2.1 (2024-10-07)
 
 * jbang-rs: implement `cache` with Rust, `jdk list --available`.
