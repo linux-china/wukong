@@ -17,6 +17,8 @@ Content-Type: application/json
   ]
 }
 
+### foojay jdk versions from distro
+GET https://api.foojay.io/disco/v3.0/packages?release_status=ga&package_type=jdk&latest=available&libc_type=libc&archive_type=tar.gz&operating_system=mac&distro=temurin&architecture=x64
 
 ### SDKMAN health check
 GET https://api.sdkman.io/2/healthcheck
@@ -33,8 +35,6 @@ GET https://api.sdkman.io/2/candidates/default/java
 
 ### SDKMAN candidate version list
 GET https://api.sdkman.io/2/candidates/ant/darwinx64/versions/list?installed=
-
-
 
 ### sdkman candidate release download url
 // @no-redirect
