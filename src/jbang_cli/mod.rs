@@ -1,7 +1,6 @@
 pub mod config;
 pub mod jdk;
 pub mod trust;
-pub mod upgrade;
 pub mod init;
 pub mod template;
 pub mod run;
@@ -15,6 +14,7 @@ pub mod clap_app;
 pub mod build;
 pub mod edit;
 pub mod app;
+pub mod version;
 
 use std::fs::{File, Permissions};
 use std::path::{Path, PathBuf};
