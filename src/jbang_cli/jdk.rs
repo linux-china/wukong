@@ -6,6 +6,7 @@ use std::path::{Path};
 use clap::{Arg, Command};
 use java_properties::PropertiesError;
 use serde::Serialize;
+use wukong::foojay;
 use crate::build_jbang_app;
 use wukong::foojay::install_jdk;
 use crate::jbang_cli::jbang_home;
@@ -21,11 +22,12 @@ fn get_current_jdk_path() -> String {
 #[derive(Debug, Clone, Serialize)]
 struct JBangJDK {
     pub id: String,
-    pub version: String, // major version
+    pub version: u32, // major version
     #[serde(rename = "fullVersion")]
     pub full_version: String,
     #[serde(rename = "javaHomeDir")]
-    pub java_home_dir: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub java_home_dir: Option<String>,
     #[serde(rename = "providerName")]
     pub provider_name: String,
 }
@@ -54,9 +56,9 @@ fn find_installed_jdks() -> Vec<JBangJDK> {
                         };
                         jdks.push(JBangJDK {
                             id: format!("{}-jbang", java_major),
-                            version: java_major.to_string(),
+                            version: java_major.parse::<u32>().unwrap(),
                             full_version,
-                            java_home_dir: jdk_path.to_str().unwrap().to_string(),
+                            java_home_dir: Some(jdk_path.to_str().unwrap().to_string()),
                             provider_name: "jbang".to_string(),
                         });
                     }
@@ -65,11 +67,7 @@ fn find_installed_jdks() -> Vec<JBangJDK> {
         }
     }
     jdks.sort_by(|a, b| {
-        if a.version.parse::<u32>().is_ok() && b.version.parse::<u32>().is_ok() {
-            a.version.parse::<u32>().unwrap().cmp(&b.version.parse::<u32>().unwrap())
-        } else {
-            a.version.cmp(&b.version)
-        }
+        a.version.cmp(&b.version)
     });
     jdks
 }
@@ -131,6 +129,10 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
                 let show_details = matches.get_flag("show-details");
                 let default_format = "text".to_owned();
                 let format = matches.get_one::<String>("format").unwrap_or(&default_format);
+                if available {
+                    list_available(show_details, format);
+                    return;
+                }
                 // current jdk
                 let current_jdk_path = get_current_jdk_path();
                 let jdks = find_installed_jdks();
@@ -139,12 +141,24 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
                         println!("{}", serde_json::to_string_pretty(&jdks).unwrap())
                     } else {
                         println!("Installed JDKs (<=default):");
-                        for jdk in &jdks {
-                            print!("  {} ({})", jdk.version, jdk.full_version);
-                            if current_jdk_path == jdk.java_home_dir {
-                                println!(" <");
-                            } else {
-                                println!();
+                        if show_details { // detail mode
+                            for jdk in &jdks {
+                                print!("{} ({}, {}, {}-jbang, {})",
+                                       jdk.version, jdk.full_version, jdk.provider_name, jdk.version, jdk.java_home_dir.clone().unwrap());
+                                if current_jdk_path == jdk.java_home_dir.clone().unwrap() {
+                                    println!(" <");
+                                } else {
+                                    println!();
+                                }
+                            }
+                        } else { // summary mode
+                            for jdk in &jdks {
+                                print!("  {} ({})", jdk.version, jdk.full_version);
+                                if current_jdk_path == jdk.java_home_dir.clone().unwrap() {
+                                    println!(" <");
+                                } else {
+                                    println!();
+                                }
                             }
                         }
                     }
@@ -171,6 +185,39 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
         }
     } else {
         println!("Missing required subcommand.");
+    }
+}
+
+fn list_available(show_details: bool, format: &str) {
+    let mut foojay_jdks = foojay::list_jdk("temurin", "ga");
+    foojay_jdks.extend(foojay::list_jdk("temurin", "ea"));
+    foojay_jdks.sort_by(|a, b| {
+        b.major_version.cmp(&a.major_version)
+    });
+    foojay_jdks.dedup_by(|a, b| a.major_version == b.major_version);
+    let jdks = foojay_jdks.iter().map(|jdk| {
+        JBangJDK {
+            id: format!("{}-jbang", jdk.major_version),
+            version: jdk.major_version,
+            full_version: jdk.java_version.clone(),
+            java_home_dir: None,
+            provider_name: "jbang".to_string(),
+        }
+    }).collect::<Vec<JBangJDK>>();
+    if format == "json" {
+        println!("{}", serde_json::to_string_pretty(&jdks).unwrap())
+    } else {
+        println!("Available JDKs:");
+        if show_details { // detail mode
+            for jdk in &jdks {
+                println!("  {} ({}, {}, {}-jbang)",
+                         jdk.version, jdk.full_version, jdk.provider_name, jdk.version);
+            }
+        } else { // summary mode
+            for jdk in &jdks {
+                println!("  {} ({})", jdk.version, jdk.full_version);
+            }
+        }
     }
 }
 
@@ -289,6 +336,11 @@ mod tests {
         let jbang_matches = jbang_app.get_matches_from(&vec!["jbang", "jdk", "list"]);
         let jdk_matches = jbang_matches.subcommand_matches("jdk").unwrap();
         manage_jdk(&jdk_matches);
+    }
+
+    #[test]
+    fn test_list_available() {
+        list_available(true, "text");
     }
 
     #[test]
