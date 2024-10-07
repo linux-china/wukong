@@ -34,6 +34,9 @@ pub fn install_jdk(java_version: &str, target_dir: &PathBuf) {
         archive_file_name = format!("jdk-{}.zip", java_version);
     }
     let archive_file_path = temp_dir.join(archive_file_name);
+    if archive_file_path.exists() { // remove broken downloaded file
+        std::fs::remove_file(&archive_file_path).unwrap();
+    }
     http_download(&download_url, archive_file_path.to_str().unwrap());
     if target_dir.exists() { // remove old jdk version
         std::fs::remove_dir_all(&target_dir).unwrap();
