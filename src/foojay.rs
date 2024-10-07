@@ -1,29 +1,46 @@
+use std::collections::HashMap;
 use std::path::{PathBuf};
+use itertools::Itertools;
+use serde::{Deserialize, Serialize};
 use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, http_download};
 
 pub fn get_jdk_download_url(java_version: &str) -> String {
     let distro = "temurin";
-    let mut os = "linux";
-    let arch = match std::env::consts::ARCH {
-        "x86_64" => "x64",
-        "aarch64" => "aarch64",
+    let platform_params = get_platform_params(distro);
+    let extra_query = platform_params.iter().map(|(k, v)| {
+        format!("{}={}", k, v)
+    }).join("&");
+    format!("https://api.foojay.io/disco/v3.0/directuris?javafx_bundled=false&package_type=jdk&latest=available&version={}&{}", java_version, extra_query)
+}
+
+fn get_platform_params(distro: &str) -> HashMap<String, String> {
+    let mut params = HashMap::new();
+    params.insert("distro".to_string(), distro.to_string());
+    match std::env::consts::ARCH {
+        "x86_64" => {
+            params.insert("architecture".to_owned(), "x64".to_owned());
+        }
+        "aarch64" => {
+            params.insert("architecture".to_owned(), "aarch64".to_owned());
+        }
         _ => panic!("Unsupported architecture"),
     };
-    let mut archive_type = "tar.gz";
-    let mut libc_type = "glibc";
     if cfg!(target_os = "linux") {
-        os = "linux";
+        params.insert("operating_system".to_owned(), "linux".to_owned());
+        params.insert("libc_type".to_owned(), "glibc".to_owned());
+        params.insert("archive_type".to_owned(), "tar.gz".to_owned());
     } else if cfg!(target_os = "macos") {
-        os = "mac";
-        libc_type = "libc";
+        params.insert("operating_system".to_owned(), "mac".to_owned());
+        params.insert("libc_type".to_owned(), "libc".to_owned());
+        params.insert("archive_type".to_owned(), "tar.gz".to_owned());
     } else if cfg!(target_os = "windows") {
-        os = "windows";
-        libc_type = "c_std_lib";
-        archive_type = "zip";
+        params.insert("operating_system".to_owned(), "windows".to_owned());
+        params.insert("libc_type".to_owned(), "c_std_lib".to_owned());
+        params.insert("archive_type".to_owned(), "zip".to_owned());
     } else {
         panic!("Unsupported OS");
     };
-    format!("https://api.foojay.io/disco/v3.0/directuris?distro={distro}&javafx_bundled=false&libc_type={libc_type}&archive_type={archive_type}&operating_system={os}&package_type=jdk&version={java_version}&architecture={arch}&latest=available")
+    params
 }
 
 pub fn install_jdk(java_version: &str, target_dir: &PathBuf) {
@@ -53,6 +70,29 @@ pub fn install_jdk(java_version: &str, target_dir: &PathBuf) {
     std::fs::remove_file(&archive_file_path).unwrap();
 }
 
+#[derive(Debug, Clone, Deserialize)]
+struct PackagesResponse {
+    pub result: Vec<FoojayJDK>,
+}
+#[derive(Debug, Clone, Deserialize)]
+struct FoojayJDK {
+    #[serde(rename = "major_version")]
+    pub major_version: u32,
+    #[serde(rename = "java_version")]
+    pub java_version: String,
+    #[serde(rename = "distribution")]
+    pub distribution: String,
+}
+
+pub fn list_jdk(distro: &str) -> Vec<FoojayJDK> {
+    let platform_params = get_platform_params(distro);
+    let extra_query = platform_params.iter().map(|(k, v)| {
+        format!("{}={}", k, v)
+    }).join("&");
+    let url = format!("https://api.foojay.io/disco/v3.0/packages?release_status=ga&package_type=jdk&latest=available&{}", extra_query);
+    reqwest::blocking::get(&url).unwrap().json::<PackagesResponse>().unwrap().result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -61,5 +101,13 @@ mod tests {
     fn test_get_download_url() {
         let java_version = "21";
         println!("{}", get_jdk_download_url(java_version));
+    }
+
+    #[test]
+    fn test_list_jdk() {
+        let jdks = list_jdk("temurin");
+        for jdk in &jdks {
+            println!("{}:{}", jdk.major_version, jdk.java_version);
+        }
     }
 }
