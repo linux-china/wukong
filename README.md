@@ -16,7 +16,7 @@ Wukong is a Java toolchain written with Rust.
 - jenv-rs: `~/.cargo/bin/jenv --version`
 - Maven Toolchains: `~/.cargo/bin/mt --version`
 
-# Toolchain
+# Java Toolchains
 
 - JBang(Java): https://www.jbang.dev/
 - SDKMAN(bash): https://sdkman.io/
@@ -27,6 +27,8 @@ Wukong is a Java toolchain written with Rust.
 
 - jdks: list all installed JDKs
 - list: list JDKs from `~/.m2/toolchains.xml`
+- add: add JDK into `~/.m2/toolchains.xml`
+- remove: remove JDK from `~/.m2/toolchains.xml`
 
 ### Add JDK
 
@@ -36,7 +38,7 @@ Wukong is a Java toolchain written with Rust.
 
 # direnv integration
 
-Integration with [direnv](https://direnv.net/):
+Integration with [direnv](https://direnv.net/) by `sdk direnv init`:
 
 - Java Home: `.java-version`, `.sdkmanrc`
 - Aut candidate home and path for SDKMAN: `.sdkmanrc`
