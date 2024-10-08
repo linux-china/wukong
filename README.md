@@ -2,6 +2,12 @@ Wukong - Java Toolchain with Rust
 ====================================
 Wukong is a Java toolchain written with Rust.
 
+# Why write Java toolchain with Rust?
+
+- startup time matter: Rust is fast, and Java takes ages to start.
+- No environment dependencies: No need to install JDK, Maven, Gradle, etc.
+- Binary file size matter: small size, easy to distribute. GraalVM native-image is not small enough.
+
 # Get started
 
 - Install: `cargo binstall wukong`. Please run `cargo install cargo-binstall` first.
