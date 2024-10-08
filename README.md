@@ -39,3 +39,4 @@ Integration with [direnv](https://direnv.net/):
 
 * [SDKMAN CLI](https://github.com/sdkman/sdkman-cli-native): SDKMAN CLI Native with Rust
 * [OneIO](https://github.com/bgpkit/oneio): all-in-one convenient IO library for Rust
+* [startup-time](https://github.com/bdrung/startup-time): Measure startup time of different programming languages
