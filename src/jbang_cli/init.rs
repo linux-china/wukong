@@ -4,8 +4,8 @@ use handlebars::{Handlebars};
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use crate::jbang_cli::set_executable;
-use crate::jbang_cli::template::TEMPLATES;
+use crate::jbang_cli::{call_jbang_sub_command, set_executable};
+use crate::jbang_cli::template::TEMPLATES_BUILTIN;
 
 fn handlebars() -> Handlebars<'static> {
     let mut hbs = Handlebars::new();
@@ -44,14 +44,14 @@ pub fn manage_init(init_matches: &clap::ArgMatches) {
         };
     } else { // generate code from template
         let default_template = "hello".to_owned();
-        let template = init_matches.get_one::<String>("template").unwrap_or(&default_template);
-        if TEMPLATES.contains_key(&template.as_str()) {
+        let template_name = init_matches.get_one::<String>("template").unwrap_or(&default_template);
+        if TEMPLATES_BUILTIN.contains_key(&template_name.as_str()) {
             let mut context: HashMap<String, String> = HashMap::new();
             context.insert("className".to_string(), class_name);
             context.insert("fileName".to_string(), file_name);
-            code = handlebars().render(template, &context).ok()
+            code = handlebars().render(template_name, &context).ok()
         } else {
-            println!("Please specify correct template you wish to generate code.");
+            call_jbang_sub_command(&["init", "-t", template_name, file_name.as_str()]);
         }
     }
     if let Some(code) = code {
