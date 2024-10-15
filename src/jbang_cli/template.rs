@@ -7,7 +7,7 @@ use crate::jbang_cli::jbang_catalog;
 use crate::jbang_cli::models::Template;
 
 lazy_static! {
-    pub static ref TEMPLATES: HashMap<&'static str, &'static str> = {
+    pub static ref TEMPLATES_BUILTIN: HashMap<&'static str, &'static str> = {
         let mut m = HashMap::new();
         m.insert("hello","Basic Hello World template");
         m.insert("hello.groovy","Basic groovy Hello World template");
@@ -79,7 +79,7 @@ pub fn remove_template(matches: &clap::ArgMatches) {
 }
 
 pub fn list_templates() {
-    for (key, value) in TEMPLATES.iter() {
+    for (key, value) in TEMPLATES_BUILTIN.iter() {
         println!("{}", *key);
         println!("  {}", *value);
     }
