@@ -2,8 +2,11 @@
 
 Nothing Yet!
 
+# Version 0.2.2 (2024-10-15)
+
 * jbang-rs: implement `version` sub command
 * jbang-rs: add `-V`, `-v` and `--version` options
+* jbang-rs: implement `template` sub command
 
 # Version 0.2.1 (2024-10-07)
 
