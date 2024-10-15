@@ -5,12 +5,13 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use crate::jbang_cli::set_executable;
-
-const TEMPLATES: &[&str] = &["hello", "cli", "hello.kt", "hello.groovy"];
+use crate::jbang_cli::template::TEMPLATES;
 
 fn handlebars() -> Handlebars<'static> {
     let mut hbs = Handlebars::new();
     hbs.register_template_string("hello", include_str!("templates/hello.java")).unwrap();
+    hbs.register_template_string("hello.kt", include_str!("templates/hello.kt")).unwrap();
+    hbs.register_template_string("hello.groovy", include_str!("templates/hello.groovy")).unwrap();
     hbs.register_template_string("cli", include_str!("templates/cli.java")).unwrap();
     hbs
 }
@@ -44,7 +45,7 @@ pub fn manage_init(init_matches: &clap::ArgMatches) {
     } else { // generate code from template
         let default_template = "hello".to_owned();
         let template = init_matches.get_one::<String>("template").unwrap_or(&default_template);
-        if TEMPLATES.contains(&template.as_str()) {
+        if TEMPLATES.contains_key(&template.as_str()) {
             let mut context: HashMap<String, String> = HashMap::new();
             context.insert("className".to_string(), class_name);
             context.insert("fileName".to_string(), file_name);
