@@ -1,7 +1,34 @@
+use std::collections::HashMap;
 use clap::{Arg, Command};
+use lazy_static::lazy_static;
 
+
+lazy_static! {
+    pub static ref TEMPLATES: HashMap<&'static str, &'static str> = {
+        let mut m = HashMap::new();
+        m.insert("hello","Basic Hello World template");
+        m.insert("hello.groovy","Basic groovy Hello World template");
+        m.insert("hello.kt","Basic kotlin Hello World template");
+        m.insert("cli","CLI template");
+        m
+    };
+}
 pub fn manage_template(template_matches: &clap::ArgMatches) {
-   // TODO implement manage_template
+    if let Some((sub_command, matches)) = template_matches.subcommand() {
+        match sub_command {
+            "list" => {
+                list_templates();
+            }
+            _ => {}
+        }
+    }
+}
+
+pub fn list_templates() {
+    for (key, value) in TEMPLATES.iter() {
+        println!("{}", *key);
+        println!("  {}", *value);
+    }
 }
 pub fn build_template_command() -> Command {
     Command::new("template")
