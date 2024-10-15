@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use clap::{Arg, Command};
+use colored::Colorize;
 use lazy_static::lazy_static;
 use url::Url;
-use crate::jbang_cli::jbang_catalog;
+use crate::jbang_cli::{builtin_jbang_catalog, jbang_catalog};
 use crate::jbang_cli::models::Template;
 
 lazy_static! {
@@ -79,14 +80,19 @@ pub fn remove_template(matches: &clap::ArgMatches) {
 }
 
 pub fn list_templates() {
-    for (key, value) in TEMPLATES_BUILTIN.iter() {
-        println!("{}", *key);
-        println!("  {}", *value);
+    // builtin templates
+    let builtin_jbang_catalog = builtin_jbang_catalog();
+    if let Some(templates) = &builtin_jbang_catalog.templates {
+        for (key, value) in templates.iter() {
+            println!("{}", key.bold());
+            println!("  {}", value.description.as_ref().unwrap_or(&"No description".to_string()));
+        }
     }
+    // user defined templates
     let jbang_catalog = jbang_catalog();
     if let Some(templates) = &jbang_catalog.templates {
         for (key, value) in templates.iter() {
-            println!("{}", key);
+            println!("{}", key.bold());
             println!("  {}", value.description.as_ref().unwrap_or(&"No description".to_string()));
         }
     }
