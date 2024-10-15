@@ -17,7 +17,9 @@ pub mod app;
 pub mod version;
 
 use std::fs::{File, Permissions};
+use std::io::Read;
 use std::path::{Path, PathBuf};
+use zip::ZipArchive;
 use wukong::common::run_command;
 use crate::jbang_cli::models::JBangCatalog;
 
@@ -42,6 +44,14 @@ pub fn jbang_catalog() -> JBangCatalog {
     } else {
         serde_json::from_reader(File::open(jbang_catalog_json).unwrap()).unwrap()
     }
+}
+
+pub fn builtin_jbang_catalog() -> JBangCatalog {
+    let jbang_jar_file_path = jbang_home().join("bin").join("jbang.jar");
+    let archive = File::open(jbang_jar_file_path).unwrap();
+    let mut archive = ZipArchive::new(archive).unwrap();
+    let zip_file = archive.by_name("jbang-catalog.json").unwrap();
+    serde_json::from_reader(zip_file).unwrap()
 }
 
 pub fn find_jbang_catalog_from_path(path: &PathBuf) -> Option<JBangCatalog> {
@@ -122,5 +132,11 @@ mod tests {
     #[test]
     fn test_find_jbang_catalog() {
         assert!(find_jbang_catalog_from_path(&PathBuf::from(".")).is_none());
+    }
+
+    #[test]
+    fn test_builtin_jbang_catalog() {
+        let catalog = builtin_jbang_catalog();
+        println!("{:?}", catalog);
     }
 }
