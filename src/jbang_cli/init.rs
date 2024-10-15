@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 use crate::jbang_cli::set_executable;
 
-const TEMPLATES: &[&str] = &["hello", "cli"];
+const TEMPLATES: &[&str] = &["hello", "cli", "hello.kt", "hello.groovy"];
 
 fn handlebars() -> Handlebars<'static> {
     let mut hbs = Handlebars::new();
