@@ -15,7 +15,7 @@ use crate::jbang_cli::template::build_template_command;
 use crate::jbang_cli::trust::build_trust_command;
 use crate::jbang_cli::version::build_version_command;
 
-pub const VERSION: &str = "0.2.1";
+pub const VERSION: &str = "0.2.2";
 
 pub fn build_jbang_app() -> Command {
     let run_command = build_run_command();
