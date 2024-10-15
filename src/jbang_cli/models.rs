@@ -87,6 +87,7 @@ pub struct CatalogRef {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Template {
+    #[serde(rename = "file-refs")]
     pub file_refs: HashMap<String, String>,
     pub description: Option<String>,
     pub properties: Option<HashMap<String, TemplateProperty>>,
