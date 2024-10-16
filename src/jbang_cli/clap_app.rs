@@ -33,6 +33,8 @@ pub fn build_jbang_app() -> Command {
     let info_command = build_info_command();
     let export_command = build_export_command();
     let cache_command = build_cache_command();
+    let completion_command = Command::new("completion")
+        .about("Output auto-completion script for bash/zsh. Usage: source <(jbang completion)");
     Command::new("jbang")
         .version(VERSION)
         .about("jbang - Unleash the power of Java")
@@ -115,5 +117,5 @@ pub fn build_jbang_app() -> Command {
         .subcommand(app_command)
         .subcommand(info_command)
         .subcommand(version_command)
-
+        .subcommand(completion_command)
 }
