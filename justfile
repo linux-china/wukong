@@ -6,6 +6,10 @@ build:
   cp target/debug/jenv ~/bin/jenv
   cp target/debug/mt ~/bin/mt
 
+# local install
+local-install:
+  cargo install --path .
+
 # display jbang help
 jbang-help:
   cargo run --bin jbang -- --help
