@@ -7,6 +7,7 @@ Nothing Yet!
 * jbang-rs: implement `version` sub command
 * jbang-rs: add `-V`, `-v` and `--version` options
 * jbang-rs: implement `template` sub command
+* jbang-rs: implement `completion` sub command
 
 # Version 0.2.1 (2024-10-07)
 
