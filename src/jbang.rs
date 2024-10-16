@@ -17,6 +17,7 @@ use crate::jbang_cli::clap_app::{build_jbang_app};
 use crate::jbang_cli::build::manage_build;
 use crate::jbang_cli::cache::{manage_cache};
 use crate::jbang_cli::catalog::{manage_catalog};
+use crate::jbang_cli::completion::manage_completion;
 use crate::jbang_cli::edit::manage_edit;
 use crate::jbang_cli::export::{manage_export};
 use crate::jbang_cli::info::{manage_info};
@@ -79,6 +80,7 @@ fn main() {
             "export" => manage_export(command_matches),
             "cache" => manage_cache(command_matches),
             "version" => manage_version(command_matches),
+            "completion" => manage_completion(command_matches),
             &_ => println!("Unknown command"),
         }
     } else if let Some(script_or_file) = matches.get_one::<String>("scriptOrFile") {
