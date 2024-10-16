@@ -61,6 +61,9 @@ pub fn direnv_hook() {
                 if java_home.exists() {
                     let java_home_dir = java_home.to_str().unwrap();
                     println!("export JAVA_HOME={}", java_home_dir);
+                    if java_version.contains("graal") {
+                        println!("export GRAALVM_HOME={}", java_home_dir);
+                    }
                     paths.push(java_home.join("bin").to_str().unwrap().to_string());
                 } else {
                     wukong::foojay::install_jdk(&java_version, &java_home);
@@ -70,6 +73,9 @@ pub fn direnv_hook() {
                 if java_home.exists() {
                     let java_home_dir = java_home.to_str().unwrap();
                     println!("export JAVA_HOME={}", java_home_dir);
+                    if java_version.contains("graal") {
+                        println!("export GRAALVM_HOME={}", java_home_dir);
+                    }
                     paths.push(java_home.join("bin").to_str().unwrap().to_string());
                 } else {
                     install_candidate("java", &java_version);
