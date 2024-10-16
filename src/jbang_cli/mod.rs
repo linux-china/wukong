@@ -15,6 +15,7 @@ pub mod build;
 pub mod edit;
 pub mod app;
 pub mod version;
+pub mod completion;
 
 use std::fs::{File, Permissions};
 use std::io::Read;
