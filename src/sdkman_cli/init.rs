@@ -11,7 +11,7 @@ pub fn shell_hook() {
             let candidate_home = entry.path();
             let candidate_current_link = candidate_home.join("current");
             if candidate_current_link.exists() && candidate_current_link.is_symlink() {
-                println!("export {}_HOME={}", candidate_name.to_uppercase(), candidate_home.to_str().unwrap());
+                println!("export {}_HOME={}", candidate_name.to_uppercase(), candidate_current_link.to_str().unwrap());
                 let candidate_bin_path = candidate_current_link.join("bin");
                 if candidate_bin_path.exists() {
                     paths.push(candidate_bin_path.to_str().unwrap().to_string());
