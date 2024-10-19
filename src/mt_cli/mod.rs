@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use colored::Colorize;
 use wukong::common::{is_java_home, jbang_home, sdkman_home};
 use crate::mt_cli::models::Toolchains;
@@ -145,10 +145,16 @@ pub fn list_command() {
             let jdk_home = toolchain.configuration.get("jdkHome").cloned().unwrap_or("".to_string());
             if !jdk_home.is_empty() {
                 let vendor = &provides.vendor;
-                if vendor.is_some() && !vendor.as_ref().unwrap().is_empty() {
-                    println!("{}: {}\n  {}", provides.version, vendor.clone().unwrap(), jdk_home);
+                let jdk_home_path = PathBuf::from(&jdk_home);
+                let jdk_home_text = if jdk_home_path.exists() {
+                    format!("{}", jdk_home.red())
                 } else {
-                    println!("{}:\n  {}", provides.version, jdk_home);
+                    format!("{}", jdk_home)
+                };
+                if vendor.is_some() && !vendor.as_ref().unwrap().is_empty() {
+                    println!("{}: {}\n  {}", provides.version.bold(), vendor.clone().unwrap(), jdk_home_text);
+                } else {
+                    println!("{}:\n  {}", provides.version.bold(), jdk_home_text);
                 };
             }
         }
