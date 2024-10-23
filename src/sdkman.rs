@@ -1,6 +1,7 @@
 mod sdkman_cli;
 
 use crate::sdkman_cli::clap_app::build_sdkman_app;
+use crate::sdkman_cli::current::manage_current;
 use crate::sdkman_cli::default::manage_default;
 use crate::sdkman_cli::direnv::manage_direnv;
 use crate::sdkman_cli::env::{manage_env};
@@ -24,6 +25,7 @@ fn main() {
             "install" => manage_install(command_matches),
             "uninstall" => manage_uninstall(command_matches),
             "default" => manage_default(command_matches),
+            "current" => manage_current(command_matches),
             "use" => manage_use(command_matches),
             "home" => manage_home(command_matches),
             "env" => manage_env(command_matches),
