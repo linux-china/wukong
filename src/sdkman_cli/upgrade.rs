@@ -1,4 +1,4 @@
-use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, list_candidate_names, read_sdkman_config, sdkman_home};
+use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, list_candidate_names, read_sdkman_config};
 use crate::sdkman_cli::default::make_candidate_default;
 use crate::sdkman_cli::install::install_candidate;
 
