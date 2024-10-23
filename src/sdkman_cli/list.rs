@@ -4,6 +4,8 @@ use crate::sdkman_cli::{get_installed_candidate_default_version, get_sdkman_plat
 pub fn manage_list(list_matches: &clap::ArgMatches) {
     if let Some(candidate_name) = list_matches.get_one::<String>("candidate") {
         list_candidate(candidate_name);
+    } else if list_matches.get_flag("local") {
+        list_installed_candidates();
     } else {
         list_all_candidates();
     }
@@ -59,10 +61,12 @@ pub fn list_installed_candidates() {
             let entry = entry.unwrap();
             if entry.path().is_dir() {
                 let version = entry.file_name().into_string().unwrap();
-                if version == current_version {
-                    installed_versions.push(version.bold().to_string());
-                } else {
-                    installed_versions.push(version);
+                if version != "current" {
+                    if version == current_version {
+                        installed_versions.insert(0, version.bold().to_string());
+                    } else {
+                        installed_versions.push(version);
+                    }
                 }
             }
         }
