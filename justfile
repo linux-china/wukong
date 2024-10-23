@@ -82,6 +82,10 @@ sdkman-use-java:
 sdkman-home-java:
   cargo run --bin sdk -- home java 22.0.2-tem
 
+# sdk current
+sdkman-current:
+  cargo run --bin sdk -- current
+
 # jenv help
 jenv-help:
   cargo run --bin jenv -- --help
