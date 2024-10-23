@@ -124,7 +124,7 @@ Java has a custom list view with vendor-specific details. "#)
             Arg::new("candidate")
                 .help("candidate name")
                 .index(1)
-                .required(true)
+                .required(false)
         );
     let env_command = build_env_command();
     let direnv_command = build_direnv_command();
