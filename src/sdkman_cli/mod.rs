@@ -49,6 +49,23 @@ pub fn read_sdkman_config() -> HashMap<String, String> {
     HashMap::new()
 }
 
+pub fn list_candidate_names() -> Vec<String> {
+    let mut candidate_names: Vec<String> = vec![];
+    let candidates_dir = sdkman_home().join("candidates");
+    // read sub directories for candidates_dir
+    if candidates_dir.exists() {
+        let entries = std::fs::read_dir(candidates_dir).unwrap();
+        for entry in entries {
+            let entry = entry.unwrap();
+            if entry.path().is_dir() {
+                let candidate_name = entry.file_name().into_string().unwrap();
+                candidate_names.push(candidate_name);
+            }
+        }
+    }
+    candidate_names
+}
+
 pub fn find_candidate_home(candidate_name: &str, candidate_version: &str) -> PathBuf {
     sdkman_home().join("candidates")
         .join(candidate_name).join(candidate_version)

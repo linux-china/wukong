@@ -1,4 +1,4 @@
-use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, read_sdkman_config, sdkman_home};
+use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, list_candidate_names, read_sdkman_config, sdkman_home};
 use crate::sdkman_cli::default::make_candidate_default;
 use crate::sdkman_cli::install::install_candidate;
 
@@ -10,18 +10,9 @@ pub fn manage_upgrade(upgrade_matches: &clap::ArgMatches) {
     if let Some(candidate_name) = upgrade_matches.get_one::<String>("candidate") {
         upgrade_candidate(candidate_name, accept_as_default);
     } else {
-        // list all candidates
-        let candidates_dir = sdkman_home().join("candidates");
-        // read sub directories for candidates_dir
-        if candidates_dir.exists() {
-            let entries = std::fs::read_dir(candidates_dir).unwrap();
-            for entry in entries {
-                let entry = entry.unwrap();
-                if entry.path().is_dir() {
-                    let candidate_name = entry.file_name().into_string().unwrap();
-                    upgrade_candidate(&candidate_name, accept_as_default);
-                }
-            }
+        let candidate_names = list_candidate_names();
+        for candidate_name in candidate_names {
+            upgrade_candidate(&candidate_name, accept_as_default);
         }
     }
 }
