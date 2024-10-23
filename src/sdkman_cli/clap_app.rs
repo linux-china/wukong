@@ -81,6 +81,13 @@ in use. They appear as follows:
 
 Java has a custom list view with vendor-specific details. "#)
         .arg(
+            Arg::new("local")
+                .long("local")
+                .help("local installed candidates")
+                .num_args(0)
+                .required(false)
+        )
+        .arg(
             Arg::new("candidate")
                 .help("candidate name")
                 .index(1)
