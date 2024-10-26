@@ -38,7 +38,7 @@ pub fn use_candidate(candidate_name: &str, candidate_home_path: &Path) {
         }
     }
     if candidate_home_path.join("bin").exists() {
-        println!("export PATH=\"{}:$PATH\"", candidate_home);
+        println!("export PATH=\"{}:$PATH\"", candidate_home_path.join("bin").to_str().unwrap());
     } else {
         println!("export PATH=\"{}/bin:$PATH\"", candidate_home);
     }
