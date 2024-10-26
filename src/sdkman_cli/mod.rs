@@ -71,6 +71,22 @@ pub fn find_candidate_home(candidate_name: &str, candidate_version: &str) -> Pat
         .join(candidate_name).join(candidate_version)
 }
 
+pub fn find_java_home(major_version: &str) -> Option<PathBuf> {
+    let java_repo = sdkman_home().join("candidates").join("java");
+    // list sub directories from java_repo
+    let entries = std::fs::read_dir(java_repo).unwrap();
+    for entry in entries {
+        let entry = entry.unwrap();
+        if entry.path().is_dir() {
+            let version = entry.file_name().into_string().unwrap();
+            if version.starts_with(major_version) {
+                return Some(entry.path());
+            }
+        }
+    }
+    None
+}
+
 pub fn get_installed_candidate_default_version(candidate_name: &str) -> String {
     let candidate_current_link = sdkman_home().join("candidates").join(candidate_name).join("current");
     if candidate_current_link.exists() {
@@ -103,5 +119,11 @@ mod tests {
     #[test]
     fn test_read_config() {
         println!("{:?}", read_sdkman_config());
+    }
+
+    #[test]
+    fn test_get_java_home() {
+        let major_version = "17";
+        println!("{:?}", find_java_home(major_version));
     }
 }
