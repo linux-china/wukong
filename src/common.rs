@@ -45,8 +45,19 @@ pub fn http_text(http_url: &str) -> String {
     }
 }
 
-pub fn http_download(http_url: &str, target_file_path: &str) {
-    oneio::download(http_url, target_file_path, None).unwrap();
+pub fn http_download<P: AsRef<Path>>(http_url: &str, target_file_path: P) {
+    let mut response = reqwest::blocking::get(http_url).unwrap();
+    let status_code = &response.status();
+    if status_code.is_success() {
+        if let Some(prefix) = target_file_path.as_ref().parent() {
+            std::fs::create_dir_all(prefix).unwrap();
+        }
+        let mut dest = File::create(&target_file_path).unwrap();
+        response.copy_to(&mut dest).unwrap();
+    } else {
+        eprintln!("Failed to download, status: {} , url: {}", status_code.as_u16(), http_url);
+        std::process::exit(1);
+    }
 }
 
 pub fn get_redirect_url(http_url: &str) -> anyhow::Result<String> {
