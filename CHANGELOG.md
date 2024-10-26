@@ -2,6 +2,10 @@
 
 Nothing Yet!
 
+# Version 0.2.3 (2024-10-28)
+
+* sdkman-rs: add Java major version support: `sdk install java 17`, `sdk use java 17`
+
 # Version 0.2.2 (2024-10-15)
 
 * jbang-rs: implement `version` sub command
