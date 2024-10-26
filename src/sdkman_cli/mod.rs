@@ -87,6 +87,23 @@ pub fn find_java_home(major_version: &str) -> Option<PathBuf> {
     None
 }
 
+pub fn find_java_version(major_version: &str) -> Option<String> {
+    let list_url = format!("{}/candidates/{}/{}/versions/list?current={}&installed={}",
+                           SDKMAN_CANDIDATES_API,
+                           "java",
+                           get_sdkman_platform(),
+                           "",
+                           ""
+    );
+    let text = wukong::common::http_text(&list_url);
+    let versions: Vec<&str> = text.lines()
+        .filter(|line| line.trim().ends_with("-tem"))
+        .map(|line| line.split('|').last().unwrap().trim())
+        .filter(|version| version.trim().starts_with(major_version))
+        .collect();
+    versions.get(0).map(|s| s.to_string())
+}
+
 pub fn get_installed_candidate_default_version(candidate_name: &str) -> String {
     let candidate_current_link = sdkman_home().join("candidates").join(candidate_name).join("current");
     if candidate_current_link.exists() {
@@ -125,5 +142,12 @@ mod tests {
     fn test_get_java_home() {
         let major_version = "17";
         println!("{:?}", find_java_home(major_version));
+    }
+
+    #[test]
+    fn test_find_java_version() {
+        let major_version = "17";
+        let version = find_java_version(major_version);
+        print!("{:?}", version);
     }
 }
