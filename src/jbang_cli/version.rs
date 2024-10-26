@@ -1,7 +1,7 @@
 use std::fs::File;
 use clap::{Arg, Command};
-use oneio::download;
 use tar::Archive;
+use wukong::common::http_download;
 use crate::jbang_cli::clap_app::VERSION;
 use crate::jbang_cli::jbang_home;
 
@@ -48,7 +48,7 @@ pub fn install_jbang() {
     let download_url = "https://github.com/jbangdev/jbang/releases/latest/download/jbang.tar";
     let temp_dir = std::env::temp_dir();
     let target_file_path = temp_dir.join("jbang.tar");
-    download(&download_url, target_file_path.to_str().unwrap(), None).unwrap();
+    http_download(&download_url, target_file_path.to_str().unwrap());
     let target_dir = jbang_home();
     let tar_file = File::open(&target_file_path).unwrap();
     let mut archive = Archive::new(tar_file);
