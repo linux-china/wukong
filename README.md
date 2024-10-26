@@ -27,6 +27,16 @@ Wukong is a Java toolchain written with Rust.
 
 Please add `eval $(~/.cargo/bin/sdk init)` to your shell profile.
 
+### enhancements
+
+* CI friendly: `sdk install -y java` for auto-install
+* Silent mode: `sdk -q install java`
+* Major version support: `sdk install java 17`, `sdk use java 17`
+
+### Difference
+
+* use version: `eval $(sdk use java 17)`
+
 # Maven Toolchains CLI
 
 - jdks: list all installed JDKs
