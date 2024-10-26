@@ -1,3 +1,4 @@
+use std::path::Path;
 use crate::sdkman_cli::{find_candidate_home, find_java_home, find_java_version};
 use crate::sdkman_cli::install::install_candidate;
 
@@ -7,13 +8,7 @@ pub fn manage_use(use_matches: &clap::ArgMatches) {
     // find java home by major version
     if candidate_name == "java" && candidate_version.parse::<u32>().is_ok() {
         if let Some(java_home) = find_java_home(&candidate_version) {
-            println!("export JAVA_HOME=\"{}\"", java_home.to_str().unwrap());
-            if java_home.as_os_str().to_str().unwrap().contains("graal") {
-                println!("export GRAALVM_HOME=\"{}\"", java_home.to_str().unwrap());
-            }
-            println!("export PATH=\"{}:$PATH\"", java_home.join("bin").to_str().unwrap());
-            println!("# Run this command to configure your shell:");
-            println!("# eval $(sdk use {} {})", candidate_name, candidate_version);
+            use_candidate(candidate_name, &java_home);
             return;
         } else {
             let java_version = find_java_version(&candidate_version).unwrap();
@@ -25,20 +20,24 @@ pub fn manage_use(use_matches: &clap::ArgMatches) {
         install_candidate(candidate_name, &candidate_version);
     }
     if candidate_home.exists() {
-        let candidate_home_name = format!("{}_HOME", candidate_name.to_uppercase());
-        let home_path = candidate_home.to_str().unwrap();
-        if candidate_home.join("bin").exists() {
-            println!("export PATH=\"{}:$PATH\"", home_path);
-        } else {
-            println!("export PATH=\"{}/bin:$PATH\"", home_path);
-        }
-        println!("export {}=\"{}\"", candidate_home_name, home_path);
-        if candidate_name == "java" && candidate_version.contains("graal") {
-            println!("export GRAALVM_HOME=\"{}\"", home_path);
-        }
-        println!("# Run this command to configure your shell:");
-        println!("# eval $(sdk use {} {})", candidate_name, candidate_version);
+        use_candidate(candidate_name, &candidate_home);
     } else {
         eprintln!("{}@{} not found, please check name and version correct or not!", candidate_name, candidate_version);
     }
+}
+
+fn use_candidate(candidate_name: &str, candidate_home_path: &Path) {
+    let candidate_home_name = format!("{}_HOME", candidate_name.to_uppercase());
+    let candidate_home = candidate_home_path.to_str().unwrap();
+    println!("export {}=\"{}\"", candidate_home_name, candidate_home);
+    if candidate_name == "java" && candidate_home.contains("graal") {
+        println!("export GRAALVM_HOME=\"{}\"", candidate_home);
+    }
+    if candidate_home_path.join("bin").exists() {
+        println!("export PATH=\"{}:$PATH\"", candidate_home);
+    } else {
+        println!("export PATH=\"{}/bin:$PATH\"", candidate_home);
+    }
+    println!("# Run this command to configure your shell:");
+    println!("# eval $(sdk use {} {})", candidate_name, candidate_home);
 }
