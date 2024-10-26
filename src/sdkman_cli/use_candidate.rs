@@ -26,12 +26,16 @@ pub fn manage_use(use_matches: &clap::ArgMatches) {
     }
 }
 
-fn use_candidate(candidate_name: &str, candidate_home_path: &Path) {
+pub fn use_candidate(candidate_name: &str, candidate_home_path: &Path) {
     let candidate_home_name = format!("{}_HOME", candidate_name.to_uppercase());
     let candidate_home = candidate_home_path.to_str().unwrap();
+    let candidate_version = candidate_home_path.file_name().unwrap().to_str().unwrap();
     println!("export {}=\"{}\"", candidate_home_name, candidate_home);
-    if candidate_name == "java" && candidate_home.contains("graal") {
-        println!("export GRAALVM_HOME=\"{}\"", candidate_home);
+    if candidate_name == "java" {
+        println!("export JENV_VERSION={}", candidate_version);
+        if candidate_home.contains("graal") {
+            println!("export GRAALVM_HOME=\"{}\"", candidate_home);
+        }
     }
     if candidate_home_path.join("bin").exists() {
         println!("export PATH=\"{}:$PATH\"", candidate_home);
@@ -39,5 +43,17 @@ fn use_candidate(candidate_name: &str, candidate_home_path: &Path) {
         println!("export PATH=\"{}/bin:$PATH\"", candidate_home);
     }
     println!("# Run this command to configure your shell:");
-    println!("# eval $(sdk use {} {})", candidate_name, candidate_home);
+    println!("# eval $(sdk use {} {})", candidate_name, candidate_version);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_use_candidate() {
+        let candidate_name = "java";
+        let candidate_version = "17.0.4-tem";
+        use_candidate(candidate_name, &find_candidate_home(candidate_name, candidate_version));
+    }
 }
