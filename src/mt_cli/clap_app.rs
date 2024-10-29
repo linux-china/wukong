@@ -1,6 +1,6 @@
 use clap::{Arg, Command};
 
-pub const VERSION: &str = "0.2.0";
+pub const VERSION: &str = "0.2.3";
 
 
 pub fn build_mt_app() -> Command {
