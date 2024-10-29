@@ -5,6 +5,7 @@ Nothing Yet!
 # Version 0.2.3 (2024-10-28)
 
 * sdkman-rs: add Java major version support: `sdk install java 17`, `sdk use java 17`
+* maven-toolchain: extract vendor from java version, such as `17.0.4-tem`
 
 # Version 0.2.2 (2024-10-15)
 
