@@ -162,8 +162,8 @@ pub fn list_command() {
 }
 
 pub fn add_command(command_matches: &clap::ArgMatches) {
-    let version = command_matches.get_one::<String>("version").unwrap();
-    let vendor = command_matches.get_one::<String>("vendor").map(|v| v.to_string());
+    let mut version = command_matches.get_one::<String>("version").unwrap();
+    let mut vendor = command_matches.get_one::<String>("vendor").map(|v| v.to_string());
     let jdk_path = command_matches.get_one::<String>("path");
     let jdk_home = if let Some(java_home) = jdk_path { // add jdk from path
         if !PathBuf::from(java_home).exists() {
@@ -182,12 +182,18 @@ pub fn add_command(command_matches: &clap::ArgMatches) {
         }
     } else { // sdkman
         let java_home = sdkman_home().join("candidates").join("java").join(version);
-        if !java_home.exists() {
+        let result = if !java_home.exists() {
             let installed_path = install_jdk(version);
             Some(installed_path.to_str().unwrap().to_string())
         } else {
             Some(java_home.to_str().unwrap().to_string())
+        };
+        if version.contains('-') {
+            let parts = version.split('-').collect::<Vec<&str>>();
+            version = &parts[0].to_string();
+            vendor = Some(parts[1].to_string());
         }
+        result
     };
     if jdk_home.is_none() {
         println!("JDK not found: {}, please use sdkman or jbang to install it first.", version);
