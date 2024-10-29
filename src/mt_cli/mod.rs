@@ -188,11 +188,6 @@ pub fn add_command(command_matches: &clap::ArgMatches) {
         } else {
             Some(java_home.to_str().unwrap().to_string())
         };
-        if version.contains('-') {
-            let parts = version.split('-').collect::<Vec<&str>>();
-            version = &parts[0].to_string();
-            vendor = Some(parts[1].to_string());
-        }
         result
     };
     if jdk_home.is_none() {
@@ -200,7 +195,14 @@ pub fn add_command(command_matches: &clap::ArgMatches) {
         return;
     }
     let mut toolchains = Toolchains::load();
-    toolchains.add_jdk(version, vendor, jdk_home.unwrap());
+    if version.contains('-') {
+        let parts = version.split('-').collect::<Vec<&str>>();
+        let version = &parts[0].to_string();
+        let vendor = Some(parts[1].to_string());
+        toolchains.add_jdk(&version, vendor, jdk_home.unwrap());
+    } else {
+        toolchains.add_jdk(&version, vendor, jdk_home.unwrap());
+    }
     toolchains.write();
 }
 
