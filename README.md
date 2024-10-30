@@ -40,12 +40,14 @@ Please add `eval $(~/.cargo/bin/sdk init)` to your shell profile.
 # Maven Toolchains CLI
 
 - jdks: list all installed JDKs
+- vendors: list all vendors and available JDK versions.
 - list: list JDKs from `~/.m2/toolchains.xml`
 - add: add JDK into `~/.m2/toolchains.xml`
 - remove: remove JDK from `~/.m2/toolchains.xml`
 
 ### Add JDK
 
+- list all vendors and jdk versions: `mt vendors`
 - `mt add 21`: add JDK 21 from `$HOME/.jbang/cache/jdks/21`
 - `mt add 17.0.4-tem`: add JDK from `$HOME/.sdk/candidates/java/17.0.4-tem`
 - `mt add /path/to/java-home`: add JDK from `/path/to/java-home`
