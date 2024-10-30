@@ -57,6 +57,6 @@ pub fn build_mt_app() -> Command {
         )
         .subcommand(
             Command::new("vendors")
-                .about("List all JDK vendors")
+                .about("List all JDK vendors and versions")
         )
 }
