@@ -204,6 +204,7 @@ pub fn add_command(command_matches: &clap::ArgMatches) {
         toolchains.add_jdk(&version, vendor, jdk_home.unwrap());
     }
     toolchains.write();
+    println!("Succeeded to add JDK: {}", version);
 }
 
 pub fn install_jdk(version: &str) -> PathBuf {
@@ -223,6 +224,7 @@ pub fn remove_command(command_matches: &clap::ArgMatches) {
     let mut toolchains = Toolchains::load();
     toolchains.remove_jdk(&version, vendor);
     toolchains.write();
+    println!("Succeeded to remove JDK: {}", version);
 }
 
 pub fn vendors_command() {
