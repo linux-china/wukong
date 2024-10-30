@@ -32,7 +32,8 @@ pub fn jdks_command() {
         }
     }
     // list all JDKs from Gradle
-    let gradle_jdks = dirs::home_dir().unwrap().join(".gradle").join("jdks");
+    let home_dir = dirs::home_dir().unwrap();
+    let gradle_jdks = home_dir.join(".gradle").join("jdks");
     if gradle_jdks.exists() {
         let lines = list_jdks(&gradle_jdks);
         print_jdks(&lines, "Gradle");
@@ -44,7 +45,7 @@ pub fn jdks_command() {
             let lines = list_jdks(&gradle_jdks);
             print_jdks(&lines, "System");
         }
-        let jdks = dirs::home_dir().unwrap().join("Library").join("Java").join("JavaVirtualMachines");
+        let jdks = home_dir.join("Library").join("Java").join("JavaVirtualMachines");
         if jdks.exists() {
             let lines = list_jdks(&jdks);
             print_jdks(&lines, "User");
