@@ -2,6 +2,10 @@
 
 Nothing Yet!
 
+# Version 0.2.5 (2024-11-12)
+
+* sdkman-rs: fix `sdk install java 17`
+
 # Version 0.2.4 (2024-10-29)
 
 * sdkman-rs: add Java major version support: `sdk install java 17`, `sdk use java 17`
