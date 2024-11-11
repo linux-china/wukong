@@ -31,7 +31,7 @@ Please add `eval $(~/.cargo/bin/sdk init)` to your shell profile.
 
 * CI friendly: `sdk install -y java` for auto-install
 * Silent mode: `sdk -q install java`
-* Major version support: `sdk install java 17`, `sdk use java 17`
+* Major version support(Temurin by default): `sdk install java 17`, `sdk use java 17`
 
 ### Difference
 
