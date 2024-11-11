@@ -2,7 +2,7 @@ use clap::{Arg, Command};
 use crate::sdkman_cli::direnv::build_direnv_command;
 use crate::sdkman_cli::env::build_env_command;
 
-pub const VERSION: &str = "0.2.3";
+pub const VERSION: &str = "0.2.5";
 
 pub fn build_sdkman_app() -> Command {
     let install_command = Command::new("install")
