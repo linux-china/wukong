@@ -39,3 +39,9 @@ GET https://api.sdkman.io/2/candidates/ant/darwinx64/versions/list?installed=
 ### sdkman candidate release download url
 // @no-redirect
 GET https://api.sdkman.io/2/broker/download/java/22.0.2-tem/darwinx64
+
+### maven search
+GET https://search.maven.org/solrsearch/select?q=spring-messaging&rows=20&wt=json
+
+### maven class search
+GET https://search.maven.org/solrsearch/select?q=c:VelocityEngine&rows=20&wt=json
