@@ -113,3 +113,11 @@ mt-vendors:
 # mt list all jdks
 mt-jdks:
     cargo run --bin mt -- jdks
+
+# search by class name
+mcs-class-search:
+    cargo run --bin mcs -- class-search ApplicationContext
+
+# search by artifact
+mcs-search:
+    cargo run --bin mcs -- search spring-messaging
