@@ -11,10 +11,11 @@ Wukong is a Java toolchain written with Rust.
 # Get started
 
 - Install: `cargo binstall wukong`. Please run `cargo install cargo-binstall` first.
-- JBang-rs: `~/.cargo/bin/jbang --version`
-- SDKMAN-rs: `~/.cargo/bin/sdk --version`
-- jenv-rs: `~/.cargo/bin/jenv --version`
-- Maven Toolchains: `~/.cargo/bin/mt --version`
+- JBang-rs: `~/.cargo/bin/jbang --help`
+- SDKMAN-rs: `~/.cargo/bin/sdk --help`
+- jenv-rs: `~/.cargo/bin/jenv --help`
+- Maven Toolchains: `~/.cargo/bin/mt --help`
+- Maven Repository Search: `~/.cargo/bin/mcs --help`
 
 # Java Toolchains
 
