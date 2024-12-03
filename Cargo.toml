@@ -1,6 +1,6 @@
 [package]
 name = "wukong"
-version = "0.2.5"
+version = "0.2.6"
 edition = "2021"
 authors = ["linux_china <libing.chen@gmail.com>"]
 description = "Wukong is a command-line toolchain for Java with Rust"

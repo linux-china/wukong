@@ -2,6 +2,10 @@
 
 Nothing Yet!
 
+# Version 0.2.6 (2024-12-02)
+
+* mcs-rs(Maven Central Search): initial version
+
 # Version 0.2.5 (2024-11-12)
 
 * sdkman-rs: fix `sdk install java 17`
