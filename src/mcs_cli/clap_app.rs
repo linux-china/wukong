@@ -11,7 +11,7 @@ pub fn build_mcs_app() -> Command {
                 .about("Search artifacts in Maven Central by coordinates")
                 .arg(
                     Arg::new("format")
-                        .help("Show result in <type> format, Supported types are: maven, gradle, gradle-short, gradle-kotlin, sbt, ivy, grape, leiningen, buildr, jbang, gav")
+                        .help("Show result in <type> format, Supported types are: maven, gradle, sbt, ivy, grape, leiningen, jbang, gav")
                         .long("format")
                         .short('f')
                         .num_args(1)
