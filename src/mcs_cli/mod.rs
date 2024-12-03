@@ -30,7 +30,7 @@ pub struct McsDoc {
 
 impl McsDoc {
     pub fn last_updated(&self) -> String {
-        let date = chrono::NaiveDateTime::from_timestamp(self.timestamp as i64 / 1000, 0);
+        let date = chrono::DateTime::from_timestamp(self.timestamp as i64 / 1000, 0).unwrap();
         date.format("%Y-%m-%d %H:%M:%S").to_string()
     }
 
