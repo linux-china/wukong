@@ -27,7 +27,7 @@ pub fn build_mcs_app() -> Command {
                 )
                 .arg(
                     Arg::new("query")
-                        .help("What to search for. If the search term contains a colon ( : ), it is considered a literal groupId and artifactId Otherwise, the search term is considered a wildcard search")
+                        .help("What to search for. If the search term contains a colon( : ), such as 'g:org.apache.commons' or `a:commons-lang3', it is considered a literal groupId and artifactId Otherwise, the search term is considered a wildcard search")
                         .index(1)
                         .required(true),
                 ),
