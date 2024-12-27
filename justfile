@@ -121,3 +121,7 @@ mcs-class-search:
 # search by artifact
 mcs-search:
     cargo run --bin mcs -- search spring-messaging
+
+# artifact info
+mcs-info:
+    cargo run --bin mcs -- info 'org.apache.commons:commons-lang3:3.17.0'
