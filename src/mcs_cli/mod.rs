@@ -1,3 +1,4 @@
+use colored::Colorize;
 use pad::PadStr;
 use serde::{Deserialize, Serialize};
 
@@ -204,6 +205,54 @@ pub fn class_search(command_matches: &clap::ArgMatches) {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
+pub struct Project {
+    pub name: Option<String>,
+    pub description: Option<String>,
+    pub url: Option<String>,
+}
+
+impl Project {
+    pub fn load(url: &str) -> Self {
+        let response = reqwest::blocking::get(url).unwrap();
+        if !response.status().is_success() {
+            panic!("Failed to fetch {}", url);
+        }
+        let xml_code = response.text().unwrap();
+        quick_xml::de::from_str(&xml_code).unwrap()
+    }
+}
+
+pub fn info(command_matches: &clap::ArgMatches) {
+    let gav = command_matches.get_one::<String>("gav").unwrap();
+    let parts = gav.split(':').collect::<Vec<&str>>();
+    let url = format!(
+        "https://repo1.maven.org/maven2/{}/{}/{}/{}-{}.pom",
+        parts[0].replace('.', "/"),
+        parts[1],
+        parts[2],
+        parts[1],
+        parts[2]
+    );
+    let project = Project::load(&url);
+    if let Some(name) = &project.name {
+        println!("{}: {}", "Name".bold(), name);
+    }
+    if let Some(description) = &project.description {
+        println!("{}: {}", "Description".bold(), description);
+    }
+    if let Some(url) = &project.url {
+        println!("{}: {}", "URL".bold(), url);
+    }
+    let artifact_url = format!(
+        "https://repo1.maven.org/maven2/{}/{}/{}/",
+        parts[0].replace('.', "/"),
+        parts[1],
+        parts[2],
+    );
+    println!("{}: {}", "Repository URL".bold(), artifact_url);
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -224,5 +273,24 @@ mod tests {
             mcs_app.get_matches_from(&vec!["mcs", "search", "spring-messaging", "--format=maven"]);
         let class_search_matches = mcs_matches.subcommand_matches("search").unwrap();
         search(class_search_matches);
+    }
+
+    #[test]
+    fn test_info() {
+        let mcs_app = build_mcs_app();
+        let mcs_matches = mcs_app.get_matches_from(&vec![
+            "mcs",
+            "info",
+            "org.apache.commons:commons-lang3:3.17.0",
+        ]);
+        let info_matches = mcs_matches.subcommand_matches("info").unwrap();
+        info(info_matches);
+    }
+
+    #[test]
+    fn test_parse_pom() {
+        let url = " https://repo1.maven.org/maven2/org/apache/commons/commons-lang3/3.17.0/commons-lang3-3.17.0.pom";
+        let pom = Project::load(url);
+        println!("{:?}", pom);
     }
 }
