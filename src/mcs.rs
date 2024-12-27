@@ -1,5 +1,5 @@
 use crate::mcs_cli::clap_app::build_mcs_app;
-use crate::mcs_cli::{class_search, search};
+use crate::mcs_cli::{class_search, info, search};
 
 mod mcs_cli;
 
@@ -10,6 +10,7 @@ fn main() {
         match command {
             "search" => search(command_matches),
             "class-search" => class_search(command_matches),
+            "info" => info(command_matches),
             &_ => println!("Unknown command"),
         }
     }
