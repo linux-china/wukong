@@ -1,5 +1,8 @@
+use crate::sdkman_cli::{
+    get_installed_candidate_default_version, get_sdkman_platform, list_candidate_names,
+    sdkman_home, SDKMAN_CANDIDATES_API,
+};
 use colored::Colorize;
-use crate::sdkman_cli::{get_installed_candidate_default_version, get_sdkman_platform, list_candidate_names, sdkman_home, SDKMAN_CANDIDATES_API};
 
 pub fn manage_list(list_matches: &clap::ArgMatches) {
     if let Some(candidate_name) = list_matches.get_one::<String>("candidate") {
@@ -17,6 +20,10 @@ pub fn list_all_candidates() {
 }
 
 pub fn list_candidate(candidate_name: &str) {
+    let mut candidate_name = candidate_name;
+    if candidate_name == "jdk" {
+        candidate_name = "java";
+    }
     let current_version = get_installed_candidate_default_version(candidate_name);
     let mut installed_versions: Vec<String> = vec![];
     let candidate_repo = sdkman_home().join("candidates").join(candidate_name);
@@ -33,12 +40,13 @@ pub fn list_candidate(candidate_name: &str) {
             }
         }
     }
-    let list_url = format!("{}/candidates/{}/{}/versions/list?current={}&installed={}",
-                           SDKMAN_CANDIDATES_API,
-                           candidate_name,
-                           get_sdkman_platform(),
-                           current_version,
-                           installed_versions.join(",")
+    let list_url = format!(
+        "{}/candidates/{}/{}/versions/list?current={}&installed={}",
+        SDKMAN_CANDIDATES_API,
+        candidate_name,
+        get_sdkman_platform(),
+        current_version,
+        installed_versions.join(",")
     );
     println!("{}", wukong::common::http_text(&list_url));
 }
