@@ -2,6 +2,11 @@
 
 Nothing Yet!
 
+# Version 0.2.7 (2024-12-28)
+
+* mcs-rs(Maven Central Search): add info sub command - `mcs info 'org.apache.commons:commons-lang3:3.17.0'`
+* sdkman: add jdk alias for java - `sdk list jdk`
+
 # Version 0.2.6 (2024-12-02)
 
 * mcs-rs(Maven Central Search): initial version
