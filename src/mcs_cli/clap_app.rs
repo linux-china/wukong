@@ -63,7 +63,7 @@ pub fn build_mcs_app() -> Command {
                 .about("Display artifact information by GAV")
                 .arg(
                     Arg::new("gav")
-                        .help("GAV coordinates of the artifact to display, such as 'org.apache.commons:commons-lang3:3.17.0'")
+                        .help("GAV coordinates of the artifact to display, such as 'org.apache.commons:commons-lang3:3.17.0' or local jar file")
                         .index(1)
                         .required(true),
                 )
