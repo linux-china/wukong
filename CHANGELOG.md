@@ -2,6 +2,10 @@
 
 Nothing Yet!
 
+# Version 0.2.8 (2025-01-24)
+
+* mcs-rs(Maven Central Search): add jar file support for info  - `mcs info ~/.m2/repository/commons-io/commons-io/2.18.0/commons-io-2.18.0.jar`
+
 # Version 0.2.7 (2024-12-28)
 
 * mcs-rs(Maven Central Search): add info sub command - `mcs info 'org.apache.commons:commons-lang3:3.17.0'`
