@@ -124,4 +124,8 @@ mcs-search:
 
 # artifact info
 mcs-info:
-    cargo run --bin mcs -- info 'org.apache.commons:commons-lang3:3.17.0'
+    cargo run --bin mcs -- info 'org.apache.commons:commons-lang3:3.18.0'
+
+# jar info
+mcs-jar-info:
+    cargo run --bin mcs -- info ~/.m2/repository/commons-io/commons-io/2.18.0/commons-io-2.18.0.jar
