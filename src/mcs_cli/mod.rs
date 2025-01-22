@@ -1,6 +1,8 @@
 use colored::Colorize;
 use pad::PadStr;
 use serde::{Deserialize, Serialize};
+use std::io::Read;
+use std::path::Path;
 
 pub mod clap_app;
 
@@ -207,6 +209,11 @@ pub fn class_search(command_matches: &clap::ArgMatches) {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Project {
+    #[serde(rename = "groupId")]
+    pub group_id: Option<String>,
+    #[serde(rename = "artifactId")]
+    pub artifact_id: Option<String>,
+    pub version: Option<String>,
     pub name: Option<String>,
     pub description: Option<String>,
     pub url: Option<String>,
@@ -221,10 +228,30 @@ impl Project {
         let xml_code = response.text().unwrap();
         quick_xml::de::from_str(&xml_code).unwrap()
     }
+
+    pub fn parse(xml_code: &str) -> Self {
+        quick_xml::de::from_str(&xml_code).unwrap()
+    }
+
+    pub fn gav(&self) -> Option<String> {
+        if self.group_id.is_some() && self.artifact_id.is_some() && self.version.is_some() {
+            return Some(format!(
+                "{}:{}:{}",
+                self.group_id.clone().unwrap(),
+                self.artifact_id.clone().unwrap(),
+                self.version.clone().unwrap()
+            ));
+        }
+        None
+    }
 }
 
 pub fn info(command_matches: &clap::ArgMatches) {
     let gav = command_matches.get_one::<String>("gav").unwrap();
+    if gav.ends_with(".jar") {
+        jar_info(gav);
+        return;
+    }
     let parts = gav.split(':').collect::<Vec<&str>>();
     let url = format!(
         "https://repo1.maven.org/maven2/{}/{}/{}/{}-{}.pom",
@@ -253,10 +280,46 @@ pub fn info(command_matches: &clap::ArgMatches) {
     println!("{}: {}", "Repository URL".bold(), artifact_url);
 }
 
+pub fn jar_info<P: AsRef<Path>>(jar_path: P) {
+    let jar_file = std::fs::File::open(jar_path).unwrap();
+    let mut zip = zip::ZipArchive::new(jar_file).unwrap();
+    for i in 0..zip.len() {
+        let mut file = zip.by_index(i).unwrap();
+        let file_name = file.name();
+        if file_name.ends_with("/pom.xml") {
+            let mut xml_code = String::new();
+            file.read_to_string(&mut xml_code).unwrap();
+            let project = Project::parse(&xml_code);
+            if let Some(gav) = project.gav() {
+                println!("{}: {}", "GAV".bold(), gav);
+                let artifact_url = format!(
+                    "https://repo1.maven.org/maven2/{}/{}/{}/",
+                    project.group_id.unwrap(),
+                    project.artifact_id.unwrap(),
+                    project.version.unwrap(),
+                );
+                println!("{}: {}", "Repository URL".bold(), artifact_url);
+            }
+            if let Some(name) = &project.name {
+                println!("{}: {}", "Name".bold(), name);
+            }
+            if let Some(description) = &project.description {
+                println!("{}: {}", "Description".bold(), description);
+            }
+            if let Some(url) = &project.url {
+                println!("{}: {}", "URL".bold(), url);
+            }
+            return;
+        }
+    }
+    println!("Failed to find pom.xml in the jar.")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::mcs_cli::clap_app::build_mcs_app;
+    use dirs::home_dir;
 
     #[test]
     fn test_class_search() {
@@ -285,6 +348,19 @@ mod tests {
         ]);
         let info_matches = mcs_matches.subcommand_matches("info").unwrap();
         info(info_matches);
+    }
+
+    #[test]
+    fn test_jar_info() {
+        let jar_file = home_dir()
+            .unwrap()
+            .join(".m2")
+            .join("repository")
+            .join("commons-io")
+            .join("commons-io")
+            .join("2.18.0")
+            .join("commons-io-2.18.0.jar");
+        jar_info(jar_file);
     }
 
     #[test]
