@@ -1,23 +1,30 @@
-use std::collections::HashMap;
+use crate::jbang_cli::template::TEMPLATES_BUILTIN;
+use crate::jbang_cli::{call_jbang_sub_command, set_executable};
 use clap::{Arg, Command};
-use handlebars::{Handlebars};
+use handlebars::Handlebars;
 use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use crate::jbang_cli::{call_jbang_sub_command, set_executable};
-use crate::jbang_cli::template::TEMPLATES_BUILTIN;
+use std::collections::HashMap;
 
 fn handlebars() -> Handlebars<'static> {
     let mut hbs = Handlebars::new();
-    hbs.register_template_string("hello", include_str!("templates/hello.java")).unwrap();
-    hbs.register_template_string("hello.kt", include_str!("templates/hello.kt")).unwrap();
-    hbs.register_template_string("hello.groovy", include_str!("templates/hello.groovy")).unwrap();
-    hbs.register_template_string("cli", include_str!("templates/cli.java")).unwrap();
+    hbs.register_template_string("hello", include_str!("templates/hello.java"))
+        .unwrap();
+    hbs.register_template_string("hello.kt", include_str!("templates/hello.kt"))
+        .unwrap();
+    hbs.register_template_string("hello.groovy", include_str!("templates/hello.groovy"))
+        .unwrap();
+    hbs.register_template_string("cli", include_str!("templates/cli.java"))
+        .unwrap();
     hbs
 }
 
 pub fn manage_init(init_matches: &clap::ArgMatches) {
-    let mut script_file = init_matches.get_one::<String>("scriptOrFile").unwrap().to_string();
+    let mut script_file = init_matches
+        .get_one::<String>("scriptOrFile")
+        .unwrap()
+        .to_string();
     let mut class_name = script_file.clone();
     if !script_file.contains('.') {
         script_file = format!("{}.java", script_file);
@@ -35,16 +42,35 @@ pub fn manage_init(init_matches: &clap::ArgMatches) {
         vec![]
     };
     let mut code: Option<String> = None;
-    if !params.is_empty() { // generate code from AI
+    if !params.is_empty() {
+        // generate code from AI
         if let Ok(api_key) = std::env::var("OPENAI_API_KEY") {
-            code = extract_code_from_openai(&api_key, params.get(0).unwrap());
-        } else {
-            println!("Please specify OPENAI_API_KEY environment variable to generate code from AI.");
+            code = extract_code_from_openai(
+                "https://api.openai.com",
+                &api_key,
+                "gpt-4.1",
+                params.get(0).unwrap(),
+            );
+        } else if let Ok(api_key) = std::env::var("DEEPSEEK_API_KEY") {
+            code = extract_code_from_openai(
+                "https://api.deepseek.com",
+                &api_key,
+                "deepseek-chat",
+                params.get(0).unwrap(),
+            );
+        }
+        else {
+            println!(
+                "Please specify OPENAI_API_KEY or DEEPSEEK_API_KEY environment variable to generate code from AI."
+            );
             return;
         };
-    } else { // generate code from template
+    } else {
+        // generate code from template
         let default_template = "hello".to_owned();
-        let template_name = init_matches.get_one::<String>("template").unwrap_or(&default_template);
+        let template_name = init_matches
+            .get_one::<String>("template")
+            .unwrap_or(&default_template);
         if TEMPLATES_BUILTIN.contains_key(&template_name.as_str()) {
             let mut context: HashMap<String, String> = HashMap::new();
             context.insert("className".to_string(), class_name);
@@ -90,22 +116,24 @@ pub struct AIMessage {
     pub content: String,
 }
 
-fn generate_code_from_openai(api_key: &str, question: &str) -> String {
+fn generate_code_from_openai(base_url: &str, api_key: &str, model: &str, question: &str) -> String {
     let request = json!({
-  "model": "gpt-4o-mini",
-  "messages": [
-    {
-      "role": "system",
-      "content": "You are an Java expert. You are writing Java code with [JBang](https://www.jbang.dev/) support. Add no additional text. Please add dependencies, javadoc in the code."
-    },
-    {
-      "role": "user",
-      "content": question
-    }
-  ]
-});
+      "model": model,
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a Java expert. You are writing Java code with [JBang](https://www.jbang.dev/) support. Add no additional text. Please add dependencies, Javadoc in the code."
+        },
+        {
+          "role": "user",
+          "content": question
+        }
+      ]
+    });
     let client = reqwest::blocking::Client::new();
-    let response = client.post("https://api.openai.com/v1/chat/completions")
+    let chat_url = format!("{}/v1/chat/completions", base_url);
+    let response = client
+        .post(&chat_url)
         .json(&request)
         .header("Content-Type", "application/json")
         .header("Authorization", format!("Bearer {}", api_key))
@@ -116,8 +144,13 @@ fn generate_code_from_openai(api_key: &str, question: &str) -> String {
     response.get_answer()
 }
 
-fn extract_code_from_openai(api_key: &str, question: &str) -> Option<String> {
-    let answer = generate_code_from_openai(api_key, question);
+fn extract_code_from_openai(
+    base_url: &str,
+    api_key: &str,
+    model: &str,
+    question: &str,
+) -> Option<String> {
+    let answer = generate_code_from_openai(base_url, api_key, model, question);
     let mut code_found = false;
     let mut code_lines: Vec<&str> = vec![];
     for line in answer.lines() {
@@ -142,35 +175,35 @@ fn extract_code_from_openai(api_key: &str, question: &str) -> Option<String> {
 
 pub fn build_init_command() -> Command {
     Command::new("init")
-        .about("Builds and runs provided script.")
+        .about("Builds and runs provided a script.")
         .arg(
             Arg::new("template")
                 .short('t')
                 .long("template")
                 .num_args(1)
                 .help("Init script with a java class useful for scripting")
-                .required(false)
+                .required(false),
         )
         .arg(
             Arg::new("scriptOrFile")
                 .help("file or URL to a Java code file")
                 .index(1)
-                .required(true)
+                .required(true),
         )
         .arg(
             Arg::new("params")
                 .help("Parameters to pass on to the generation.")
                 .required(false)
                 .index(2)
-                .num_args(1..)
+                .num_args(1..),
         )
 }
 
 #[cfg(test)]
 mod tests {
-    use dotenvy::dotenv;
-    use crate::jbang_cli::clap_app::build_jbang_app;
     use super::*;
+    use crate::jbang_cli::clap_app::build_jbang_app;
+    use dotenvy::dotenv;
 
     #[test]
     fn test_render_template() {
@@ -186,7 +219,12 @@ mod tests {
     fn test_generate_code_from_openai() {
         dotenv().unwrap();
         let app = build_jbang_app();
-        let matches = app.get_matches_from(["jbang", "init", "Hello.java", "Please write a simple Hello.java"]);
+        let matches = app.get_matches_from([
+            "jbang",
+            "init",
+            "Hello.java",
+            "Please write a simple Hello.java",
+        ]);
         manage_init(matches.subcommand_matches("init").unwrap());
     }
 }
