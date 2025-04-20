@@ -2,9 +2,14 @@
 
 Nothing Yet!
 
+# Version 0.2.9 (2025-04-30)
+
+* jbang-rs: add `DEEPSEEK_API_KEY` support to generate code from AI
+
 # Version 0.2.8 (2025-01-24)
 
-* mcs-rs(Maven Central Search): add jar file support for info  - `mcs info ~/.m2/repository/commons-io/commons-io/2.18.0/commons-io-2.18.0.jar`
+* mcs-rs(Maven Central Search): add jar file support for info -
+  `mcs info ~/.m2/repository/commons-io/commons-io/2.18.0/commons-io-2.18.0.jar`
 
 # Version 0.2.7 (2024-12-28)
 
@@ -22,7 +27,7 @@ Nothing Yet!
 # Version 0.2.4 (2024-10-29)
 
 * sdkman-rs: add Java major version support: `sdk install java 17`, `sdk use java 17`
-* maven-toolchain: extract vendor from java version, such as `17.0.4-tem`
+* maven-toolchain: extract vendor from Java version, such as `17.0.4-tem`
 
 # Version 0.2.2 (2024-10-15)
 
