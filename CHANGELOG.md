@@ -2,7 +2,7 @@
 
 Nothing Yet!
 
-# Version 0.2.7 (2025-04-30)
+# Version 0.2.8 (2025-04-30)
 
 * jbang-rs: add `DEEPSEEK_API_KEY` support to generate code from AI
 * sdkman: add `sdk env update` to update Java version from env
