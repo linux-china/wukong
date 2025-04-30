@@ -39,7 +39,7 @@ pub fn check_jbang_version() {
         println!("jbang is up-to-date");
     } else {
         println!("There is a new version of jbang available!");
-        println!("You have version {}  and {} is the latest.", jbang_version, last_version);
+        println!("You have version {} and {} is the latest.", jbang_version, last_version);
         println!("Run 'jbang version --update' to update to the latest version.");
     }
 }
