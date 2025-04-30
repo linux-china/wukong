@@ -2,16 +2,16 @@ use clap::{Arg, Command};
 use crate::sdkman_cli::direnv::build_direnv_command;
 use crate::sdkman_cli::env::build_env_command;
 
-pub const VERSION: &str = "0.2.5";
+pub const VERSION: &str = "0.2.9";
 
 pub fn build_sdkman_app() -> Command {
     let install_command = Command::new("install")
         .about("install a candidate version.")
-        .long_about(r#"Invoking this subcommand with only the candidate as parameter will install the currently known default version for that candidate. Provide a second qualifier to install a specific non-default version. Provide a third optional qualifier to add an already installed local version. This final qualifier is the absolute local path to the base directory of the SDK to be added. The local version will appear as an installed version of the candidate. The version may not conflict with an existing version, installed or not."#)
+        .long_about(r#"Invoking this subcommand with only the candidate as a parameter will install the currently known default version for that candidate. Provide a second qualifier to install a specific non-default version. Provide a third optional qualifier to add an already installed local version. This final qualifier is the absolute local path to the base directory of the SDK to be added. The local version will appear as an installed version of the candidate. The version may not conflict with an existing version, installed or not."#)
         .arg(
             Arg::new("yes")
                 .short('y')
-                .help("Accept installed candidate version as default.")
+                .help("Accept an installed candidate version as default.")
                 .num_args(0)
                 .required(false)
         )
