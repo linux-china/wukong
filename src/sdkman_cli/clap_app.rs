@@ -140,7 +140,7 @@ Java has a custom list view with vendor-specific details. "#)
         .arg(
             Arg::new("yes")
                 .short('y')
-                .help("Accept installed candidate version as default.")
+                .help("Accept an installed candidate version as default.")
                 .num_args(0)
                 .required(false)
         )
