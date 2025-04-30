@@ -1,14 +1,15 @@
+use crate::sdkman_cli::get_installed_candidate_default_version;
+use crate::sdkman_cli::install::install_candidate;
+use clap::Command;
 use std::fs::File;
 use std::io::{BufReader, Write};
 use std::path::PathBuf;
-use clap::{Command};
-use crate::sdkman_cli::install::install_candidate;
-use crate::sdkman_cli::{get_installed_candidate_default_version};
 
 pub fn manage_env(env_matches: &clap::ArgMatches) {
     if let Some((command, _)) = env_matches.subcommand() {
         match command {
             "init" => env_init(),
+            "update" => env_update(),
             "install" => env_install(),
             "clear" => env_clear(),
             &_ => println!("Unknown command"),
@@ -22,9 +23,34 @@ pub fn env_init() {
         let java_default_version = get_installed_candidate_default_version("java");
         if !java_default_version.is_empty() {
             write_candidates(vec![format!("java={}", java_default_version)]);
+        } else {
+            eprintln!("No default Java version found!");
         }
     } else {
         eprintln!(".sdkmanrc already exists!");
+    }
+}
+
+pub fn env_update() {
+    let sdkmanrc_path = PathBuf::from(".sdkmanrc");
+    if !sdkmanrc_path.exists() {
+        env_init()
+    } else {
+        let java_default_version = get_installed_candidate_default_version("java");
+        if !java_default_version.is_empty() {
+            let text = std::fs::read_to_string(sdkmanrc_path).unwrap();
+            let mut candidates: Vec<String> = vec![];
+            for line in text.lines() {
+                if line.starts_with("java=") {
+                    candidates.push(format!("java={}", java_default_version));
+                    println!("Updated Java to {}", java_default_version);
+                } else {
+                    candidates.push(line.to_string());
+                }
+            }
+        } else {
+            eprintln!("No default Java version found!");
+        }
     }
 }
 
@@ -66,8 +92,10 @@ pub fn env_clear() {
 }
 
 fn write_candidates(candidates: Vec<String>) {
-    let mut lines = vec!["# Enable auto-env through the sdkman_auto_env config".to_owned(),
-                         "# Add key=value pairs of SDKs to use below".to_owned()];
+    let mut lines = vec![
+        "# Enable auto-env through the sdkman_auto_env config".to_owned(),
+        "# Add key=value pairs of SDKs to use below".to_owned(),
+    ];
     lines.extend(candidates);
     let sdkmanrc_path = PathBuf::from(".sdkmanrc");
     let mut file = File::create(&sdkmanrc_path).unwrap();
@@ -79,6 +107,7 @@ pub fn build_env_command() -> Command {
         .about("control SDKs on a project level, setting up specific versions for a directory.")
         .subcommand(Command::new("install").about("install and switch to the SDK versions specified in .sdkmanrc"))
         .subcommand(Command::new("init").about("allows for the creation of a default .sdkmanrc file with a single entry for the java candidate, set to the current default value)"))
+        .subcommand(Command::new("update").about("update .sdkmanrc file with java version from env"))
         .subcommand(Command::new("clear").about("reset all SDK versions to their system defaults"))
 }
 
