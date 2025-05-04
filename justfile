@@ -1,10 +1,10 @@
 # build project and copy to ~/bin
 build:
     cargo build
-    cp target/debug/jbang ~/bin/jbang
-    cp target/debug/sdk ~/bin/sdk
-    cp target/debug/jenv ~/bin/jenv
-    cp target/debug/mt ~/bin/mt
+    cp -rf target/debug/jbang ~/bin/jbang
+    cp -rf target/debug/sdk ~/bin/sdk
+    cp -rf target/debug/jenv ~/bin/jenv
+    cp -rf target/debug/mt ~/bin/mt
 
 # local install
 local-install:
@@ -57,6 +57,10 @@ jbang-catalog-list:
 # jbang info tools
 jbang-info-tools:
     cargo run --bin jbang -- info tools scripts/hello.java
+
+# jbang wrapper
+jbang-wrapper--help:
+    cargo run --bin jbang -- wrapper --help
 
 # display sdkman help
 sdkman-help:
