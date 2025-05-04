@@ -37,7 +37,7 @@ pub fn manage_alias(alias_matches: &clap::ArgMatches) {
 pub fn list_aliases() {
     let jbang_catalog = jbang_catalog();
     print_catalog_alias(&jbang_catalog);
-    // list catalog from current directory
+    // list catalog from the current directory
     if let Some(project_catalog) = find_jbang_catalog_from_path(&PathBuf::from(".")) {
         print_catalog_alias(&project_catalog);
     }
