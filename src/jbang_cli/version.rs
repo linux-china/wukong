@@ -9,7 +9,7 @@ pub fn manage_version(version_matches: &clap::ArgMatches) {
     if version_matches.get_flag("check") {
         check_jbang_version();
     } else if version_matches.get_flag("update") {
-        println!("Updating jbang...");
+        println!("[jbang] Downloading and updating jbang...");
         install_jbang();
     } else {
         display_version();
@@ -26,7 +26,7 @@ pub fn display_version() {
 }
 
 pub fn update_jbang() {
-    println!("Updating jbang...");
+    println!("[jbang] Downloading and updating jbang...");
     install_jbang();
 }
 
