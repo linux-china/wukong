@@ -23,6 +23,7 @@ use crate::jbang_cli::export::{manage_export};
 use crate::jbang_cli::info::{manage_info};
 use crate::jbang_cli::run::{manage_run, jbang_run};
 use crate::jbang_cli::version::{display_version, install_jbang, manage_version};
+use crate::jbang_cli::wrapper::manage_wrapper;
 
 pub const JBANG_SUB_COMMANDS: [&str; 17] = ["run", "build", "init", "edit", "cache", "export",
     "jdk", "config", "trust", "alias", "template", "catalog", "app", "completion", "info", "version", "wrapper"];
@@ -81,6 +82,7 @@ fn main() {
             "cache" => manage_cache(command_matches),
             "version" => manage_version(command_matches),
             "completion" => manage_completion(command_matches),
+            "wrapper" => manage_wrapper(command_matches),
             &_ => println!("Unknown command"),
         }
     } else if let Some(script_or_file) = matches.get_one::<String>("scriptOrFile") {

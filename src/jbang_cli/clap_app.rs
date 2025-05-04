@@ -1,4 +1,3 @@
-use clap::{Arg, ArgAction, Command};
 use crate::jbang_cli::alias::build_alias_command;
 use crate::jbang_cli::app::build_app_command;
 use crate::jbang_cli::build::build_build_command;
@@ -14,6 +13,8 @@ use crate::jbang_cli::run::build_run_command;
 use crate::jbang_cli::template::build_template_command;
 use crate::jbang_cli::trust::build_trust_command;
 use crate::jbang_cli::version::build_version_command;
+use crate::jbang_cli::wrapper::build_wrapper_command;
+use clap::{Arg, ArgAction, Command};
 
 pub const VERSION: &str = "0.2.7";
 
@@ -33,6 +34,7 @@ pub fn build_jbang_app() -> Command {
     let info_command = build_info_command();
     let export_command = build_export_command();
     let cache_command = build_cache_command();
+    let wrapper_command = build_wrapper_command();
     let completion_command = Command::new("completion")
         .about("Output auto-completion script for bash/zsh. Usage: source <(jbang completion)");
     Command::new("jbang")
@@ -92,7 +94,7 @@ pub fn build_jbang_app() -> Command {
             Arg::new("scriptOrFile")
                 .help("A reference to a source file")
                 .index(1)
-                .required(false)
+                .required(false),
         )
         .arg(
             Arg::new("userParams")
@@ -100,7 +102,7 @@ pub fn build_jbang_app() -> Command {
                 .index(2)
                 .num_args(1..)
                 .action(ArgAction::Append)
-                .required(false)
+                .required(false),
         )
         .subcommand(run_command)
         .subcommand(build_command)
@@ -118,4 +120,5 @@ pub fn build_jbang_app() -> Command {
         .subcommand(info_command)
         .subcommand(version_command)
         .subcommand(completion_command)
+        .subcommand(wrapper_command)
 }
