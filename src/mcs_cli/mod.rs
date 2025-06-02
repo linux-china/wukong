@@ -283,6 +283,8 @@ pub fn info(command_matches: &clap::ArgMatches) {
 pub fn jar_info<P: AsRef<Path>>(jar_path: P) {
     let jar_file = std::fs::File::open(jar_path).unwrap();
     let mut zip = zip::ZipArchive::new(jar_file).unwrap();
+    let mut manifest_content = String::new();
+    let mut pom_found = false;
     for i in 0..zip.len() {
         let mut file = zip.by_index(i).unwrap();
         let file_name = file.name();
@@ -309,10 +311,26 @@ pub fn jar_info<P: AsRef<Path>>(jar_path: P) {
             if let Some(url) = &project.url {
                 println!("{}: {}", "URL".bold(), url);
             }
-            return;
+            pom_found = true;
+        } else if file_name.ends_with("META-INF/MANIFEST.MF") {
+            file.read_to_string(&mut manifest_content).unwrap();
         }
     }
-    println!("Failed to find pom.xml in the jar.")
+    if !manifest_content.is_empty() {
+        println!("{}:", "MANIFEST.MF".bold());
+        for line in manifest_content.lines() {
+            if let Some((key, value)) = line.split_once(':') {
+                println!("  {}: {}", key.trim(), value.trim());
+            }
+        }
+    }
+    if !pom_found {
+        eprintln!(
+            "{}: {}",
+            "Error".bold(),
+            "Failed to find pom.xml in the jar."
+        );
+    }
 }
 
 #[cfg(test)]
