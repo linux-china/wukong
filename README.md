@@ -16,6 +16,7 @@ Wukong is a Java toolchain written with Rust.
 - jenv-rs: `~/.cargo/bin/jenv --help`
 - Maven Toolchains: `~/.cargo/bin/mt --help`
 - Maven Central Search: `~/.cargo/bin/mcs --help`
+- JAR file analyzer: `~/.cargo/bin/jarviz --help`
 
 # Java Toolchains
 
@@ -24,6 +25,7 @@ Wukong is a Java toolchain written with Rust.
 - jenv(bash): https://github.com/jenv/jenv
 - Maven Toolchains CLI: https://maven.apache.org/guides/mini/guide-using-toolchains.html
 - Maven Central Search: https://search.maven.org/
+- JAR file analyzer: https://github.com/kordamp/jarviz
 
 # SDKMAN-rs
 
