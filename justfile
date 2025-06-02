@@ -133,3 +133,7 @@ mcs-info:
 # jar info
 mcs-jar-info:
     cargo run --bin mcs -- info ~/.m2/repository/commons-io/commons-io/2.18.0/commons-io-2.18.0.jar
+
+# jarviz info
+jarviz-help:
+    cargo run --bin jarviz -- --help
