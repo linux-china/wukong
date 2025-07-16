@@ -39,13 +39,21 @@ pub fn build_jarviz_app() -> Command {
                                 .long("classpath")
                                 .num_args(1)
                                 .required(false),
-                        ).arg(
-                        Arg::new("directory")
-                            .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
-                            .long("directory")
-                            .num_args(1)
-                            .required(false),
-                    ),
+                        )
+                        .arg(
+                            Arg::new("directory")
+                                .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
+                                .long("directory")
+                                .num_args(1)
+                                .required(false),
+                        )
+                        .arg(
+                            Arg::new("output-format")
+                                .help("Output format to use, such as text, csv, json, and default is text")
+                                .long("output-format")
+                                .num_args(1)
+                                .required(false),
+                        ),
                 )
         )
         .subcommand(
