@@ -137,3 +137,7 @@ mcs-jar-info:
 # jarviz info
 jarviz-help:
     cargo run --bin jarviz -- --help
+
+# jarviz info
+jarviz-bytecode:
+    cargo run --bin jarviz -- bytecode show --file=/Users/linux_china/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
