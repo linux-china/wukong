@@ -262,6 +262,36 @@ fn resolve_pom_dependencies(output: &str) -> HashSet<String> {
     dependencies
 }
 
+fn resolve_gradle_dependencies(output: &str) -> HashSet<String> {
+    let start_placeholder = "compileClasspath";
+    let mut dependencies: HashSet<String> = HashSet::new();
+    let mut in_dependencies_section = false;
+    for line in output.lines() {
+        if line.starts_with(start_placeholder) || line.starts_with("runtimeClasspath") {
+            in_dependencies_section = true;
+            continue;
+        }
+        if line.trim().is_empty() {
+            in_dependencies_section = false;
+            continue;
+        }
+        if in_dependencies_section {
+            let mut trimmed_line = line.trim();
+            if trimmed_line.ends_with(")") {
+                let offset = trimmed_line.rfind("(").unwrap();
+                trimmed_line = &trimmed_line[..offset].trim();
+            }
+            if let Some(pos) = trimmed_line.rfind(" ") {
+                trimmed_line = &trimmed_line[pos + 1..];
+            }
+            if trimmed_line.contains(":") {
+                dependencies.insert(trimmed_line.to_string());
+            }
+        }
+    }
+    dependencies
+}
+
 pub fn bytecode_show(command_matches: &clap::ArgMatches) {
     let mut class_info = HashMap::<u16, u32>::new();
     let include_details: bool = command_matches.get_flag("details");
@@ -605,9 +635,19 @@ mod tests {
 
     #[test]
     fn test_resolve_pom_dependencies() {
-        let path = PathBuf::from("output.txt");
+        let path = PathBuf::from("tests/dependencies/maven-dependencies.txt");
         let output = std::fs::read_to_string(path).unwrap();
         let dependencies = resolve_pom_dependencies(&output);
+        for dependency in dependencies {
+            println!("{}", dependency);
+        }
+    }
+
+    #[test]
+    fn test_resolve_gradle_dependencies() {
+        let path = PathBuf::from("tests/dependencies/gradle-dependencies.txt");
+        let output = std::fs::read_to_string(path).unwrap();
+        let dependencies = resolve_gradle_dependencies(&output);
         for dependency in dependencies {
             println!("{}", dependency);
         }
