@@ -1,9 +1,11 @@
 use colored::Colorize;
 use itertools::Itertools;
 use pad::PadStr;
+use prettytable::{row, Table};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
+use std::io;
 use std::io::Read;
 use walkdir::WalkDir;
 use zip::ZipArchive;
@@ -151,17 +153,24 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
         println!("No class files found in the provided input.");
         return;
     }
+    let mut table = Table::new();
+    table.add_row(row!["Major Version", "Java Version", "Class Count"]);
     // iterate through the class_info map and print the major version and count
-    println!("Major Version | Java Version | Count");
-    println!("--------------|--------------|-------");
     for (major_version, count) in class_info.iter().sorted_by_key(|x| x.1) {
         let java_version = get_java_version(*major_version);
-        println!(
-            "{:>13} | {:>12} | {:>5}",
-            major_version.to_string().blue(),
-            java_version.green(),
-            count.to_string().yellow()
-        );
+        table.add_row(row![
+            major_version.to_string(),
+            java_version,
+            count.to_string()
+        ]);
+    }
+    let output_format = command_matches
+        .get_one::<String>("output-format")
+        .unwrap_or(&"text".to_owned());
+    if output_format == "csv" {
+        table.to_csv(io::stdout()).unwrap();
+    } else {
+        table.printstd();
     }
 }
 
