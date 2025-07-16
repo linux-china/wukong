@@ -373,7 +373,26 @@ pub fn jar_manifest(command_matches: &clap::ArgMatches) {
     }
 }
 
-pub fn jar_manifest_show(command_matches: &clap::ArgMatches) {}
+pub fn jar_manifest_show(command_matches: &clap::ArgMatches) {
+    if let Some(jar_source) = resolve_jar_source(command_matches) {
+        if jar_source.starts_with("file://") {
+            let local_path = jar_source.trim_start_matches("file://");
+            if let Some(manifest_content) = archive_manifest_local(local_path) {
+                println!("{}", manifest_content);
+            } else {
+                println!("No manifest found in the local JAR file.");
+            }
+        } else {
+            if let Some(manifest_content) = archive_manifest_url(&jar_source) {
+                println!("{}", manifest_content);
+            } else {
+                println!("No manifest found in the remote JAR file.");
+            }
+        }
+    } else {
+        println!("No JAR source provided.");
+    }
+}
 
 pub fn jar_manifest_query(command_matches: &clap::ArgMatches) {}
 
