@@ -228,12 +228,20 @@ pub fn build_jarviz_app() -> Command {
                                 .long("classpath")
                                 .num_args(1)
                                 .required(false),
-                        ).arg(
-                        Arg::new("directory")
-                            .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
-                            .long("directory")
-                            .num_args(1)
-                            .required(false),
+                        )
+                        .arg(
+                            Arg::new("directory")
+                                .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
+                                .long("directory")
+                                .num_args(1)
+                                .required(false),
+                        )
+                        .arg(
+                            Arg::new("attribute-name")
+                                .help("Name of a manifest attribute.")
+                                .long("attribute-name")
+                                .num_args(1)
+                                .required(true),
                     ),
                 )
         )
