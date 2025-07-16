@@ -53,6 +53,27 @@ pub fn build_jarviz_app() -> Command {
                                 .long("output-format")
                                 .num_args(1)
                                 .required(false),
+                        )
+                        .arg(
+                            Arg::new("details")
+                                .help("Show matching class names.")
+                                .long("details")
+                                .num_args(0)
+                                .required(false),
+                        )
+                        .arg(
+                            Arg::new("bytecode-version")
+                                .help("Bytecode version to search.")
+                                .long("bytecode-version")
+                                .num_args(1)
+                                .required(false),
+                        )
+                        .arg(
+                            Arg::new("java-version")
+                                .help("Java version to search.")
+                                .long("java-version")
+                                .num_args(1)
+                                .required(false),
                         ),
                 )
         )
