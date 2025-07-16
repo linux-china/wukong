@@ -4,7 +4,7 @@ use pad::PadStr;
 use prettytable::{row, Table};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io;
 use std::io::Read;
@@ -230,6 +230,36 @@ fn resolve_jar_source(command_matches: &clap::ArgMatches) -> Option<String> {
         return Some(format!("dir://{}", directory));
     }
     None
+}
+
+fn resolve_pom_dependencies(output: &str) -> HashSet<String> {
+    let start_placeholder = "--- dependency:";
+    let end_placeholder = "------";
+    let mut dependencies: HashSet<String> = HashSet::new();
+    let mut in_dependencies_section = false;
+    for line in output.lines() {
+        if line.contains(start_placeholder) && line.contains("tree") {
+            in_dependencies_section = true;
+            continue;
+        }
+        if line.contains(end_placeholder) {
+            in_dependencies_section = false;
+            continue;
+        }
+        if in_dependencies_section {
+            let mut trimmed_line = line.trim();
+            if trimmed_line.ends_with("(optional)") {
+                trimmed_line = &trimmed_line[..trimmed_line.len() - 10].trim();
+            }
+            if let Some(pos) = trimmed_line.rfind(" ") {
+                trimmed_line = &trimmed_line[pos + 1..];
+            }
+            if trimmed_line.contains(":") {
+                dependencies.insert(trimmed_line.to_string());
+            }
+        }
+    }
+    dependencies
 }
 
 pub fn bytecode_show(command_matches: &clap::ArgMatches) {
@@ -471,6 +501,7 @@ mod tests {
     use crate::jarviz_cli::clap_app::build_jarviz_app;
     use dirs::home_dir;
     use regex::Regex;
+    use std::path::PathBuf;
 
     #[test]
     fn test_bytecode() {
@@ -569,6 +600,16 @@ mod tests {
         let properties = java_properties::read(cleaned_content.as_bytes()).unwrap();
         for (key, value) in properties {
             println!("{}: {}", key, value);
+        }
+    }
+
+    #[test]
+    fn test_resolve_pom_dependencies() {
+        let path = PathBuf::from("output.txt");
+        let output = std::fs::read_to_string(path).unwrap();
+        let dependencies = resolve_pom_dependencies(&output);
+        for dependency in dependencies {
+            println!("{}", dependency);
         }
     }
 }
