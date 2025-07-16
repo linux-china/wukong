@@ -92,14 +92,13 @@ fn get_bytecode_version(java_version: f32) -> u16 {
     }
 }
 
-fn archive_local<P: AsRef<Path>>(
+fn scan_local_archive<P: AsRef<Path>>(
     path: P,
     class_info: &mut HashMap<u16, u32>,
     include_details: bool,
     class_details: &mut HashMap<u16, Vec<String>>,
 ) {
-    let archive = File::open(path).unwrap();
-    let mut archive = ZipArchive::new(archive).unwrap();
+    let mut archive = build_archive_from_local(path);
     for i in 0..archive.len() {
         let mut zip_file = archive.by_index(i).unwrap();
         if zip_file.is_file() {
@@ -121,17 +120,26 @@ fn archive_local<P: AsRef<Path>>(
     }
 }
 
-fn archive_url(
+fn build_archive_from_local<P: AsRef<Path>>(path: P) -> ZipArchive<File> {
+    let archive = File::open(path).unwrap();
+    ZipArchive::new(archive).unwrap()
+}
+
+fn build_archive_from_url(url: &str) -> ZipArchive<io::Cursor<Vec<u8>>> {
+    let mut res = reqwest::blocking::get(url).unwrap();
+    let mut buf: Vec<u8> = Vec::new();
+    let _ = res.read_to_end(&mut buf);
+    let reader = io::Cursor::new(buf);
+    ZipArchive::new(reader).unwrap()
+}
+
+fn scan_remote_archive(
     url: &str,
     class_info: &mut HashMap<u16, u32>,
     include_details: bool,
     class_details: &mut HashMap<u16, Vec<String>>,
 ) {
-    let mut res = reqwest::blocking::get(url).unwrap();
-    let mut buf: Vec<u8> = Vec::new();
-    let _ = res.read_to_end(&mut buf);
-    let reader = std::io::Cursor::new(buf);
-    let mut archive = ZipArchive::new(reader).unwrap();
+    let mut archive = build_archive_from_url(url);
     for i in 0..archive.len() {
         let mut zip_file = archive.by_index(i).unwrap();
         if zip_file.is_file() {
@@ -151,6 +159,35 @@ fn archive_url(
             }
         }
     }
+}
+
+fn archive_manifest_url(url: &str) -> Option<String> {
+    let mut res = reqwest::blocking::get(url).unwrap();
+    let mut buf: Vec<u8> = Vec::new();
+    let _ = res.read_to_end(&mut buf);
+    let reader = io::Cursor::new(buf);
+    let mut archive = ZipArchive::new(reader).unwrap();
+    archive
+        .by_name("META-INF/MANIFEST.MF")
+        .ok()
+        .and_then(|mut file| {
+            let mut manifest_content = String::new();
+            file.read_to_string(&mut manifest_content).unwrap();
+            Some(manifest_content)
+        })
+}
+
+fn archive_manifest_local<P: AsRef<Path>>(path: P) -> Option<String> {
+    let archive = File::open(path).unwrap();
+    let mut archive = ZipArchive::new(archive).unwrap();
+    archive
+        .by_name("META-INF/MANIFEST.MF")
+        .ok()
+        .and_then(|mut file| {
+            let mut manifest_content = String::new();
+            file.read_to_string(&mut manifest_content).unwrap();
+            Some(manifest_content)
+        })
 }
 
 pub fn bytecode(command_matches: &clap::ArgMatches) {
@@ -160,6 +197,38 @@ pub fn bytecode(command_matches: &clap::ArgMatches) {
             &_ => println!("Unknown command"),
         }
     }
+}
+
+fn resolve_jar_source(command_matches: &clap::ArgMatches) -> Option<String> {
+    if let Some(gav) = command_matches.get_one::<String>("gav") {
+        let parts = gav.split(":").collect::<Vec<&str>>();
+        let group = parts[0].replace('.', "/");
+        let artifact = parts[1];
+        let version = parts[2];
+        let m2_home = dirs::home_dir().unwrap().join(".m2");
+        let local_jar = m2_home
+            .join("repository")
+            .join(&group)
+            .join(artifact)
+            .join(version)
+            .join(format!("{}-{}.jar", artifact, version));
+        return if local_jar.exists() {
+            Some(format!("file://{}", local_jar.display()))
+        } else {
+            let url = format!(
+                "https://repo1.maven.org/maven2/{}/{}/{}/{}-{}.jar",
+                group, artifact, version, artifact, version,
+            );
+            Some(url)
+        };
+    } else if let Some(file) = command_matches.get_one::<String>("file") {
+        return Some(format!("file://{}", file));
+    } else if let Some(url) = command_matches.get_one::<String>("url") {
+        return Some(url.clone());
+    } else if let Some(directory) = command_matches.get_one::<String>("directory") {
+        return Some(format!("dir://{}", directory));
+    }
+    None
 }
 
 pub fn bytecode_show(command_matches: &clap::ArgMatches) {
@@ -175,44 +244,37 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
             default_bytecode_version = get_bytecode_version(version);
         }
     }
-    if let Some(gav) = command_matches.get_one::<String>("gav") {
-        let parts = gav.split(":").collect::<Vec<&str>>();
-        let group = parts[0].replace('.', "/");
-        let artifact = parts[1];
-        let version = parts[2];
-        let m2_home = dirs::home_dir().unwrap().join(".m2");
-        let local_jar = m2_home
-            .join("repository")
-            .join(&group)
-            .join(artifact)
-            .join(version)
-            .join(format!("{}-{}.jar", artifact, version));
-        if local_jar.exists() {
-            archive_local(
-                local_jar,
+    if let Some(jar_source) = resolve_jar_source(command_matches) {
+        if jar_source.starts_with("file://") {
+            let local_path = jar_source.trim_start_matches("file://");
+            scan_local_archive(
+                local_path,
                 &mut class_info,
                 include_details,
                 &mut class_details,
             );
-        } else {
-            let url = format!(
-                "https://repo1.maven.org/maven2/{}/{}/{}/{}-{}.jar",
-                group, artifact, version, artifact, version,
-            );
-            archive_url(&url, &mut class_info, include_details, &mut class_details);
-        }
-    } else if let Some(file) = command_matches.get_one::<String>("file") {
-        archive_local(file, &mut class_info, include_details, &mut class_details);
-    } else if let Some(url) = command_matches.get_one::<String>("url") {
-        archive_url(url, &mut class_info, include_details, &mut class_details);
-    } else if let Some(directory) = command_matches.get_one::<String>("directory") {
-        for entry in WalkDir::new(directory).into_iter().filter_map(|e| e.ok()) {
-            if entry.file_type().is_file() {
-                let path = entry.path();
-                if path.to_str().unwrap().ends_with(".jar") {
-                    archive_local(path, &mut class_info, include_details, &mut class_details);
+        } else if jar_source.starts_with("dir://") {
+            let directory = jar_source.trim_start_matches("dir://");
+            for entry in WalkDir::new(directory).into_iter().filter_map(|e| e.ok()) {
+                if entry.file_type().is_file() {
+                    let path = entry.path();
+                    if path.to_str().unwrap().ends_with(".jar") {
+                        scan_local_archive(
+                            path,
+                            &mut class_info,
+                            include_details,
+                            &mut class_details,
+                        );
+                    }
                 }
             }
+        } else {
+            scan_remote_archive(
+                &jar_source,
+                &mut class_info,
+                include_details,
+                &mut class_details,
+            );
         }
     }
     if class_info.is_empty() {
@@ -448,5 +510,13 @@ mod tests {
             .join("commons-io")
             .join("2.18.0")
             .join("commons-io-2.18.0.jar");
+    }
+
+    #[test]
+    fn test_manifest() {
+        let archive = "/Users/linux_china/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar";
+
+        let content = archive_manifest_local(archive).unwrap();
+        print!("{}", content);
     }
 }
