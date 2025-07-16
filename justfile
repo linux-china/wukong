@@ -138,6 +138,14 @@ mcs-jar-info:
 jarviz-help:
     cargo run --bin jarviz -- --help
 
-# jarviz info
+# jarviz bytecode
 jarviz-bytecode:
-    cargo run --bin jarviz -- bytecode show --file=/Users/linux_china/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
+    cargo run --bin jarviz -- bytecode show --details --file=/Users/linux_china/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
+
+# jarviz manifest
+jarviz-manifest:
+    cargo run --bin jarviz -- manifest show --file=/Users/linux_china/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
+
+# jarviz manifest
+jarviz-manifest-query:
+    cargo run --bin jarviz -- manifest query --attribute-name=bundle-name --file=/Users/linux_china/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
