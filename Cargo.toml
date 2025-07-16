@@ -63,6 +63,7 @@ pad = "0.1"
 walkdir="2.5"
 prettytable-rs = "^0.10"
 read-url= { version = "0.0.5", features = ["default", "blocking"] }
+regex="1.11"
 
 [dev-dependencies]
 dotenvy = "0.15"
