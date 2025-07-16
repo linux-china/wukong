@@ -7,6 +7,7 @@ use std::collections::HashMap;
 use std::fs::File;
 use std::io;
 use std::io::Read;
+use std::path::Path;
 use walkdir::WalkDir;
 use zip::ZipArchive;
 
@@ -55,6 +56,103 @@ fn get_java_version(major_version: u16) -> &'static str {
     }
 }
 
+fn get_bytecode_version(java_version: f32) -> u16 {
+    match java_version {
+        1.1 => 45,
+        1.2 => 46,
+        1.3 => 47,
+        1.4 => 48,
+        1.5 => 49,
+        5.0 => 49,
+        6.0 => 50,
+        1.6 => 50,
+        7.0 => 51,
+        1.7 => 51,
+        8.0 => 52,
+        1.8 => 52,
+        9.0 => 53,
+        10.0 => 54,
+        11.0 => 55,
+        12.0 => 56,
+        13.0 => 57,
+        14.0 => 58,
+        15.0 => 59,
+        16.0 => 60,
+        17.0 => 61,
+        18.0 => 62,
+        19.0 => 63,
+        20.0 => 64,
+        21.0 => 65,
+        22.0 => 66,
+        23.0 => 67,
+        24.0 => 68,
+        25.0 => 69,
+        26.0 => 70,
+        _ => (java_version - 44.0) as u16,
+    }
+}
+
+fn archive_local<P: AsRef<Path>>(
+    path: P,
+    class_info: &mut HashMap<u16, u32>,
+    include_details: bool,
+    class_details: &mut HashMap<u16, Vec<String>>,
+) {
+    let archive = File::open(path).unwrap();
+    let mut archive = ZipArchive::new(archive).unwrap();
+    for i in 0..archive.len() {
+        let mut zip_file = archive.by_index(i).unwrap();
+        if zip_file.is_file() {
+            let major_version = get_major_version(&mut zip_file);
+            if major_version > 0 {
+                class_info
+                    .entry(major_version)
+                    .and_modify(|e| *e += 1)
+                    .or_insert(1);
+                if include_details {
+                    let class_full_name = zip_file.name().to_string();
+                    class_details
+                        .entry(major_version)
+                        .and_modify(|items| items.push(class_full_name.clone()))
+                        .or_insert(vec![class_full_name.clone()]);
+                }
+            }
+        }
+    }
+}
+
+fn archive_url(
+    url: &str,
+    class_info: &mut HashMap<u16, u32>,
+    include_details: bool,
+    class_details: &mut HashMap<u16, Vec<String>>,
+) {
+    let mut res = reqwest::blocking::get(url).unwrap();
+    let mut buf: Vec<u8> = Vec::new();
+    let _ = res.read_to_end(&mut buf);
+    let reader = std::io::Cursor::new(buf);
+    let mut archive = ZipArchive::new(reader).unwrap();
+    for i in 0..archive.len() {
+        let mut zip_file = archive.by_index(i).unwrap();
+        if zip_file.is_file() {
+            let major_version = get_major_version(&mut zip_file);
+            if major_version > 0 {
+                class_info
+                    .entry(major_version)
+                    .and_modify(|e| *e += 1)
+                    .or_insert(1);
+                if include_details {
+                    let class_full_name = zip_file.name().to_string();
+                    class_details
+                        .entry(major_version)
+                        .and_modify(|items| items.push(class_full_name.clone()))
+                        .or_insert(vec![class_full_name.clone()]);
+                }
+            }
+        }
+    }
+}
+
 pub fn bytecode(command_matches: &clap::ArgMatches) {
     if let Some((command, command_matches)) = command_matches.subcommand() {
         match command {
@@ -66,89 +164,57 @@ pub fn bytecode(command_matches: &clap::ArgMatches) {
 
 pub fn bytecode_show(command_matches: &clap::ArgMatches) {
     let mut class_info = HashMap::<u16, u32>::new();
+    let include_details: bool = command_matches.get_flag("details");
+    let mut class_details = HashMap::<u16, Vec<String>>::new();
+    let mut default_bytecode_version = command_matches
+        .get_one::<String>("java-version")
+        .map(|s| s.parse::<u16>().unwrap_or(0))
+        .unwrap_or(0);
+    if let Some(java_version) = command_matches.get_one::<String>("java-version") {
+        if let Ok(version) = java_version.parse::<f32>() {
+            default_bytecode_version = get_bytecode_version(version);
+        }
+    }
     if let Some(gav) = command_matches.get_one::<String>("gav") {
         let parts = gav.split(":").collect::<Vec<&str>>();
         let group = parts[0].replace('.', "/");
         let artifact = parts[1];
         let version = parts[2];
-        let url = format!(
-            "https://repo1.maven.org/maven2/{}/{}/{}/{}-{}.jar",
-            group, artifact, version, artifact, version,
-        );
-        let mut res = reqwest::blocking::get(url).unwrap();
-        let mut buf: Vec<u8> = Vec::new();
-        let _ = res.read_to_end(&mut buf);
-        let reader = std::io::Cursor::new(buf);
-        let mut archive = ZipArchive::new(reader).unwrap();
-        for i in 0..archive.len() {
-            let mut zip_file = archive.by_index(i).unwrap();
-            if zip_file.is_file() {
-                let major_version = get_major_version(&mut zip_file);
-                if major_version > 0 {
-                    class_info
-                        .entry(major_version)
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
-                }
-            }
+        let m2_home = dirs::home_dir().unwrap().join(".m2");
+        let local_jar = m2_home
+            .join("repository")
+            .join(&group)
+            .join(artifact)
+            .join(version)
+            .join(format!("{}-{}.jar", artifact, version));
+        if local_jar.exists() {
+            archive_local(
+                local_jar,
+                &mut class_info,
+                include_details,
+                &mut class_details,
+            );
+        } else {
+            let url = format!(
+                "https://repo1.maven.org/maven2/{}/{}/{}/{}-{}.jar",
+                group, artifact, version, artifact, version,
+            );
+            archive_url(&url, &mut class_info, include_details, &mut class_details);
         }
     } else if let Some(file) = command_matches.get_one::<String>("file") {
-        let mut archive = ZipArchive::new(File::open(file).unwrap()).unwrap();
-        for i in 0..archive.len() {
-            let mut zip_file = archive.by_index(i).unwrap();
-            if zip_file.is_file() {
-                let major_version = get_major_version(&mut zip_file);
-                if major_version > 0 {
-                    class_info
-                        .entry(major_version)
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
-                }
-            }
-        }
+        archive_local(file, &mut class_info, include_details, &mut class_details);
     } else if let Some(url) = command_matches.get_one::<String>("url") {
-        let mut res = reqwest::blocking::get(url).unwrap();
-        let mut buf: Vec<u8> = Vec::new();
-        let _ = res.read_to_end(&mut buf);
-        let reader = std::io::Cursor::new(buf);
-        let mut archive = ZipArchive::new(reader).unwrap();
-        for i in 0..archive.len() {
-            let mut zip_file = archive.by_index(i).unwrap();
-            if zip_file.is_file() {
-                let major_version = get_major_version(&mut zip_file);
-                if major_version > 0 {
-                    class_info
-                        .entry(major_version)
-                        .and_modify(|e| *e += 1)
-                        .or_insert(1);
-                }
-            }
-        }
+        archive_url(url, &mut class_info, include_details, &mut class_details);
     } else if let Some(directory) = command_matches.get_one::<String>("directory") {
         for entry in WalkDir::new(directory).into_iter().filter_map(|e| e.ok()) {
             if entry.file_type().is_file() {
                 let path = entry.path();
                 if path.to_str().unwrap().ends_with(".jar") {
-                    let mut archive = ZipArchive::new(File::open(path).unwrap()).unwrap();
-                    for i in 0..archive.len() {
-                        let mut zip_file = archive.by_index(i).unwrap();
-                        if zip_file.is_file() {
-                            let major_version = get_major_version(&mut zip_file);
-                            if major_version > 0 {
-                                class_info
-                                    .entry(major_version)
-                                    .and_modify(|e| *e += 1)
-                                    .or_insert(1);
-                            }
-                        }
-                    }
+                    archive_local(path, &mut class_info, include_details, &mut class_details);
                 }
             }
         }
-    } else {
-        println!("Please provide a valid GAV, file, or URL.");
-        return;
-    };
+    }
     if class_info.is_empty() {
         println!("No class files found in the provided input.");
         return;
@@ -164,13 +230,44 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
             count.to_string()
         ]);
     }
+    let default_format = "text".to_owned();
     let output_format = command_matches
         .get_one::<String>("output-format")
-        .unwrap_or(&"text".to_owned());
+        .unwrap_or(&default_format);
     if output_format == "csv" {
         table.to_csv(io::stdout()).unwrap();
     } else {
         table.printstd();
+        if include_details {
+            if default_bytecode_version > 0 {
+                println!(
+                    "\nClasses with major version {} (Java {}):",
+                    default_bytecode_version,
+                    get_java_version(default_bytecode_version)
+                );
+                if let Some(classes) = class_details.get(&default_bytecode_version) {
+                    for class_full_name in classes {
+                        println!("  - {}", class_full_name);
+                    }
+                } else {
+                    println!(
+                        "  No classes found for major version:{}",
+                        default_bytecode_version
+                    );
+                }
+            } else {
+                for (major_version, classes) in class_details.iter().sorted_by_key(|x| x.1) {
+                    println!(
+                        "### {}(Java {})",
+                        major_version,
+                        get_java_version(*major_version)
+                    );
+                    for class_full_name in classes {
+                        println!("  - {}", class_full_name);
+                    }
+                }
+            }
+        }
     }
 }
 
