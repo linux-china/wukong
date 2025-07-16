@@ -2,6 +2,7 @@ use colored::Colorize;
 use itertools::Itertools;
 use pad::PadStr;
 use prettytable::{row, Table};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
@@ -375,26 +376,53 @@ pub fn jar_manifest(command_matches: &clap::ArgMatches) {
 
 pub fn jar_manifest_show(command_matches: &clap::ArgMatches) {
     if let Some(jar_source) = resolve_jar_source(command_matches) {
-        if jar_source.starts_with("file://") {
+        let manifest = if jar_source.starts_with("file://") {
             let local_path = jar_source.trim_start_matches("file://");
-            if let Some(manifest_content) = archive_manifest_local(local_path) {
-                println!("{}", manifest_content);
-            } else {
-                println!("No manifest found in the local JAR file.");
-            }
+            archive_manifest_local(local_path)
         } else {
-            if let Some(manifest_content) = archive_manifest_url(&jar_source) {
-                println!("{}", manifest_content);
-            } else {
-                println!("No manifest found in the remote JAR file.");
-            }
+            archive_manifest_url(&jar_source)
+        };
+        if let Some(manifest_content) = manifest {
+            println!("{}", manifest_content);
+        } else {
+            println!("No manifest found in the JAR file.");
         }
     } else {
         println!("No JAR source provided.");
     }
 }
 
-pub fn jar_manifest_query(command_matches: &clap::ArgMatches) {}
+pub fn jar_manifest_query(command_matches: &clap::ArgMatches) {
+    if let Some(jar_source) = resolve_jar_source(command_matches) {
+        let manifest = if jar_source.starts_with("file://") {
+            let local_path = jar_source.trim_start_matches("file://");
+            archive_manifest_local(local_path)
+        } else {
+            archive_manifest_url(&jar_source)
+        };
+        if let Some(manifest_content) = manifest {
+            let re = Regex::new(r"\r\n\s").unwrap();
+            let cleaned_content = re.replace_all(&manifest_content, "");
+            // Reading simple
+            let properties = java_properties::read(cleaned_content.as_bytes()).unwrap();
+            let attribute_name = command_matches.get_one::<String>("attribute-name");
+            if let Some(key_name) = attribute_name {
+                for (key, value) in properties {
+                    if key.eq_ignore_ascii_case(key_name) {
+                        println!("{}: {}", key, value);
+                        return;
+                    }
+                }
+            } else {
+                println!("--attribute-name should be supplied.");
+            }
+        } else {
+            println!("No manifest found in the JAR file.");
+        }
+    } else {
+        println!("No JAR source provided.");
+    }
+}
 
 pub fn jar_module(command_matches: &clap::ArgMatches) {
     if let Some((command, command_matches)) = command_matches.subcommand() {
@@ -442,8 +470,7 @@ mod tests {
     use super::*;
     use crate::jarviz_cli::clap_app::build_jarviz_app;
     use dirs::home_dir;
-    use std::fs::File;
-    use zip::ZipArchive;
+    use regex::Regex;
 
     #[test]
     fn test_bytecode() {
@@ -455,8 +482,10 @@ mod tests {
 
     #[test]
     fn test_jar_extract() {
-        let archive = File::open("/Users/linux_china/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar").unwrap();
-        let mut archive = ZipArchive::new(archive).unwrap();
+        let path = home_dir()
+            .unwrap()
+            .join(".m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar");
+        let mut archive = build_archive_from_local(path);
         //list entries in the jar file
         for i in 0..archive.len() {
             let mut zip_file = archive.by_index(i).unwrap();
@@ -476,11 +505,7 @@ mod tests {
     #[test]
     fn test_jar_extract_from_url() {
         let url = "https://repo1.maven.org/maven2/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar";
-        let mut res = reqwest::blocking::get(url).unwrap();
-        let mut buf: Vec<u8> = Vec::new();
-        let _ = res.read_to_end(&mut buf);
-        let reader = std::io::Cursor::new(buf);
-        let mut archive = ZipArchive::new(reader).unwrap();
+        let mut archive = build_archive_from_url(url);
         //list entries in the jar file
         for i in 0..archive.len() {
             let mut zip_file = archive.by_index(i).unwrap();
@@ -533,9 +558,17 @@ mod tests {
 
     #[test]
     fn test_manifest() {
-        let archive = "/Users/linux_china/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar";
-
-        let content = archive_manifest_local(archive).unwrap();
-        print!("{}", content);
+        let archive = home_dir()
+            .unwrap()
+            .join(".m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar");
+        let re = Regex::new(r"\r\n\s").unwrap();
+        let original_content = archive_manifest_local(archive).unwrap();
+        let cleaned_content = re.replace_all(&original_content, "");
+        println!("{}", cleaned_content);
+        // Reading simple
+        let properties = java_properties::read(cleaned_content.as_bytes()).unwrap();
+        for (key, value) in properties {
+            println!("{}: {}", key, value);
+        }
     }
 }
