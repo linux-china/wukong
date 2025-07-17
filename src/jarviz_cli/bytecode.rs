@@ -233,13 +233,21 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
         table.to_csv(io::stdout()).unwrap();
     } else {
         let jar_url = jar_source.unwrap();
-        if jar_url.ends_with(".jar") {
-            let jar_name = jar_url.split("/").last().unwrap().to_string();
-            table.set_titles(Row::new(vec![Cell::new_align(
-                &jar_name,
-                Alignment::CENTER,
-            )
-            .with_hspan(3)]));
+        let title = if jar_url.ends_with(".jar") {
+            jar_url.split("/").last().unwrap().to_string()
+        } else if jar_url.starts_with("dir://") {
+            jar_url.trim_start_matches("dir://").to_string()
+        } else if jar_url.starts_with("pom://") {
+            "pom".to_owned()
+        } else if jar_url.starts_with("gradle://") {
+            "gradle".to_owned()
+        } else {
+            "".to_owned()
+        };
+        if !title.is_empty() {
+            table.set_titles(Row::new(vec![
+                Cell::new_align(&title, Alignment::CENTER).with_hspan(3)
+            ]));
         }
         table.printstd();
         if include_details {
