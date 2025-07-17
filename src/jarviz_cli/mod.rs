@@ -241,16 +241,16 @@ fn get_local_jar(group_id: &str, artifact_id: &str, version: &str) -> Option<Str
 fn resolve_jar_source(command_matches: &clap::ArgMatches) -> Option<String> {
     if let Some(gav) = command_matches.get_one::<String>("gav") {
         let parts = gav.split(":").collect::<Vec<&str>>();
-        let group = parts[0];
+        let group_id = parts[0];
         let artifact = parts[1];
         let version = parts[2];
-        let local_jar = get_local_jar(&group, artifact, version);
+        let local_jar = get_local_jar(&group_id, artifact, version);
         return if local_jar.is_some() {
             Some(format!("file://{}", local_jar.unwrap()))
         } else {
             let url = format!(
                 "https://repo1.maven.org/maven2/{}/{}/{}/{}-{}.jar",
-                group, artifact, version, artifact, version,
+                group_id, artifact, version, artifact, version,
             );
             Some(url)
         };
