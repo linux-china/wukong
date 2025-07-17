@@ -48,6 +48,20 @@ pub fn build_jarviz_app() -> Command {
                                 .required(false),
                         )
                         .arg(
+                            Arg::new("pom")
+                                .help("Show bytecode version(s) from the Maven project")
+                                .long("pom")
+                                .num_args(0)
+                                .required(false),
+                        )
+                        .arg(
+                            Arg::new("gradle")
+                                .help("Show bytecode version(s) from the Gradle file")
+                                .long("gradle")
+                                .num_args(0)
+                                .required(false),
+                        )
+                        .arg(
                             Arg::new("output-format")
                                 .help("Output format to use, such as text, csv, json, and default is text")
                                 .long("output-format")
