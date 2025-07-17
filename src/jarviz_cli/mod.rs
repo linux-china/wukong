@@ -200,21 +200,53 @@ pub fn bytecode(command_matches: &clap::ArgMatches) {
     }
 }
 
+fn get_local_jar(group_id: &str, artifact_id: &str, version: &str) -> Option<String> {
+    let m2_home = dirs::home_dir().unwrap().join(".m2");
+    let gradle_home = dirs::home_dir().unwrap().join(".gradle");
+    if m2_home.exists() {
+        let local_m2_jar = m2_home
+            .join("repository")
+            .join(group_id.replace('.', "/"))
+            .join(artifact_id)
+            .join(version)
+            .join(format!("{}-{}.jar", artifact_id, version));
+        if local_m2_jar.exists() {
+            return Some(format!("file://{}", local_m2_jar.display()));
+        }
+    }
+    if gradle_home.exists() {
+        let artifact_dir = gradle_home
+            .join("caches")
+            .join("modules-2")
+            .join("files-2.1")
+            .join(group_id)
+            .join(artifact_id)
+            .join(version);
+        if artifact_dir.exists() {
+            for entry in WalkDir::new(artifact_dir)
+                .into_iter()
+                .filter_map(|e| e.ok())
+            {
+                if entry.file_type().is_file()
+                    && entry.path().extension().unwrap_or_default() == "jar"
+                {
+                    return Some(format!("file://{}", entry.path().display()));
+                }
+            }
+        }
+    }
+    None
+}
+
 fn resolve_jar_source(command_matches: &clap::ArgMatches) -> Option<String> {
     if let Some(gav) = command_matches.get_one::<String>("gav") {
         let parts = gav.split(":").collect::<Vec<&str>>();
-        let group = parts[0].replace('.', "/");
+        let group = parts[0];
         let artifact = parts[1];
         let version = parts[2];
-        let m2_home = dirs::home_dir().unwrap().join(".m2");
-        let local_jar = m2_home
-            .join("repository")
-            .join(&group)
-            .join(artifact)
-            .join(version)
-            .join(format!("{}-{}.jar", artifact, version));
-        return if local_jar.exists() {
-            Some(format!("file://{}", local_jar.display()))
+        let local_jar = get_local_jar(&group, artifact, version);
+        return if local_jar.is_some() {
+            Some(format!("file://{}", local_jar.unwrap()))
         } else {
             let url = format!(
                 "https://repo1.maven.org/maven2/{}/{}/{}/{}-{}.jar",
@@ -650,6 +682,21 @@ mod tests {
         let dependencies = resolve_gradle_dependencies(&output);
         for dependency in dependencies {
             println!("{}", dependency);
+        }
+    }
+
+    #[test]
+    fn test_find_local_jar() {
+        let group_id = "org.slf4j";
+        let artifact_id = "slf4j-api";
+        let version = "1.7.30";
+        if let Some(local_jar) = get_local_jar(group_id, artifact_id, version) {
+            println!("Local JAR found: {}", local_jar);
+        } else {
+            println!(
+                "No local JAR found for {}:{}:{}",
+                group_id, artifact_id, version
+            );
         }
     }
 }
