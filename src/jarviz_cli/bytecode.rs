@@ -1,5 +1,5 @@
 use crate::jarviz_cli::{
-    get_local_jar, resolve_jar_endpoint, scan_local_archive, scan_remote_archive,
+    get_local_jar, get_output_format, resolve_jar_endpoint, scan_local_archive, scan_remote_archive,
 };
 use itertools::Itertools;
 use prettytable::format::Alignment;
@@ -256,10 +256,7 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
             count.to_string()
         ]);
     }
-    let default_format = "text".to_owned();
-    let output_format = command_matches
-        .get_one::<String>("output-format")
-        .unwrap_or(&default_format);
+    let output_format = get_output_format(command_matches);
     if output_format == "csv" {
         table.to_csv(io::stdout()).unwrap();
     } else {
