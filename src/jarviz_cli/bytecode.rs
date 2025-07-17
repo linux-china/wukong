@@ -135,6 +135,30 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
                 include_details,
                 &mut class_details,
             );
+        } else if jar_url.starts_with("classpath://") {
+            let classpath = jar_url.trim_start_matches("classpath://");
+            if classpath.is_empty() {
+                eprintln!(
+                    "Classpath is empty, please provide a valid CLASSPATH environment variable."
+                );
+                return;
+            }
+            let classpath_entries: Vec<&str> = if cfg!(target_os = "windows") {
+                classpath.split(';').collect()
+            } else {
+                classpath.split(':').collect()
+            };
+            for jar_file_path in classpath_entries {
+                if jar_file_path.ends_with(".jar") {
+                    jars.push(jar_file_path.to_string());
+                    scan_local_archive(
+                        jar_file_path,
+                        &mut class_info,
+                        include_details,
+                        &mut class_details,
+                    );
+                }
+            }
         } else if jar_url.starts_with("dir://") {
             let directory = jar_url.trim_start_matches("dir://");
             for entry in WalkDir::new(directory).into_iter().filter_map(|e| e.ok()) {
