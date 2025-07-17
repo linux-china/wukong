@@ -133,13 +133,6 @@ pub fn build_jarviz_app() -> Command {
                             .num_args(1)
                             .required(false),
                         )
-                        .arg(
-                            Arg::new("output-format")
-                                .help("Output format to use, such as text, csv, json, and default is text")
-                                .long("output-format")
-                                .num_args(1)
-                                .required(false),
-                        ),
                 )
                 .subcommand(
                     Command::new("find")
@@ -191,6 +184,13 @@ pub fn build_jarviz_app() -> Command {
                                 .help("Show class(es) from the Gradle file")
                                 .long("gradle")
                                 .num_args(0)
+                                .required(false),
+                        )
+                        .arg(
+                            Arg::new("output-format")
+                                .help("Output format to use, such as text, csv, json, and default is text")
+                                .long("output-format")
+                                .num_args(1)
                                 .required(false),
                         ),
                 )
