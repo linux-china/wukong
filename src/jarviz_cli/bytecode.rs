@@ -1,7 +1,8 @@
 use crate::jarviz_cli::{resolve_jar_source, scan_local_archive, scan_remote_archive};
 use itertools::Itertools;
-use prettytable::{row, Table};
-use std::collections::HashMap;
+use prettytable::format::Alignment;
+use prettytable::{row, Cell, Row, Table};
+use std::collections::{HashMap, HashSet};
 use std::io;
 use std::io::Read;
 use walkdir::WalkDir;
@@ -118,17 +119,18 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
             default_bytecode_version = get_bytecode_version(version);
         }
     }
-    if let Some(jar_source) = resolve_jar_source(command_matches) {
-        if jar_source.starts_with("file://") {
-            let local_path = jar_source.trim_start_matches("file://");
+    let jar_source = resolve_jar_source(command_matches);
+    if let Some(jar_url) = &jar_source {
+        if jar_url.starts_with("file://") {
+            let local_path = jar_url.trim_start_matches("file://");
             scan_local_archive(
                 local_path,
                 &mut class_info,
                 include_details,
                 &mut class_details,
             );
-        } else if jar_source.starts_with("dir://") {
-            let directory = jar_source.trim_start_matches("dir://");
+        } else if jar_url.starts_with("dir://") {
+            let directory = jar_url.trim_start_matches("dir://");
             for entry in WalkDir::new(directory).into_iter().filter_map(|e| e.ok()) {
                 if entry.file_type().is_file() {
                     let path = entry.path();
@@ -144,7 +146,7 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
             }
         } else {
             scan_remote_archive(
-                &jar_source,
+                &jar_url,
                 &mut class_info,
                 include_details,
                 &mut class_details,
@@ -173,6 +175,15 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
     if output_format == "csv" {
         table.to_csv(io::stdout()).unwrap();
     } else {
+        let jar_url = jar_source.unwrap();
+        if jar_url.ends_with(".jar") {
+            let jar_name = jar_url.split("/").last().unwrap().to_string();
+            table.set_titles(Row::new(vec![Cell::new_align(
+                &jar_name,
+                Alignment::CENTER,
+            )
+            .with_hspan(3)]));
+        }
         table.printstd();
         if include_details {
             if default_bytecode_version > 0 {
@@ -205,6 +216,66 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
             }
         }
     }
+}
+
+fn resolve_pom_dependencies(output: &str) -> HashSet<String> {
+    let start_placeholder = "--- dependency:";
+    let end_placeholder = "------";
+    let mut dependencies: HashSet<String> = HashSet::new();
+    let mut in_dependencies_section = false;
+    for line in output.lines() {
+        if line.contains(start_placeholder) && line.contains("tree") {
+            in_dependencies_section = true;
+            continue;
+        }
+        if line.contains(end_placeholder) {
+            in_dependencies_section = false;
+            continue;
+        }
+        if in_dependencies_section {
+            let mut trimmed_line = line.trim();
+            if trimmed_line.ends_with("(optional)") {
+                trimmed_line = &trimmed_line[..trimmed_line.len() - 10].trim();
+            }
+            if let Some(pos) = trimmed_line.rfind(" ") {
+                trimmed_line = &trimmed_line[pos + 1..];
+            }
+            if trimmed_line.contains(":") {
+                dependencies.insert(trimmed_line.to_string());
+            }
+        }
+    }
+    dependencies
+}
+
+fn resolve_gradle_dependencies(output: &str) -> HashSet<String> {
+    let start_placeholder = "compileClasspath";
+    let mut dependencies: HashSet<String> = HashSet::new();
+    let mut in_dependencies_section = false;
+    for line in output.lines() {
+        if line.starts_with(start_placeholder) || line.starts_with("runtimeClasspath") {
+            in_dependencies_section = true;
+            continue;
+        }
+        if line.trim().is_empty() {
+            in_dependencies_section = false;
+            continue;
+        }
+        if in_dependencies_section {
+            let mut trimmed_line = line.trim();
+            if trimmed_line.ends_with(")") {
+                let offset = trimmed_line.rfind("(").unwrap();
+                trimmed_line = &trimmed_line[..offset].trim();
+            }
+            if let Some(pos) = trimmed_line.rfind(" ") {
+                trimmed_line = &trimmed_line[pos + 1..];
+            }
+            if trimmed_line.contains(":") {
+                dependencies.insert(trimmed_line.to_string());
+            }
+        }
+    }
+    dependencies
 }
 
 #[cfg(test)]
