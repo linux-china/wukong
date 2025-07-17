@@ -10,8 +10,8 @@ fn main() {
     if let Some((command, command_matches)) = matches.subcommand() {
         match command {
             "bytecode" => bytecode(command_matches),
-            "checksum" => entries(command_matches),
-            "entries" => checksum(command_matches),
+            "checksum" => checksum(command_matches),
+            "entries" => entries(command_matches),
             "manifest" => jar_manifest(command_matches),
             "module" => jar_module(command_matches),
             "packages" => packages(command_matches),
