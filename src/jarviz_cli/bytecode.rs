@@ -114,6 +114,7 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
     let mut class_info = HashMap::<u16, u32>::new();
     let include_details: bool = command_matches.get_flag("details");
     let mut class_details = HashMap::<u16, Vec<String>>::new();
+    let mut jars: Vec<String> = vec![];
     let mut default_bytecode_version = command_matches
         .get_one::<String>("java-version")
         .map(|s| s.parse::<u16>().unwrap_or(0))
@@ -127,6 +128,7 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
     if let Some(jar_url) = &jar_source {
         if jar_url.starts_with("file://") {
             let local_path = jar_url.trim_start_matches("file://");
+            jars.push(local_path.to_string());
             scan_local_archive(
                 local_path,
                 &mut class_info,
@@ -139,6 +141,8 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
                 if entry.file_type().is_file() {
                     let path = entry.path();
                     if path.to_str().unwrap().ends_with(".jar") {
+                        let path_str = path.to_str().unwrap().to_string();
+                        jars.push(path_str.clone());
                         scan_local_archive(
                             path,
                             &mut class_info,
@@ -149,6 +153,7 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
                 }
             }
         } else if jar_url.starts_with("http://") || jar_url.starts_with("https://") {
+            jars.push(jar_url.to_string());
             scan_remote_archive(
                 &jar_url,
                 &mut class_info,
@@ -170,6 +175,7 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
                     if jar_file_path.starts_with("file://") {
                         let local_path = jar_file_path.trim_start_matches("file://");
                         if Path::new(local_path).exists() {
+                            jars.push(local_path.to_string());
                             scan_local_archive(
                                 &local_path,
                                 &mut class_info,
@@ -195,6 +201,7 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
                     if jar_file_path.starts_with("file://") {
                         let local_path = jar_file_path.trim_start_matches("file://");
                         if Path::new(local_path).exists() {
+                            jars.push(local_path.to_string());
                             scan_local_archive(
                                 &local_path,
                                 &mut class_info,
@@ -251,6 +258,10 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
         }
         table.printstd();
         if include_details {
+            println!("\n### jars");
+            for jar in jars {
+                println!("- {}", jar);
+            }
             if default_bytecode_version > 0 {
                 println!(
                     "\nClasses with major version {} (Java {}):",
@@ -259,11 +270,11 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
                 );
                 if let Some(classes) = class_details.get(&default_bytecode_version) {
                     for class_full_name in classes {
-                        println!("  - {}", class_full_name);
+                        println!("- {}", class_full_name);
                     }
                 } else {
                     println!(
-                        "  No classes found for major version:{}",
+                        "No classes found for major version:{}",
                         default_bytecode_version
                     );
                 }
@@ -275,7 +286,7 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
                         get_java_version(*major_version)
                     );
                     for class_full_name in classes {
-                        println!("  - {}", class_full_name);
+                        println!("- {}", class_full_name);
                     }
                 }
             }
