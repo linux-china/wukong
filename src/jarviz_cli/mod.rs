@@ -6,9 +6,9 @@ use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
-use std::io;
 use std::io::Read;
 use std::path::Path;
+use std::{env, io};
 use walkdir::WalkDir;
 use zip::ZipArchive;
 
@@ -173,6 +173,9 @@ fn resolve_jar_endpoint(command_matches: &clap::ArgMatches) -> Option<String> {
         return Some(url.clone());
     } else if let Some(directory) = command_matches.get_one::<String>("directory") {
         return Some(format!("dir://{}", directory));
+    } else if command_matches.get_flag("classpath") {
+        let classpath = env::var("CLASSPATH").unwrap_or("".to_owned());
+        return Some(format!("classpath://{}", classpath));
     } else if command_matches.get_flag("pom") {
         return Some("pom://".to_owned());
     } else if command_matches.get_flag("gradle") {
@@ -318,7 +321,6 @@ mod tests {
     use crate::jarviz_cli::clap_app::build_jarviz_app;
     use dirs::home_dir;
     use regex::Regex;
-    use std::path::PathBuf;
 
     #[test]
     fn test_jar_extract() {
@@ -410,8 +412,6 @@ mod tests {
             println!("{}: {}", key, value);
         }
     }
-
-
 
     #[test]
     fn test_find_local_jar() {
