@@ -318,12 +318,18 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
     }
 }
 
-fn resolve_pom_dependencies(output: &str) -> HashSet<String> {
+pub fn resolve_pom_dependencies(output: &str) -> HashSet<String> {
+    let mut mvn_output = output.to_string();
+    if mvn_output.is_empty() {
+        let out = capture_command("mvn", &["dependency:tree"])
+            .expect("Failed to run `mvn dependency:tree` tree");
+        mvn_output = String::from_utf8_lossy(&out.stdout).to_string();
+    }
     let start_placeholder = "--- dependency:";
     let end_placeholder = "------";
     let mut dependencies: HashSet<String> = HashSet::new();
     let mut in_dependencies_section = false;
-    for line in output.lines() {
+    for line in mvn_output.lines() {
         if line.contains(start_placeholder) && line.contains("tree") {
             in_dependencies_section = true;
             continue;
@@ -348,11 +354,17 @@ fn resolve_pom_dependencies(output: &str) -> HashSet<String> {
     dependencies
 }
 
-fn resolve_gradle_dependencies(output: &str) -> HashSet<String> {
+pub fn resolve_gradle_dependencies(output: &str) -> HashSet<String> {
+    let mut gradle_output = output.to_string();
+    if gradle_output.is_empty() {
+        let out = capture_command("./gradlew", &["dependencies"])
+            .expect("Failed to run `./gradlew dependencies` tree");
+        gradle_output = String::from_utf8_lossy(&out.stdout).to_string();
+    }
     let start_placeholder = "compileClasspath";
     let mut dependencies: HashSet<String> = HashSet::new();
     let mut in_dependencies_section = false;
-    for line in output.lines() {
+    for line in gradle_output.lines() {
         if line.starts_with(start_placeholder) || line.starts_with("runtimeClasspath") {
             in_dependencies_section = true;
             continue;
