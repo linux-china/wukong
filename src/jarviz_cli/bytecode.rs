@@ -1,11 +1,15 @@
-use crate::jarviz_cli::{resolve_jar_source, scan_local_archive, scan_remote_archive};
+use crate::jarviz_cli::{
+    get_local_jar, resolve_jar_endpoint, scan_local_archive, scan_remote_archive,
+};
 use itertools::Itertools;
 use prettytable::format::Alignment;
 use prettytable::{row, Cell, Row, Table};
 use std::collections::{HashMap, HashSet};
 use std::io;
 use std::io::Read;
+use std::path::Path;
 use walkdir::WalkDir;
+use wukong::common::capture_command;
 
 pub fn get_major_version(zip_file: &mut dyn Read) -> u16 {
     let mut buffer = [0; 8];
@@ -119,7 +123,7 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
             default_bytecode_version = get_bytecode_version(version);
         }
     }
-    let jar_source = resolve_jar_source(command_matches);
+    let jar_source = resolve_jar_endpoint(command_matches);
     if let Some(jar_url) = &jar_source {
         if jar_url.starts_with("file://") {
             let local_path = jar_url.trim_start_matches("file://");
@@ -144,13 +148,66 @@ pub fn bytecode_show(command_matches: &clap::ArgMatches) {
                     }
                 }
             }
-        } else {
+        } else if jar_url.starts_with("http://") || jar_url.starts_with("https://") {
             scan_remote_archive(
                 &jar_url,
                 &mut class_info,
                 include_details,
                 &mut class_details,
             );
+        } else if jar_url.starts_with("pom://") {
+            let out = capture_command("mvn", &["dependency:tree"])
+                .expect("Failed to run `mvn dependency:tree` tree");
+            let output = String::from_utf8_lossy(&out.stdout);
+            let dependencies = resolve_pom_dependencies(&output);
+            for dep in dependencies {
+                let parts = dep.split(':').collect::<Vec<&str>>();
+                let group_id = parts.get(0).unwrap();
+                let artifact = parts.get(1).unwrap();
+                let version = parts.get(3).unwrap();
+                let jar_path = get_local_jar(group_id, artifact, version);
+                if let Some(jar_file_path) = jar_path {
+                    if jar_file_path.starts_with("file://") {
+                        let local_path = jar_file_path.trim_start_matches("file://");
+                        if Path::new(local_path).exists() {
+                            scan_local_archive(
+                                &local_path,
+                                &mut class_info,
+                                include_details,
+                                &mut class_details,
+                            );
+                        }
+                    }
+                }
+            }
+        } else if jar_url.starts_with("gradle://") {
+            let out = capture_command("./gradlew", &["dependencies"])
+                .expect("Failed to run `./gradlew dependencies` tree");
+            let output = String::from_utf8_lossy(&out.stdout);
+            let dependencies = resolve_gradle_dependencies(&output);
+            for dep in dependencies {
+                let parts = dep.split(':').collect::<Vec<&str>>();
+                let group_id = parts.get(0).unwrap();
+                let artifact = parts.get(1).unwrap();
+                let version = parts.get(2).unwrap();
+                let jar_path = get_local_jar(group_id, artifact, version);
+                if let Some(jar_file_path) = jar_path {
+                    if jar_file_path.starts_with("file://") {
+                        let local_path = jar_file_path.trim_start_matches("file://");
+                        if Path::new(local_path).exists() {
+                            scan_local_archive(
+                                &local_path,
+                                &mut class_info,
+                                include_details,
+                                &mut class_details,
+                            );
+                        }
+                    }
+                }
+            }
+        } else {
+            eprintln!("Unsupported jar source: {}", jar_url);
+            return;
         }
     }
     if class_info.is_empty() {
@@ -282,11 +339,42 @@ fn resolve_gradle_dependencies(output: &str) -> HashSet<String> {
 mod tests {
     use super::*;
     use crate::jarviz_cli::clap_app::build_jarviz_app;
+    use std::path::PathBuf;
 
     #[test]
     fn test_bytecode() {
         let jarviz_app = build_jarviz_app();
         let matrix_matches = jarviz_app.get_matches_from(&vec!["bytecode", "matrix"]);
         bytecode(&matrix_matches);
+    }
+
+    #[test]
+    fn test_resolve_pom_dependencies() {
+        let path = PathBuf::from("tests/dependencies/maven-dependencies.txt");
+        let output = std::fs::read_to_string(path).unwrap();
+        let dependencies = resolve_pom_dependencies(&output);
+        for dependency in dependencies {
+            println!("{}", dependency);
+        }
+    }
+
+    #[test]
+    fn test_resolve_gradle_dependencies() {
+        let path = PathBuf::from("tests/dependencies/gradle-dependencies.txt");
+        let output = std::fs::read_to_string(path).unwrap();
+        let dependencies = resolve_gradle_dependencies(&output);
+        for dependency in dependencies {
+            println!("{}", dependency);
+        }
+    }
+    #[test]
+    fn test_local_jar() {
+        let jar_file_path  = "/Users/linux_china/.m2/repository/org/junit/jupiter/junit-jupiter-params/5.13.1/junit-jupiter-params-5.13.1.jar";
+        scan_local_archive(
+            jar_file_path,
+            &mut HashMap::new(),
+            true,
+            &mut HashMap::new(),
+        );
     }
 }
