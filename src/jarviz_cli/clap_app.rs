@@ -132,7 +132,14 @@ pub fn build_jarviz_app() -> Command {
                             .long("directory")
                             .num_args(1)
                             .required(false),
-                    ),
+                        )
+                        .arg(
+                            Arg::new("output-format")
+                                .help("Output format to use, such as text, csv, json, and default is text")
+                                .long("output-format")
+                                .num_args(1)
+                                .required(false),
+                        ),
                 )
                 .subcommand(
                     Command::new("find")
@@ -162,15 +169,30 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("classpath")
                                 .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                                 .long("classpath")
-                                .num_args(1)
+                                .num_args(0)
                                 .required(false),
-                        ).arg(
+                        )
+                        .arg(
                         Arg::new("directory")
                             .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
                             .long("directory")
                             .num_args(1)
                             .required(false),
-                    ),
+                        )
+                        .arg(
+                            Arg::new("pom")
+                                .help("Show class(es) from the Maven project")
+                                .long("pom")
+                                .num_args(0)
+                                .required(false),
+                        )
+                        .arg(
+                            Arg::new("gradle")
+                                .help("Show class(es) from the Gradle file")
+                                .long("gradle")
+                                .num_args(0)
+                                .required(false),
+                        ),
                 )
         )
         .subcommand(
