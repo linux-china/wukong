@@ -76,6 +76,8 @@ pub fn build_jarviz_app() -> Command {
                                 .required(false),
                         ),
                 )
+                .subcommand( Command::new("matrix")
+                    .about("Show matrix for java and bytecode versions"))
         )
         .subcommand(
             Command::new("entries")
