@@ -1,4 +1,4 @@
-use clap::{Arg, Command};
+use clap::{Arg, ArgAction, Command};
 
 pub const VERSION: &str = "0.3.0";
 
@@ -37,8 +37,7 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("classpath")
                                 .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                                 .long("classpath")
-                                .num_args(1)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         )
                         .arg(
                             Arg::new("directory")
@@ -51,15 +50,13 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("pom")
                                 .help("Show bytecode version(s) from the Maven project")
                                 .long("pom")
-                                .num_args(0)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         )
                         .arg(
                             Arg::new("gradle")
                                 .help("Show bytecode version(s) from the Gradle file")
                                 .long("gradle")
-                                .num_args(0)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         )
                         .arg(
                             Arg::new("output-format")
@@ -124,8 +121,7 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("classpath")
                                 .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                                 .long("classpath")
-                                .num_args(1)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         ).arg(
                         Arg::new("directory")
                             .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
@@ -162,8 +158,7 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("classpath")
                                 .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                                 .long("classpath")
-                                .num_args(0)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         )
                         .arg(
                         Arg::new("directory")
@@ -176,15 +171,13 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("pom")
                                 .help("Show class(es) from the Maven project")
                                 .long("pom")
-                                .num_args(0)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         )
                         .arg(
                             Arg::new("gradle")
                                 .help("Show class(es) from the Gradle file")
                                 .long("gradle")
-                                .num_args(0)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         )
                         .arg(
                             Arg::new("output-format")
@@ -226,8 +219,7 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("classpath")
                                 .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                                 .long("classpath")
-                                .num_args(1)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         ).arg(
                         Arg::new("directory")
                             .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
@@ -264,8 +256,7 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("classpath")
                                 .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                                 .long("classpath")
-                                .num_args(1)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         )
                         .arg(
                             Arg::new("directory")
@@ -314,8 +305,7 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("classpath")
                                 .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                                 .long("classpath")
-                                .num_args(1)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         ).arg(
                         Arg::new("directory")
                             .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
@@ -352,8 +342,7 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("classpath")
                                 .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                                 .long("classpath")
-                                .num_args(1)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         ).arg(
                         Arg::new("directory")
                             .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
@@ -394,8 +383,7 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("classpath")
                                 .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                                 .long("classpath")
-                                .num_args(1)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         ).arg(
                         Arg::new("directory")
                             .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
@@ -432,8 +420,7 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("classpath")
                                 .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                                 .long("classpath")
-                                .num_args(1)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         ).arg(
                         Arg::new("directory")
                             .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
@@ -474,8 +461,7 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("classpath")
                                 .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                                 .long("classpath")
-                                .num_args(1)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         ).arg(
                         Arg::new("directory")
                             .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
@@ -487,15 +473,13 @@ pub fn build_jarviz_app() -> Command {
                             Arg::new("pom")
                                 .help("Show service(s) from the Maven project")
                                 .long("pom")
-                                .num_args(0)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         )
                         .arg(
                             Arg::new("gradle")
                                 .help("Show service(s) from the Gradle file")
                                 .long("gradle")
-                                .num_args(0)
-                                .required(false),
+                                .action(ArgAction::SetTrue)
                         )
                         .arg(
                             Arg::new("service-name")
@@ -541,8 +525,7 @@ pub fn build_jarviz_app() -> Command {
                     Arg::new("classpath")
                         .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
                         .long("classpath")
-                        .num_args(1)
-                        .required(false),
+                        .action(ArgAction::SetTrue)
                 ).arg(
                 Arg::new("directory")
                     .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
