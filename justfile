@@ -138,14 +138,26 @@ mcs-jar-info:
 jarviz-help:
     cargo run --bin jarviz -- --help
 
+# jarviz bytecode matrix
+jarviz-bytecode-matrix:
+    cargo run --bin jarviz -- bytecode matrix
+
 # jarviz bytecode
-jarviz-bytecode:
-    cargo run --bin jarviz -- bytecode show --details --file=/Users/linux_china/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
+jarviz-bytecode-show:
+    cargo run --bin jarviz -- bytecode show --details --file=$HOME/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
 
 # jarviz manifest
 jarviz-manifest:
-    cargo run --bin jarviz -- manifest show --file=/Users/linux_china/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
+    cargo run --bin jarviz -- manifest show --file=$HOME/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
 
 # jarviz manifest
 jarviz-manifest-query:
-    cargo run --bin jarviz -- manifest query --attribute-name=bundle-name --file=/Users/linux_china/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
+    cargo run --bin jarviz -- manifest query --attribute-name=bundle-name --file=$HOME/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
+
+# jarviz entries
+jarviz-entries-find:
+    cargo run --bin jarviz -- entries find --output-format=csv --file=$HOME/.m2/repository/org/apache/commons/commons-csv/1.14.0/commons-csv-1.14.0.jar
+
+# jarviz services list
+jarviz-services-list:
+    cargo run --bin jarviz -- services list --output-format=csv --file=$HOME/.m2/repository/ch/qos/logback/logback-classic/1.5.18/logback-classic-1.5.18.jar
