@@ -2,6 +2,10 @@
 
 Nothing Yet!
 
+# Version 0.3.0 (2025-07-17)
+
+* Add `jarviz` for JAR file analysis
+
 # Version 0.2.8 (2025-04-30)
 
 * jbang-rs: add `DEEPSEEK_API_KEY` support to generate code from AI
