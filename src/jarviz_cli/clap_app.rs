@@ -482,45 +482,35 @@ pub fn build_jarviz_app() -> Command {
                             .long("directory")
                             .num_args(1)
                             .required(false),
-                    ),
-                )
-                .subcommand(
-                    Command::new("show")
-                        .about("Display service implementations")
+                    )
                         .arg(
-                            Arg::new("gav")
-                                .help("Maven GAV coordinates, i.e, com.fasterxml.jackson.core:jackson-core:2.19.0")
-                                .long("gav")
+                            Arg::new("pom")
+                                .help("Show service(s) from the Maven project")
+                                .long("pom")
+                                .num_args(0)
+                                .required(false),
+                        )
+                        .arg(
+                            Arg::new("gradle")
+                                .help("Show service(s) from the Gradle file")
+                                .long("gradle")
+                                .num_args(0)
+                                .required(false),
+                        )
+                        .arg(
+                            Arg::new("service-name")
+                                .help("Name of a service interface.")
+                                .long("service-name")
                                 .num_args(1)
                                 .required(false),
                         )
                         .arg(
-                            Arg::new("url")
-                                .help("URL to target resource")
-                                .long("url")
+                            Arg::new("output-format")
+                                .help("Output format to use, such as text, csv, json, and default is text")
+                                .long("output-format")
                                 .num_args(1)
                                 .required(false),
-                        )
-                        .arg(
-                            Arg::new("file")
-                                .help("Path to a local JAR file")
-                                .long("file")
-                                .num_args(1)
-                                .required(false),
-                        )
-                        .arg(
-                            Arg::new("classpath")
-                                .help("Platform specific set of file paths i.e, /opt/jars/file.jar:/opt/jars/file2.jar")
-                                .long("classpath")
-                                .num_args(1)
-                                .required(false),
-                        ).arg(
-                        Arg::new("directory")
-                            .help("Path to a directory that contains JAR files. Jarviz will recursively walk the tree looking for **/*.jar")
-                            .long("directory")
-                            .num_args(1)
-                            .required(false),
-                    ),
+                        ),
                 )
         )
         .subcommand(
