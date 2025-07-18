@@ -7,6 +7,14 @@ build:
     cp -rf target/debug/mt ~/bin/mt
     cp -rf target/debug/jarviz ~/bin/jarviz
 
+release:
+    cargo build --release
+    cp -rf target/debug/jbang ~/bin/jbang
+    cp -rf target/debug/sdk ~/bin/sdk
+    cp -rf target/debug/jenv ~/bin/jenv
+    cp -rf target/debug/mt ~/bin/mt
+    cp -rf target/debug/jarviz ~/bin/jarviz
+
 # local install
 local-install:
     cargo install --path .
