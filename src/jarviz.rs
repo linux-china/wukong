@@ -1,6 +1,8 @@
 use crate::jarviz_cli::bytecode::bytecode;
 use crate::jarviz_cli::clap_app::build_jarviz_app;
-use crate::jarviz_cli::{checksum, entries, jar_manifest, jar_module, packages, services};
+use crate::jarviz_cli::entries::entries;
+use crate::jarviz_cli::services::services;
+use crate::jarviz_cli::{checksum, jar_manifest, jar_module, packages};
 
 mod jarviz_cli;
 
