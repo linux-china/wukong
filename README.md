@@ -56,6 +56,15 @@ Please add `eval $(~/.cargo/bin/sdk init)` to your shell profile.
 - `mt add 17.0.4-tem`: add JDK from `$HOME/.sdk/candidates/java/17.0.4-tem`
 - `mt add /path/to/java-home`: add JDK from `/path/to/java-home`
 
+# jarviz
+
+`jarviz` is a JAR file analyzer written in Rust, and inspired by [kordamp/jarviz](https://github.com/kordamp/jarviz).
+
+- bytecode matric: `jarviz bytecode matrix`
+- bytecode show: `jarviz bytecode show --pom`
+- entries list: `jarviz entries list --file=path/to/jarfile.jar`
+- services list: `jarviz services list --pom`
+
 # direnv integration
 
 Integration with [direnv](https://direnv.net/) by `sdk direnv init`:
