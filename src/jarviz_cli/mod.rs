@@ -23,6 +23,10 @@ pub fn get_output_format(command_matches: &clap::ArgMatches) -> String {
         .map_or("text".to_string(), |f| f.to_string())
 }
 
+pub fn is_good_class_file(file_name: &str) -> bool {
+    !(file_name.ends_with("module-info.class") || file_name.ends_with("package-info.class"))
+}
+
 fn scan_local_archive<P: AsRef<Path>>(
     path: P,
     class_info: &mut HashMap<u16, u32>,
@@ -35,10 +39,7 @@ fn scan_local_archive<P: AsRef<Path>>(
         if zip_file.is_file() {
             let major_version = get_major_version(&mut zip_file);
             if major_version > 0 {
-                let file_name = zip_file.name();
-                if !(file_name.ends_with("module-info.class")
-                    || file_name.ends_with("package-info.class"))
-                {
+                if is_good_class_file(zip_file.name()) {
                     class_info
                         .entry(major_version)
                         .and_modify(|e| *e += 1)
@@ -81,10 +82,7 @@ fn scan_remote_archive(
         if zip_file.is_file() {
             let major_version = get_major_version(&mut zip_file);
             if major_version > 0 {
-                let file_name = zip_file.name();
-                if !(file_name.ends_with("module-info.class")
-                    || file_name.ends_with("package-info.class"))
-                {
+                if is_good_class_file(zip_file.name()) {
                     class_info
                         .entry(major_version)
                         .and_modify(|e| *e += 1)
