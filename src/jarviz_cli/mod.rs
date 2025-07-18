@@ -35,16 +35,21 @@ fn scan_local_archive<P: AsRef<Path>>(
         if zip_file.is_file() {
             let major_version = get_major_version(&mut zip_file);
             if major_version > 0 {
-                class_info
-                    .entry(major_version)
-                    .and_modify(|e| *e += 1)
-                    .or_insert(1);
-                if include_details {
-                    let class_full_name = zip_file.name().to_string();
-                    class_details
+                let file_name = zip_file.name();
+                if !(file_name.ends_with("module-info.class")
+                    || file_name.ends_with("package-info.class"))
+                {
+                    class_info
                         .entry(major_version)
-                        .and_modify(|items| items.push(class_full_name.clone()))
-                        .or_insert(vec![class_full_name.clone()]);
+                        .and_modify(|e| *e += 1)
+                        .or_insert(1);
+                    if include_details {
+                        let class_full_name = zip_file.name().to_string();
+                        class_details
+                            .entry(major_version)
+                            .and_modify(|items| items.push(class_full_name.clone()))
+                            .or_insert(vec![class_full_name.clone()]);
+                    }
                 }
             }
         }
@@ -76,16 +81,21 @@ fn scan_remote_archive(
         if zip_file.is_file() {
             let major_version = get_major_version(&mut zip_file);
             if major_version > 0 {
-                class_info
-                    .entry(major_version)
-                    .and_modify(|e| *e += 1)
-                    .or_insert(1);
-                if include_details {
-                    let class_full_name = zip_file.name().to_string();
-                    class_details
+                let file_name = zip_file.name();
+                if !(file_name.ends_with("module-info.class")
+                    || file_name.ends_with("package-info.class"))
+                {
+                    class_info
                         .entry(major_version)
-                        .and_modify(|items| items.push(class_full_name.clone()))
-                        .or_insert(vec![class_full_name.clone()]);
+                        .and_modify(|e| *e += 1)
+                        .or_insert(1);
+                    if include_details {
+                        let class_full_name = zip_file.name().to_string();
+                        class_details
+                            .entry(major_version)
+                            .and_modify(|items| items.push(class_full_name.clone()))
+                            .or_insert(vec![class_full_name.clone()]);
+                    }
                 }
             }
         }
