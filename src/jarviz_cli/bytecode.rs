@@ -50,6 +50,7 @@ pub fn get_java_version(major_version: u16) -> &'static str {
         67 => "23",
         68 => "24",
         69 => "25",
+        70 => "26",
         _ => "Unknown",
     }
 }
@@ -86,7 +87,8 @@ fn get_bytecode_version(java_version: f32) -> u16 {
         24.0 => 68,
         25.0 => 69,
         26.0 => 70,
-        _ => (java_version - 44.0) as u16,
+        version if version >= 27.0 => (java_version + 44.0) as u16,
+        _ => 0,
     }
 }
 
