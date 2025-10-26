@@ -50,7 +50,7 @@ which = "8"
 dirs = "6"
 anyhow = "1"
 java-properties = "2"
-zip = "5.1"
+zip = "6.0"
 colored = "3"
 handlebars = "6.3.2"
 itertools = "0.14"
@@ -62,7 +62,6 @@ chrono = "0.4.42"
 pad = "0.1"
 walkdir="2.5"
 prettytable-rs = "0.10"
-read-url= { version = "0.0.5", features = ["default", "blocking"] }
 regex="1.11"
 
 [dev-dependencies]
