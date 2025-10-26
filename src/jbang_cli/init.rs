@@ -48,7 +48,7 @@ pub fn manage_init(init_matches: &clap::ArgMatches) {
             code = extract_code_from_openai(
                 "https://api.openai.com",
                 &api_key,
-                "gpt-4.1",
+                "gpt-5",
                 params.get(0).unwrap(),
             );
         } else if let Ok(api_key) = std::env::var("DEEPSEEK_API_KEY") {
