@@ -40,12 +40,16 @@ fn load_config() {
     let config = read_sdkman_config();
     if let Some(insecure_ssl) = config.get("sdkman_insecure_ssl") {
         if insecure_ssl == "true" {
-            std::env::set_var("ONEIO_ACCEPT_INVALID_CERTS", "true");
+            unsafe {
+                std::env::set_var("ONEIO_ACCEPT_INVALID_CERTS", "true");
+            }
         }
     }
     if let Some(colour_enable) = config.get("sdkman_colour_enable") {
         if colour_enable == "false" {
-            std::env::set_var("CLICOLOR", "0");
+            unsafe {
+                std::env::set_var("CLICOLOR", "0");
+            }
         }
     }
 }
