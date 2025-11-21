@@ -68,7 +68,7 @@ Please add `eval $(~/.cargo/bin/sdk init)` to your shell profile.
 
 # jaz
 
-jaz: a lightweight utility that simplifies how Java developers run their applications.
+jaz: a lightweight utility that simplifies how Java developers run their applications on JDK 17+.
 
 Detected variables:
 
@@ -79,7 +79,15 @@ Detected variables:
 
 Features:
 
-- `.env` support
+- `.env` support with dotenvx
+
+Roadmap
+
+- ⚙️ JVM configuration profiles
+- 📦 AppCDS support
+- 🔄 Continuous tuning
+- 📊 Telemetry
+- 📦 Leyden support
 
 # direnv integration
 
