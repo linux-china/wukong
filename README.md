@@ -26,6 +26,7 @@ Wukong is a Java toolchain written with Rust.
 - Maven Toolchains CLI: https://maven.apache.org/guides/mini/guide-using-toolchains.html
 - Maven Central Search: https://search.maven.org/
 - JAR file analyzer: https://github.com/kordamp/jarviz
+- jaz: https://learn.microsoft.com/en-us/java/jaz/overview
 
 # SDKMAN-rs
 
@@ -65,6 +66,21 @@ Please add `eval $(~/.cargo/bin/sdk init)` to your shell profile.
 - entries list: `jarviz entries list --file=path/to/jarfile.jar`
 - services list: `jarviz services list --pom`
 
+# jaz
+
+jaz: a lightweight utility that simplifies how Java developers run their applications.
+
+Detected variables:
+
+- JAVA_HOME
+- JAVA_VERSION
+- JAVA_VENDOR
+- JAVA_OPTIONS
+
+Features:
+
+- `.env` support
+
 # direnv integration
 
 Integration with [direnv](https://direnv.net/) by `sdk direnv init`:
@@ -78,4 +94,6 @@ Integration with [direnv](https://direnv.net/) by `sdk direnv init`:
 * [OneIO](https://github.com/bgpkit/oneio): all-in-one convenient IO library for Rust
 * [startup-time](https://github.com/bdrung/startup-time): Measure startup time of different programming languages
 * jbang(1): https://www.jbang.dev/documentation/guide/latest/cli/jbang.html
+* [jaz](https://learn.microsoft.com/en-us/java/jaz/overview): a lightweight utility that simplifies how Java developers
+  run their applications on Azure
 
