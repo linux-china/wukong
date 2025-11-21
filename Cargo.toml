@@ -36,6 +36,10 @@ path = "src/mt.rs"
 name = "jarviz"
 path = "src/jarviz.rs"
 
+[[bin]]
+name = "jaz"
+path = "src/jaz.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 clap = "4.5"
@@ -63,6 +67,7 @@ pad = "0.1"
 walkdir="2.5"
 prettytable-rs = "0.10"
 regex="1.12"
+dotenvx-rs = "0.4.27"
 
 [dev-dependencies]
 dotenvy = "0.15"
