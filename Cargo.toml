@@ -67,7 +67,7 @@ pad = "0.1"
 walkdir="2.5"
 prettytable-rs = "0.10"
 regex="1.12"
-dotenvx-rs = "0.4.27"
+dotenvx-rs = "0.4.28"
 
 [dev-dependencies]
 dotenvy = "0.15"
