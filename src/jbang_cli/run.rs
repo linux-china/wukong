@@ -68,7 +68,14 @@ pub fn build_run_command() -> Command {
                 .long("java")
                 .short('j')
                 .help("JDK version to use for running the script.")
-                .num_args(0)
+                .num_args(1)
+                .required(false),
+        )
+        .arg(
+            Arg::new("java-options")
+                .long("java-options")
+                .help("Options to pass to the Java runtime.")
+                .num_args(1)
                 .required(false),
         )
         .arg(
@@ -76,6 +83,13 @@ pub fn build_run_command() -> Command {
                 .long("native")
                 .short('n')
                 .help("Build using native-image.")
+                .num_args(0)
+                .required(false),
+        )
+        .arg(
+            Arg::new("insecure")
+                .long("insecure")
+                .help("Enable insecure trust of all SSL certificates.")
                 .num_args(0)
                 .required(false),
         )
