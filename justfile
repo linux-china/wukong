@@ -9,11 +9,15 @@ build:
 
 release:
     cargo build --release
-    cp -rf target/debug/jbang ~/bin/jbang
-    cp -rf target/debug/sdk ~/bin/sdk
-    cp -rf target/debug/jenv ~/bin/jenv
-    cp -rf target/debug/mt ~/bin/mt
-    cp -rf target/debug/jarviz ~/bin/jarviz
+    cp -rf target/release/jbang ~/.cargo/bin/jbang
+    cp -rf target/release/sdk ~/.cargo/bin/sdk
+    cp -rf target/release/jenv ~/.cargo/bin/jenv
+    cp -rf target/release/mt ~/.cargo/bin/mt
+    cp -rf target/release/jarviz ~/.cargo/bin/jarviz
+
+release-jbang:
+   cargo build --bin jbang --release
+   cp -rf target/release/jbang ~/.cargo/bin/jbang
 
 # local install
 local-install:
