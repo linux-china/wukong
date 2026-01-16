@@ -6,7 +6,11 @@ use wukong::common::{capture_command, run_command_line};
 pub fn manage_run(run_matches: &clap::ArgMatches) {
     let script_or_file = run_matches.get_one::<String>("scriptOrFile").unwrap();
     let args = std::env::args().collect::<Vec<String>>();
-    let app_args = &args[2..].iter().map(|s| s.as_str()).collect_vec();
+    let app_args = &args[2..]
+        .iter()
+        .filter(|s| *s != "--")
+        .map(|s| s.as_str())
+        .collect_vec();
     jbang_run(script_or_file, app_args);
 }
 pub fn jbang_run(_script_or_file: &str, user_params: &[&str]) {
