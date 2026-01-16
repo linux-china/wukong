@@ -97,7 +97,9 @@ fn main() {
 
 fn inject_insecure(matches: &ArgMatches) {
     if matches.get_flag("insecure") {
-        std::env::set_var("ONEIO_ACCEPT_INVALID_CERTS", "true")
+        unsafe {
+            std::env::set_var("ONEIO_ACCEPT_INVALID_CERTS", "true")
+        }
     }
 }
 
