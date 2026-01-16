@@ -6,10 +6,10 @@ use wukong::common::{capture_command, run_command_line};
 pub fn manage_run(run_matches: &clap::ArgMatches) {
     let script_or_file = run_matches.get_one::<String>("scriptOrFile").unwrap();
     let args = std::env::args().collect::<Vec<String>>();
-    let app_args = &args[3..].iter().map(|s| s.as_str()).collect_vec();
+    let app_args = &args[2..].iter().map(|s| s.as_str()).collect_vec();
     jbang_run(script_or_file, app_args);
 }
-pub fn jbang_run(script_or_file: &str, user_params: &[&str]) {
+pub fn jbang_run(_script_or_file: &str, user_params: &[&str]) {
     let jdk_home = ensure_jdk_available(JBANG_DEFAULT_JAVA_VERSION);
     let java_exec = java_exec(&jdk_home);
     let jbang_home = jbang_home();
@@ -20,7 +20,6 @@ pub fn jbang_run(script_or_file: &str, user_params: &[&str]) {
         jbang_jar.to_str().unwrap(),
         "dev.jbang.Main",
         "run",
-        script_or_file,
     ];
     args.extend(user_params);
     let output = capture_command(&java_exec, &args).unwrap();
