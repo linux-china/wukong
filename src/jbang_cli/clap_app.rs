@@ -16,7 +16,7 @@ use crate::jbang_cli::version::build_version_command;
 use crate::jbang_cli::wrapper::build_wrapper_command;
 use clap::{Arg, ArgAction, Command};
 
-pub const VERSION: &str = "0.2.7";
+pub const VERSION: &str = "0.2.8";
 
 pub fn build_jbang_app() -> Command {
     let run_command = build_run_command();
