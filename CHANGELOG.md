@@ -2,10 +2,11 @@
 
 Nothing Yet!
 
-# Version 0.3.0 (2026-01-18)
+# Version 0.3.1 (2026-01-18)
 
 * Fix params error for `jbang run` 
 * Add options fr `jbang build`
+* Adjus color output for `mt`
 
 # Version 0.3.0 (2025-07-17)
 
