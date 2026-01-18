@@ -1,6 +1,6 @@
 [package]
 name = "wukong"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 authors = ["linux_china <libing.chen@gmail.com>"]
 description = "Wukong is a command-line toolchain for Java with Rust"
@@ -96,7 +96,7 @@ lto = true
 # Config for 'dist'
 [workspace.metadata.dist]
 # The preferred dist version to use in CI (Cargo.toml SemVer syntax)
-cargo-dist-version = "0.30.2"
+cargo-dist-version = "0.30.3"
 # CI backends to support
 ci = "github"
 # The installers to generate for each app

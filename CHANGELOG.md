@@ -2,6 +2,11 @@
 
 Nothing Yet!
 
+# Version 0.3.0 (2026-01-18)
+
+* Fix params error for `jbang run` 
+* Add options fr `jbang build`
+
 # Version 0.3.0 (2025-07-17)
 
 * Add `jarviz` for JAR file analysis
