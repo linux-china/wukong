@@ -148,9 +148,9 @@ pub fn list_command() {
                 let vendor = &provides.vendor;
                 let jdk_home_path = PathBuf::from(&jdk_home);
                 let jdk_home_text = if jdk_home_path.exists() {
-                    format!("{}", jdk_home.red())
+                    format!("{}", jdk_home.green())
                 } else {
-                    format!("{}", jdk_home)
+                    format!("{}", jdk_home.red())
                 };
                 if vendor.is_some() && !vendor.as_ref().unwrap().is_empty() {
                     println!("{}: {}\n  {}", provides.version.bold(), vendor.clone().unwrap(), jdk_home_text);
