@@ -26,8 +26,6 @@ pub fn jbang_run(_script_or_file: &str, script_and_params: &[&str]) {
         "run",
     ];
     args.extend(script_and_params);
-    println!("params: {:?}", script_and_params);
-    println!("full: {:?}", args);
     let output = capture_command(&java_exec, &args).unwrap();
     let exit_code = output.status.code().unwrap();
     if exit_code == 255 {
