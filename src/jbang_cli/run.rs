@@ -1,5 +1,5 @@
 use crate::jbang_cli::{ensure_jdk_available, java_exec, jbang_home, JBANG_DEFAULT_JAVA_VERSION};
-use clap::{Arg, ArgAction, Command};
+use clap::{Arg, Command};
 use itertools::Itertools;
 use wukong::common::{capture_command, run_command_line};
 
@@ -13,7 +13,7 @@ pub fn manage_run(run_matches: &clap::ArgMatches) {
         .collect_vec();
     jbang_run(script_or_file, app_args);
 }
-pub fn jbang_run(_script_or_file: &str, user_params: &[&str]) {
+pub fn jbang_run(_script_or_file: &str, script_and_params: &[&str]) {
     let jdk_home = ensure_jdk_available(JBANG_DEFAULT_JAVA_VERSION);
     let java_exec = java_exec(&jdk_home);
     let jbang_home = jbang_home();
@@ -25,7 +25,9 @@ pub fn jbang_run(_script_or_file: &str, user_params: &[&str]) {
         "dev.jbang.Main",
         "run",
     ];
-    args.extend(user_params);
+    args.extend(script_and_params);
+    println!("params: {:?}", script_and_params);
+    println!("full: {:?}", args);
     let output = capture_command(&java_exec, &args).unwrap();
     let exit_code = output.status.code().unwrap();
     if exit_code == 255 {
@@ -93,20 +95,6 @@ pub fn build_run_command() -> Command {
                 .num_args(0)
                 .required(false),
         )
-        .arg(
-            Arg::new("scriptOrFile")
-                .help("A reference to a source file")
-                .index(1)
-                .required(false),
-        )
-        .arg(
-            Arg::new("userParams")
-                .help("Parameters to pass on to the script")
-                .index(2)
-                .num_args(1..)
-                .action(ArgAction::Append)
-                .required(false),
-        )
 }
 
 #[cfg(test)]
@@ -115,6 +103,9 @@ mod tests {
 
     #[test]
     fn test_jbang_run() {
-        jbang_run("scripts/hello.java", &["first", "second"]);
+        jbang_run(
+            "scripts/hello.java",
+            &["scripts/hello.java", "first", "second"],
+        );
     }
 }
