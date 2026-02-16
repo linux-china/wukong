@@ -19,6 +19,10 @@ release-jbang:
    cargo build --bin jbang --release
    cp -rf target/release/jbang ~/.cargo/bin/jbang
 
+# use alpine/git container to push the repo
+push:
+   docker run --rm -it -v "$(pwd)":/repo -v "$HOME/.ssh":/root/.ssh:ro -w /repo alpine/git push origin main --tags
+
 # local install
 local-install:
     cargo install --path .
