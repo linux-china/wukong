@@ -2,6 +2,10 @@
 
 Nothing Yet!
 
+# Version 0.3.2 (2026-02-16)
+
+* Fix params error for `jbang run`
+
 # Version 0.3.1 (2026-01-18)
 
 * Fix params error for `jbang run` 
