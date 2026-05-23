@@ -80,7 +80,7 @@ pub fn extract_zip<P: AsRef<Path>>(archive_file_path: P, target_dir: &PathBuf, r
             let enclosed_name = file.enclosed_name().unwrap();
             let mut relative_path = enclosed_name.to_str().unwrap();
             if root_excluded {  // exclude root path
-                relative_path = &relative_path[(relative_path.find("/").unwrap() + 1)..];
+                relative_path = &relative_path[(relative_path.find(std::path::MAIN_SEPARATOR).unwrap() + 1)..];
             }
             let outpath = target_dir.join(relative_path);
             if let Some(p) = outpath.parent() {
@@ -105,7 +105,7 @@ pub fn extract_tgz<P: AsRef<Path>>(archive_file_path: P, target_dir: &PathBuf, r
             let entry_path = entry.path().unwrap();
             let mut relative_path = entry_path.to_str().unwrap();
             if root_excluded { // exclude root path
-                relative_path = &relative_path[(relative_path.find("/").unwrap() + 1)..];
+                relative_path = &relative_path[(relative_path.find(std::path::MAIN_SEPARATOR).unwrap() + 1)..];
             }
             let path = target_dir.join(relative_path);
             entry.unpack(&path).unwrap();
