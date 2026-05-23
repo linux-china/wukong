@@ -81,10 +81,28 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
                 let jdk_path = jbang_home_path.join("cache").join("jdks").join(version);
                 if jdk_path.exists() {
                     let current_jdk_link = jbang_home_path.join("currentjdk");
-                    if current_jdk_link.exists() {
-                        fs::remove_file(current_jdk_link).unwrap();
+                    if current_jdk_link.exists() || current_jdk_link.is_symlink() {
+                        // On Windows, `currentjdk` is a directory symlink; using
+                        // `fs::remove_file` on it fails with PermissionDenied.
+                        let remove_result = if current_jdk_link.is_symlink() {
+                            symlink::remove_symlink_dir(&current_jdk_link)
+                                .or_else(|_| fs::remove_file(&current_jdk_link))
+                                .or_else(|_| fs::remove_dir(&current_jdk_link))
+                        } else if current_jdk_link.is_dir() {
+                            fs::remove_dir_all(&current_jdk_link)
+                        } else {
+                            fs::remove_file(&current_jdk_link)
+                        };
+                        if let Err(e) = remove_result {
+                            println!("Failed to remove existing currentjdk link: {}", e);
+                            return;
+                        }
                     }
-                    symlink::symlink_dir(jdk_path, jbang_home_path.join("currentjdk")).unwrap();
+                    if let Err(e) = symlink::symlink_dir(&jdk_path, jbang_home_path.join("currentjdk")) {
+                        println!("Failed to create currentjdk symlink: {}", e);
+                        println!("Note: On Windows, creating symlinks requires Administrator privileges or Developer Mode enabled.");
+                        return;
+                    }
                     println!("Setting default JDK to {}", version);
                 } else {
                     println!("JDK {} is not installed.", version);
