@@ -2,6 +2,11 @@
 
 Nothing Yet!
 
+# Version 0.3.3 (2026-05-24)
+
+* Fix some bugs on Windows platform
+* Add jbang.jar auto-download support
+
 # Version 0.3.2 (2026-02-16)
 
 * Fix params error for `jbang run`
@@ -10,7 +15,7 @@ Nothing Yet!
 
 * Fix params error for `jbang run` 
 * Add options fr `jbang build`
-* Adjus color output for `mt`
+* Adjust color output for `mt`
 
 # Version 0.3.0 (2025-07-17)
 
