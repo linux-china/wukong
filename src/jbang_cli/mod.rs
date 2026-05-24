@@ -1,34 +1,45 @@
-pub mod config;
-pub mod jdk;
-pub mod trust;
-pub mod init;
-pub mod template;
-pub mod run;
-pub mod models;
 pub mod alias;
-pub mod catalog;
-pub mod info;
-pub mod export;
-pub mod cache;
-pub mod clap_app;
-pub mod build;
-pub mod edit;
 pub mod app;
-pub mod version;
+pub mod build;
+pub mod cache;
+pub mod catalog;
+pub mod clap_app;
 pub mod completion;
+pub mod config;
+pub mod edit;
+pub mod export;
+pub mod info;
+pub mod init;
+pub mod jdk;
+pub mod models;
+pub mod run;
+pub mod template;
+pub mod trust;
+pub mod version;
 pub mod wrapper;
 
+use crate::jbang_cli::models::JBangCatalog;
 use std::fs::{File, Permissions};
 use std::io::Read;
 use std::path::{Path, PathBuf};
+use wukong::common::{http_download, run_command};
 use zip::ZipArchive;
-use wukong::common::run_command;
-use crate::jbang_cli::models::JBangCatalog;
 
 pub const JBANG_DEFAULT_JAVA_VERSION: &str = "17";
 
 pub fn jbang_home() -> PathBuf {
     wukong::common::jbang_home()
+}
+
+pub fn jbang_jar_path() -> PathBuf {
+    let path = jbang_home().join("bin").join("jbang.jar");
+    if !path.exists() {
+        http_download(
+            "https://repo1.maven.org/maven2/dev/jbang/jbang.bin/0.138.0/jbang.bin-0.138.0-all.jar",
+            &path,
+        );
+    }
+    path
 }
 
 pub fn jdk_home(jdk_version: &str) -> PathBuf {
@@ -49,7 +60,7 @@ pub fn jbang_catalog() -> JBangCatalog {
 }
 
 pub fn builtin_jbang_catalog() -> JBangCatalog {
-    let jbang_jar_file_path = jbang_home().join("bin").join("jbang.jar");
+    let jbang_jar_file_path = jbang_jar_path();
     let archive = File::open(jbang_jar_file_path).unwrap();
     let mut archive = ZipArchive::new(archive).unwrap();
     let zip_file = archive.by_name("jbang-catalog.json").unwrap();
@@ -68,9 +79,19 @@ pub fn find_jbang_catalog_from_path(path: &PathBuf) -> Option<JBangCatalog> {
 
 pub fn java_exec(java_home: &PathBuf) -> String {
     if cfg!(target_os = "windows") {
-        java_home.join("bin").join("java.exe").to_str().unwrap().to_string()
+        java_home
+            .join("bin")
+            .join("java.exe")
+            .to_str()
+            .unwrap()
+            .to_string()
     } else {
-        java_home.join("bin").join("java").to_str().unwrap().to_string()
+        java_home
+            .join("bin")
+            .join("java")
+            .to_str()
+            .unwrap()
+            .to_string()
     }
 }
 
@@ -96,8 +117,7 @@ pub fn call_jbang_sub_command(commands: &[&str]) {
     unsafe {
         std::env::set_var("CLICOLOR_FORCE", "1");
     }
-    let jbang_home = jbang_home();
-    let jbang_jar_path = jbang_home.join("bin").join("jbang.jar");
+    let jbang_jar_path = jbang_jar_path();
     let jbang_jar = jbang_jar_path.to_str().unwrap();
     let mut jbang_params = vec!["-classpath", jbang_jar, "dev.jbang.Main"];
     jbang_params.extend(commands);
@@ -112,7 +132,13 @@ pub fn print_command_help(sub_command: &str) {
     let jbang_home = jbang_home();
     let jbang_jar_path = jbang_home.join("bin").join("jbang.jar");
     let jbang_jar = jbang_jar_path.to_str().unwrap();
-    let jbang_params = vec!["-classpath", jbang_jar, "dev.jbang.Main", sub_command, "--help"];
+    let jbang_params = vec![
+        "-classpath",
+        jbang_jar,
+        "dev.jbang.Main",
+        sub_command,
+        "--help",
+    ];
     run_command(&java_exec(&java_home), &jbang_params).unwrap();
 }
 
@@ -124,7 +150,6 @@ pub fn set_executable<P: AsRef<Path>>(path: P) {
 
 #[cfg(not(unix))]
 pub fn set_executable<P: AsRef<Path>>(path: P) {}
-
 
 #[cfg(test)]
 mod tests {

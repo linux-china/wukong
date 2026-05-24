@@ -1,4 +1,4 @@
-use crate::jbang_cli::{ensure_jdk_available, java_exec, jbang_home, JBANG_DEFAULT_JAVA_VERSION};
+use crate::jbang_cli::{ensure_jdk_available, java_exec, jbang_home, jbang_jar_path, JBANG_DEFAULT_JAVA_VERSION};
 use clap::{Arg, Command};
 use itertools::Itertools;
 use wukong::common::{capture_command, run_command_line};
@@ -16,8 +16,7 @@ pub fn manage_run(run_matches: &clap::ArgMatches) {
 pub fn jbang_run(_script_or_file: &str, script_and_params: &[&str]) {
     let jdk_home = ensure_jdk_available(JBANG_DEFAULT_JAVA_VERSION);
     let java_exec = java_exec(&jdk_home);
-    let jbang_home = jbang_home();
-    let jbang_jar = jbang_home.join("bin").join("jbang.jar");
+    let jbang_jar = jbang_jar_path();
     // java -classpath $HOME/.jbang/bin/jbang.jar dev.jbang.Main run hello.java param1 param2
     let mut args = vec![
         "-classpath",
