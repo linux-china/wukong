@@ -59,7 +59,7 @@ pub fn install_jbang() {
             let entry_path = entry.path().unwrap();
             let mut relative_path = entry_path.to_str().unwrap();
             if relative_path.starts_with("jbang/") {
-                relative_path = &relative_path[(relative_path.find("/").unwrap() + 1)..];
+                relative_path = &relative_path[(relative_path.find(std::path::MAIN_SEPARATOR).unwrap() + 1)..];
             }
             let path = target_dir.join(relative_path);
             entry.set_preserve_mtime(true);
