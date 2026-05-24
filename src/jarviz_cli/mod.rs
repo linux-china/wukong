@@ -135,7 +135,7 @@ fn get_local_jar(group_id: &str, artifact_id: &str, version: &str) -> Option<Str
     if m2_home.exists() {
         let local_m2_jar = m2_home
             .join("repository")
-            .join(group_id.replace('.', "/"))
+            .join(group_id.replace('.', std::path::MAIN_SEPARATOR.to_string().as_str()))
             .join(artifact_id)
             .join(version)
             .join(format!("{}-{}.jar", artifact_id, version));
