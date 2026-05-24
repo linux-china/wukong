@@ -58,7 +58,7 @@ pub fn install_jbang() {
         .for_each(|mut entry| {
             let entry_path = entry.path().unwrap();
             let mut relative_path = entry_path.to_str().unwrap();
-            if relative_path.starts_with("jbang/") {
+            if relative_path.starts_with("jbang/") || relative_path.starts_with("jbang\\") {
                 relative_path = &relative_path[(relative_path.find(std::path::MAIN_SEPARATOR).unwrap() + 1)..];
             }
             let path = target_dir.join(relative_path);
