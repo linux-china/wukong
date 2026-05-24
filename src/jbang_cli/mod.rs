@@ -38,6 +38,9 @@ pub fn jbang_jar_path() -> PathBuf {
             "https://repo1.maven.org/maven2/dev/jbang/jbang.bin/0.138.0/jbang.bin-0.138.0-all.jar",
             &path,
         );
+        let version_file_path = jbang_home().join("version.txt");
+        std::fs::write(&version_file_path, "0.138.0").unwrap();
+        // install_jbang();
     }
     path
 }
