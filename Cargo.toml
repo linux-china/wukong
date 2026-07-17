@@ -40,6 +40,10 @@ path = "src/jarviz.rs"
 name = "jaz"
 path = "src/jaz.rs"
 
+[[bin]]
+name = "gav"
+path = "src/gav.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
 clap = "4.6"
