@@ -35,7 +35,7 @@ pub fn build_gav_app() -> Command {
         )
         .arg(
             Arg::new("scope")
-                .help("scope parameter: compile, test, import, provided, runtime, system")
+                .help("scope parameter: compile, test, runtime, import, provided, system")
                 .long("scope")
                 .num_args(1)
                 .required(false),
@@ -59,14 +59,14 @@ pub fn build_gav_app() -> Command {
                 .alias("dev")
                 .help("Add dependency as test scope")
                 .long("test")
+                .short('D')
                 .action(ArgAction::SetTrue)
                 .required(false),
         )
         .arg(
-            Arg::new("provided")
-                .help("Add dependency as provided scope")
-                .long("provided")
-                .short('D')
+            Arg::new("runtime")
+                .help("Add dependency as runtime scope")
+                .long("runtime")
                 .action(ArgAction::SetTrue)
                 .required(false),
         )

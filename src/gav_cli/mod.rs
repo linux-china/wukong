@@ -32,6 +32,7 @@ pub fn gav_add(command_matches: &clap::ArgMatches) {
     // bom or managed(<dependencyManagement>)
     if command_matches.get_flag("bom") {
         gav_params.push("-Dtype=pom".to_owned());
+        gav_params.push("-Dscope=import".to_owned());
         gav_params.push("-Dmanaged".to_owned());
     } else if command_matches.get_flag("managed") {
         gav_params.push("-Dmanaged".to_owned());
@@ -39,10 +40,8 @@ pub fn gav_add(command_matches: &clap::ArgMatches) {
     // scope
     if command_matches.get_flag("test") {
         scope = "test".to_owned();
-    } else if command_matches.get_flag("provided") {
-        scope = "provided".to_owned();
-    } else if command_matches.get_flag("provided") {
-        scope = "provided".to_owned();
+    } else if command_matches.get_flag("runtime") {
+        scope = "runtime".to_owned();
     }
     if scope != "" {
         gav_params.push(format!("-Dscope={}", scope));
@@ -73,6 +72,7 @@ pub fn gav_remove(command_matches: &clap::ArgMatches) {
     }
     if command_matches.get_flag("bom") {
         gav_params.push("-Dtype=pom".to_owned());
+        gav_params.push("-Dscope=import".to_owned());
         gav_params.push("-Dmanaged".to_owned());
     } else if command_matches.get_flag("managed") {
         gav_params.push("-Dmanaged".to_owned());
