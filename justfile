@@ -6,6 +6,7 @@ build:
     cp -rf target/debug/jenv ~/bin/jenv
     cp -rf target/debug/mt ~/bin/mt
     cp -rf target/debug/jarviz ~/bin/jarviz
+    cp -rf target/debug/gav ~/bin/gav
 
 release:
     cargo build --release
@@ -14,6 +15,7 @@ release:
     cp -rf target/release/jenv ~/.cargo/bin/jenv
     cp -rf target/release/mt ~/.cargo/bin/mt
     cp -rf target/release/jarviz ~/.cargo/bin/jarviz
+    cp -rf target/release/gav ~/.cargo/bin/gav
 
 release-jbang:
    cargo build --bin jbang --release
