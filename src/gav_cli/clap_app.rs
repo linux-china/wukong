@@ -157,12 +157,7 @@ pub fn build_gav_app() -> Command {
         );
     let tree_command = Command::new("tree")
         .alias("list")
-        .about("Display dependency tree")
-        .after_help(
-            "EXAMPLES:\n\
-            \x20 gav tree\n\
-            \x20 gav list",
-        );
+        .about("Display dependency tree");
     Command::new("gav")
         .version(VERSION)
         .about("gav - Maven Dependency Management with Dependency Plugin 3.11+")
@@ -171,9 +166,12 @@ pub fn build_gav_app() -> Command {
         .subcommand(tree_command)
         .after_help(
             "EXAMPLES:\n\
-            \x20 gav add org.apache.commons:commons-lang3:3.14.0\n\
-            \x20 gav add org.junit.jupiter:junit-jupiter:5.10.0 --test\n\
-            \x20 gav remove org.apache.commons:commons-lang3:3.14.0\n\
+             \x20 gav add org.apache.commons:commons-lang3:3.20.0\n\
+            \x20 gav add com.google.guava:guava:33.6.0-jre\n\
+            \x20 gav add org.postgresql:postgresql:42.7.13 --runtime\n\
+            \x20 gav add org.junit.jupiter:junit-jupiter:6.1.1 --test\n\
+            \x20 gav add --bom org.springframework.boot:spring-boot-dependencies:4.1.0\n\
+            \x20 gav remove org.apache.commons:commons-lang3\n\
             \x20 gav tree",
         )
 }
