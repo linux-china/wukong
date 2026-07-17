@@ -141,7 +141,9 @@ pub fn build_gav_app() -> Command {
                 .action(ArgAction::SetTrue)
                 .required(false),
         );
-    let tree_command = Command::new("tree").about("Display dependency tree");
+    let tree_command = Command::new("tree")
+        .alias("list")
+        .about("Display dependency tree");
     Command::new("gav")
         .version(VERSION)
         .about("gav - Maven Dependency Management with Dependency Plugin 3.11+")
