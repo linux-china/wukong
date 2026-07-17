@@ -53,7 +53,7 @@ tar = "0.4.46"
 reqwest = { version = "0.13", features = ["json", "blocking"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-quick-xml = { version = "0.40", features = ["serialize"] }
+quick-xml = { version = "0.41", features = ["serialize"] }
 which = "8"
 dirs = "6"
 anyhow = "1"
