@@ -27,6 +27,8 @@ Wukong is a Java toolchain written with Rust.
 - Maven Central Search: https://search.maven.org/
 - JAR file analyzer: https://github.com/kordamp/jarviz
 - jaz: https://learn.microsoft.com/en-us/java/jaz/overview
+- gav: Maven dependency manager
+  with [dependency plugin 3.11+](https://maven.apache.org/plugins/maven-dependency-plugin/examples/managing-dependencies.html)
 
 # SDKMAN-rs
 
@@ -56,6 +58,17 @@ Please add `eval $(~/.cargo/bin/sdk init)` to your shell profile.
 - `mt add 21`: add JDK 21 from `$HOME/.jbang/cache/jdks/21`
 - `mt add 17.0.4-tem`: add JDK from `$HOME/.sdk/candidates/java/17.0.4-tem`
 - `mt add /path/to/java-home`: add JDK from `/path/to/java-home`
+
+# gav
+
+`gav` is a Maven dependency manager
+with [dependency plugin 3.11+](https://maven.apache.org/plugins/maven-dependency-plugin/examples/managing-dependencies.html)
+
+commands:
+
+- add: `gav add <gav>`
+- remove: `gav remove <gav>`
+- dependencies: `gav tree`
 
 # jarviz
 
