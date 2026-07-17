@@ -70,6 +70,10 @@ commands:
 - remove: `gav remove <gav>`
 - dependencies: `gav tree`
 
+tips:
+
+- Add bom: `gav add --bom org.springframework.boot:spring-boot-dependencies`
+
 # jarviz
 
 `jarviz` is a JAR file analyzer written in Rust, and inspired by [kordamp/jarviz](https://github.com/kordamp/jarviz).
