@@ -90,6 +90,14 @@ pub fn build_gav_app() -> Command {
                 .long("optional")
                 .action(ArgAction::SetTrue)
                 .required(false),
+        )
+        .after_help(
+            "EXAMPLES:\n\
+            \x20 gav add org.apache.commons:commons-lang3:3.20.0\n\
+            \x20 gav add com.google.guava:guava:33.6.0-jre\n\
+            \x20 gav add org.postgresql:postgresql:42.7.13 --runtime\n\
+            \x20 gav add org.junit.jupiter:junit-jupiter:6.1.1 --test\n\
+            \x20 gav add --bom org.springframework.boot:spring-boot-dependencies:4.1.0",
         );
     let gav_remove_command = Command::new("remove")
         .about("Remove dependency by GAV")
@@ -140,14 +148,32 @@ pub fn build_gav_app() -> Command {
                 .long("managed")
                 .action(ArgAction::SetTrue)
                 .required(false),
+        )
+        .after_help(
+            "EXAMPLES:\n\
+            \x20 gav remove org.apache.commons:commons-lang3:3.14.0\n\
+            \x20 gav remove org.springframework.boot:spring-boot-dependencies:3.2.0 --bom\n\
+            \x20 gav remove com.example:my-lib:1.0.0 --pl core --managed",
         );
     let tree_command = Command::new("tree")
         .alias("list")
-        .about("Display dependency tree");
+        .about("Display dependency tree")
+        .after_help(
+            "EXAMPLES:\n\
+            \x20 gav tree\n\
+            \x20 gav list",
+        );
     Command::new("gav")
         .version(VERSION)
         .about("gav - Maven Dependency Management with Dependency Plugin 3.11+")
         .subcommand(gav_add_command)
         .subcommand(gav_remove_command)
         .subcommand(tree_command)
+        .after_help(
+            "EXAMPLES:\n\
+            \x20 gav add org.apache.commons:commons-lang3:3.14.0\n\
+            \x20 gav add org.junit.jupiter:junit-jupiter:5.10.0 --test\n\
+            \x20 gav remove org.apache.commons:commons-lang3:3.14.0\n\
+            \x20 gav tree",
+        )
 }
