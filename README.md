@@ -66,13 +66,14 @@ with [dependency plugin 3.11+](https://maven.apache.org/plugins/maven-dependency
 
 commands:
 
-- add: `gav add <gav>`
+- add: `gav add <gav>` or `gav add --test <gav>`
 - remove: `gav remove <gav>`
 - dependencies: `gav tree`
 
-tips:
+Examples:
 
-- Add bom: `gav add --bom org.springframework.boot:spring-boot-dependencies:4.1.0`
+- Add JUnit dependency: `gav add --test org.junit.jupiter:junit-jupiter:6.1.2`
+- Add Spring Boot BOM: `gav add --bom org.springframework.boot:spring-boot-dependencies:4.1.0`
 
 # jarviz
 
