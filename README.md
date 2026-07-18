@@ -72,7 +72,7 @@ commands:
 
 tips:
 
-- Add bom: `gav add --bom org.springframework.boot:spring-boot-dependencies`
+- Add bom: `gav add --bom org.springframework.boot:spring-boot-dependencies:4.1.0`
 
 # jarviz
 
