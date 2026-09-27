@@ -196,13 +196,17 @@ pub fn add_command(command_matches: &clap::ArgMatches) {
         return;
     }
     let mut toolchains = Toolchains::load();
-    if version.contains('-') {
+    let changed = if version.contains('-') {
         let parts = version.split('-').collect::<Vec<&str>>();
         let version = &parts[0].to_string();
         let vendor = Some(parts[1].to_string());
-        toolchains.add_jdk(&version, vendor, jdk_home.unwrap());
+        toolchains.add_jdk(&version, vendor, jdk_home.unwrap())
     } else {
-        toolchains.add_jdk(&version, vendor, jdk_home.unwrap());
+        toolchains.add_jdk(&version, vendor, jdk_home.unwrap())
+    };
+    if !changed {
+        println!("JDK already exists in toolchains.xml: {}", version);
+        return;
     }
     toolchains.write();
     println!("Succeeded to add JDK: {}", version);
@@ -223,7 +227,10 @@ pub fn remove_command(command_matches: &clap::ArgMatches) {
     let version = command_matches.get_one::<String>("version").unwrap();
     let vendor = command_matches.get_one::<String>("vendor").map(|v| v.to_string());
     let mut toolchains = Toolchains::load();
-    toolchains.remove_jdk(&version, vendor);
+    if !toolchains.remove_jdk(&version, vendor) {
+        println!("JDK not found in toolchains.xml: {}", version);
+        return;
+    }
     toolchains.write();
     println!("Succeeded to remove JDK: {}", version);
 }
