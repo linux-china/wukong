@@ -112,7 +112,7 @@ pub fn bytecode(command_matches: &clap::ArgMatches) {
 pub fn bytecode_matrix(_: &clap::ArgMatches) {
     let mut table = Table::new();
     table.add_row(row!["Bytecode Version", "Java Version"]);
-    for major_version in 45..=70 {
+    for major_version in 45..=72 {
         let java_version = get_java_version(major_version);
         table.add_row(row![major_version.to_string(), java_version]);
     }
