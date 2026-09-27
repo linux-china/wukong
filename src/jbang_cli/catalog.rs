@@ -98,13 +98,6 @@ pub fn build_catalog_command() -> Command {
                         .required(true)
                 )
                 .arg(
-                    Arg::new("scriptOrFile")
-                        .help("A reference to a source file")
-                        .num_args(1)
-                        .index(1)
-                        .required(true)
-                )
-                .arg(
                     Arg::new("params")
                         .help("Parameters to pass on to the script")
                         .num_args(1..)
@@ -115,12 +108,6 @@ pub fn build_catalog_command() -> Command {
         .subcommand(
             Command::new("remove")
                 .about("Remove existing catalog.")
-                .arg(
-                    Arg::new("file")
-                        .help("Path or URL to alias file")
-                        .index(1)
-                        .required(true)
-                )
                 .arg(
                     Arg::new("name")
                         .help("The name of the alias")
