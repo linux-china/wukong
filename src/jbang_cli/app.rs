@@ -68,7 +68,7 @@ pub fn install_app(command_name: &str, script_or_file: &str) {
         script_or_file.to_string()
     };
     let command_path = jbang_home().join("bin").join(command_name);
-    let code = format!("#!/bin/sh\nexec jbang run {} \"$@\"", script_path);
+    let code = format!("#!/bin/sh\nexec jbang run \"{}\" \"$@\"", script_path);
     std::fs::write(&command_path, code).unwrap();
     set_executable(&command_path);
 }
