@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::path::{PathBuf};
+use std::path::{Path, PathBuf};
 use itertools::Itertools;
 use serde::{Deserialize};
 use crate::common::{extract_tgz, extract_tgz_from_sub_path, extract_zip, http_download};
@@ -55,19 +55,38 @@ pub fn install_jdk(java_version: &str, target_dir: &PathBuf) {
         std::fs::remove_file(&archive_file_path).unwrap();
     }
     http_download(&download_url, archive_file_path.to_str().unwrap());
-    if target_dir.exists() { // remove old jdk version
-        std::fs::remove_dir_all(&target_dir).unwrap();
+    // extract into a sibling temp dir first, then rename, so an interrupted install never leaves a broken JDK at target_dir
+    let parent_dir = target_dir.parent().expect("JDK target dir must have a parent");
+    std::fs::create_dir_all(parent_dir).unwrap();
+    let dir_name = target_dir.file_name().unwrap().to_string_lossy();
+    let staging_dir = parent_dir.join(format!(".{}.installing-{}", dir_name, std::process::id()));
+    if staging_dir.exists() {
+        std::fs::remove_dir_all(&staging_dir).unwrap();
     }
     if cfg!(target_family = "windows") {
-        extract_zip(&archive_file_path, target_dir, true);
+        extract_zip(&archive_file_path, &staging_dir, true);
     } else {
         if cfg!(target_os = "macos") {
-            extract_tgz_from_sub_path(&archive_file_path, target_dir, "Contents/Home/");
+            extract_tgz_from_sub_path(&archive_file_path, &staging_dir, "Contents/Home/");
         } else {
-            extract_tgz(&archive_file_path, target_dir, true);
+            extract_tgz(&archive_file_path, &staging_dir, true);
         }
     }
+    if !is_jdk_installed(&staging_dir) {
+        let _ = std::fs::remove_dir_all(&staging_dir);
+        panic!("Failed to install JDK {}: bin/java or release file not found after extraction", java_version);
+    }
+    if target_dir.exists() { // remove old or broken jdk
+        std::fs::remove_dir_all(&target_dir).unwrap();
+    }
+    std::fs::rename(&staging_dir, target_dir).unwrap();
     std::fs::remove_file(&archive_file_path).unwrap();
+}
+
+/// check whether a complete JDK is installed in the directory, not just that the directory exists
+pub fn is_jdk_installed(java_home: &Path) -> bool {
+    let java_exec = if cfg!(target_os = "windows") { "java.exe" } else { "java" };
+    java_home.join("bin").join(java_exec).is_file() && java_home.join("release").is_file()
 }
 
 #[derive(Debug, Clone, Deserialize)]

@@ -3,7 +3,7 @@ pub mod clap_app;
 use std::fs;
 use std::path::PathBuf;
 use wukong::common::capture_command;
-use wukong::foojay::install_jdk;
+use wukong::foojay::{install_jdk, is_jdk_installed};
 
 pub fn jenv_home() -> PathBuf {
     let home = dirs::home_dir().unwrap();
@@ -177,7 +177,7 @@ pub fn add_command(command_matches: &clap::ArgMatches) {
         if let Ok(num_version) = version_or_path.parse::<u32>() { // number
             let java_version = num_version.to_string();
             let java_home = jenv_home().join("versions").join(&java_version);
-            if java_home.exists() {
+            if is_jdk_installed(&java_home) {
                 println!("version {} already exists", num_version);
             } else {
                 println!("installing version {}", num_version);

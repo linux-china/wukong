@@ -8,7 +8,7 @@ use java_properties::PropertiesError;
 use serde::Serialize;
 use wukong::foojay;
 use crate::build_jbang_app;
-use wukong::foojay::install_jdk;
+use wukong::foojay::{install_jdk, is_jdk_installed};
 use crate::jbang_cli::jbang_home;
 
 fn get_current_jdk_path() -> String {
@@ -136,7 +136,7 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
                 let version = matches.get_one::<String>("version").unwrap();
                 let jbang_home = jbang_home_path.to_str().unwrap();
                 let jdk_path = jbang_home_path.join("cache").join("jdks").join(version);
-                if !jdk_path.exists() {
+                if !is_jdk_installed(&jdk_path) {
                     install_jdk(version, &jdk_path);
                 }
                 println!("export PATH=\"{}/cache/jdks/{}/bin:$PATH\"", jbang_home, version);

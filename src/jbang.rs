@@ -23,7 +23,7 @@ use crate::jbang_cli::wrapper::manage_wrapper;
 use crate::jbang_cli::{jbang_home, print_command_help, JBANG_DEFAULT_JAVA_VERSION};
 use clap::ArgMatches;
 use itertools::Itertools;
-use wukong::foojay::install_jdk;
+use wukong::foojay::{install_jdk, is_jdk_installed};
 
 pub const JBANG_SUB_COMMANDS: [&str; 17] = [
     "run",
@@ -54,7 +54,7 @@ fn main() {
             .join("cache")
             .join("jdks")
             .join(JBANG_DEFAULT_JAVA_VERSION);
-        if !default_jdk_home.exists() {
+        if !is_jdk_installed(&default_jdk_home) {
             install_jdk(JBANG_DEFAULT_JAVA_VERSION, &default_jdk_home);
         }
     }

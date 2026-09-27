@@ -105,7 +105,7 @@ pub fn jbang_exec() -> PathBuf {
 
 pub fn ensure_jdk_available(jdk_version: &str) -> PathBuf {
     let jdk_home = jbang_home().join("cache").join("jdks").join(jdk_version);
-    if !jdk_home.exists() {
+    if !wukong::foojay::is_jdk_installed(&jdk_home) {
         wukong::foojay::install_jdk(jdk_version, &jdk_home);
     }
     jdk_home
