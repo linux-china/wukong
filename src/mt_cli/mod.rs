@@ -42,7 +42,7 @@ pub fn jdks_command() {
         // list all JDKs from /Library/Java/JavaVirtualMachines
         let jdks = PathBuf::from("/Library/Java/JavaVirtualMachines");
         if jdks.exists() {
-            let lines = list_jdks(&gradle_jdks);
+            let lines = list_jdks(&jdks);
             print_jdks(&lines, "System");
         }
         let jdks = home_dir.join("Library").join("Java").join("JavaVirtualMachines");
