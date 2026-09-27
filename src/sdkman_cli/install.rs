@@ -145,7 +145,7 @@ mod tests {
     #[test]
     fn test_install_candidate() {
         let candidate_name = "ant";
-        let version = "1.10.14";
+        let version = "1.10.17";
         install_candidate(candidate_name, version);
     }
 
@@ -158,8 +158,8 @@ mod tests {
 
     #[test]
     fn test_copy_dir() {
-        let source = PathBuf::from("/Users/linux_china/temp/jdks/apache-maven-3.9.9");
-        let target = PathBuf::from("/Users/linux_china/temp/jdks/maven/3.9.9");
+        let source = PathBuf::from("/Users/linux_china/temp/jdks/apache-maven-3.9.16");
+        let target = PathBuf::from("/Users/linux_china/temp/jdks/maven/3.9.16");
         let mut options = CopyOptions::new(); //Initialize default values for CopyOptions
         options.copy_inside = true;
         fs_extra::dir::copy(PathBuf::from(source), target, &options).unwrap();
