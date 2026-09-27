@@ -6,6 +6,7 @@ use itertools::Itertools;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use std::collections::HashMap;
+use std::path::Path;
 
 fn handlebars() -> Handlebars<'static> {
     let mut hbs = Handlebars::new();
@@ -25,68 +26,79 @@ pub fn manage_init(init_matches: &clap::ArgMatches) {
         .get_one::<String>("scriptOrFile")
         .unwrap()
         .to_string();
-    let mut class_name = script_file.clone();
-    if !script_file.contains('.') {
+    if Path::new(&script_file).extension().is_none() {
         script_file = format!("{}.java", script_file);
-    } else {
-        class_name = script_file.split('.').next().unwrap().to_string();
     }
-    let file_name = if script_file.contains('/') {
-        script_file.split('/').last().unwrap().to_string()
-    } else {
-        script_file.clone()
-    };
+    let script_path = Path::new(&script_file);
+    let file_name = script_path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .unwrap_or(&script_file)
+        .to_string();
+    let class_name = script_path
+        .file_stem()
+        .and_then(|stem| stem.to_str())
+        .unwrap_or(&file_name)
+        .to_string();
     let params = if let Some(params) = init_matches.get_many::<String>("params") {
         params.into_iter().collect_vec()
     } else {
         vec![]
     };
-    let mut code: Option<String> = None;
-    if !params.is_empty() {
+    let code: String = if !params.is_empty() {
         // generate code from AI
-        if let Ok(api_key) = std::env::var("OPENAI_API_KEY") {
-            code = extract_code_from_openai(
+        let code = if let Ok(api_key) = std::env::var("OPENAI_API_KEY") {
+            extract_code_from_openai(
                 "https://api.openai.com",
                 &api_key,
                 "gpt-5",
                 params.get(0).unwrap(),
-            );
+            )
         } else if let Ok(api_key) = std::env::var("DEEPSEEK_API_KEY") {
-            code = extract_code_from_openai(
+            extract_code_from_openai(
                 "https://api.deepseek.com",
                 &api_key,
                 "deepseek-chat",
                 params.get(0).unwrap(),
-            );
-        }
-        else {
+            )
+        } else {
             println!(
                 "Please specify OPENAI_API_KEY or DEEPSEEK_API_KEY environment variable to generate code from AI."
             );
             return;
         };
+        match code {
+            Some(code) => code,
+            None => {
+                eprintln!("Failed to extract code from AI response.");
+                return;
+            }
+        }
     } else {
         // generate code from template
         let default_template = "hello".to_owned();
         let template_name = init_matches
             .get_one::<String>("template")
             .unwrap_or(&default_template);
-        if TEMPLATES_BUILTIN.contains_key(&template_name.as_str()) {
-            let mut context: HashMap<String, String> = HashMap::new();
-            context.insert("className".to_string(), class_name);
-            context.insert("fileName".to_string(), file_name);
-            code = handlebars().render(template_name, &context).ok()
-        } else {
-            call_jbang_sub_command(&["init", "-t", template_name, file_name.as_str()]);
+        if !TEMPLATES_BUILTIN.contains_key(&template_name.as_str()) {
+            // non-builtin template: let jbang.jar generate the file
+            call_jbang_sub_command(&["init", "-t", template_name, script_file.as_str()]);
+            return;
         }
-    }
-    if let Some(code) = code {
-        std::fs::write(&script_file, code).unwrap();
-        set_executable(&script_file);
-        println!("Script file: {}", script_file);
-    } else {
-        println!("Please specify OPENAI_API_KEY environment variable to generate code from AI.");
-    }
+        let mut context: HashMap<String, String> = HashMap::new();
+        context.insert("className".to_string(), class_name);
+        context.insert("fileName".to_string(), file_name);
+        match handlebars().render(template_name, &context) {
+            Ok(code) => code,
+            Err(e) => {
+                eprintln!("Failed to render template '{}': {}", template_name, e);
+                return;
+            }
+        }
+    };
+    std::fs::write(&script_file, code).unwrap();
+    set_executable(&script_file);
+    println!("Script file: {}", script_file);
 }
 
 #[derive(Debug, Serialize, Deserialize)]
