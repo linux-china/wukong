@@ -91,8 +91,6 @@ fn main() {
     }
     let app = build_jbang_app();
     let matches = app.get_matches();
-    // inject insecure
-    inject_insecure(&matches);
     if let Some((command, command_matches)) = matches.subcommand() {
         match command {
             "run" => manage_run(command_matches),
@@ -126,12 +124,6 @@ fn main() {
             script_or_file,
             &params.iter().map(|s| s.as_str()).collect_vec(),
         );
-    }
-}
-
-fn inject_insecure(matches: &ArgMatches) {
-    if matches.get_flag("insecure") {
-        unsafe { std::env::set_var("ONEIO_ACCEPT_INVALID_CERTS", "true") }
     }
 }
 
