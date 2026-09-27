@@ -5,13 +5,11 @@ use wukong::common::{capture_command, run_command_line};
 
 pub fn manage_run(run_matches: &clap::ArgMatches) {
     let script_or_file = run_matches.get_one::<String>("scriptOrFile").unwrap();
+    // forward raw args to JBang unchanged: JBang (picocli) handles `--` itself,
+    // and any `--` meant for the script must be preserved
     let args = std::env::args().collect::<Vec<String>>();
-    let app_args = &args[2..]
-        .iter()
-        .filter(|s| *s != "--")
-        .map(|s| s.as_str())
-        .collect_vec();
-    jbang_run(script_or_file, app_args);
+    let app_args = args[2..].iter().map(|s| s.as_str()).collect_vec();
+    jbang_run(script_or_file, &app_args);
 }
 pub fn jbang_run(_script_or_file: &str, script_and_params: &[&str]) {
     let jdk_home = ensure_jdk_available(JBANG_DEFAULT_JAVA_VERSION);
@@ -90,6 +88,21 @@ pub fn build_run_command() -> Command {
                 .long("insecure")
                 .help("Enable insecure trust of all SSL certificates.")
                 .num_args(0)
+                .required(false),
+        )
+        .arg(
+            Arg::new("scriptOrFile")
+                .help("A reference to a source file")
+                .index(1)
+                .required(true),
+        )
+        .arg(
+            Arg::new("userParams")
+                .help("Parameters to pass on to the script")
+                .index(2)
+                .num_args(1..)
+                .trailing_var_arg(true)
+                .allow_hyphen_values(true)
                 .required(false),
         )
 }
