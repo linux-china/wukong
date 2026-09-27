@@ -14,11 +14,11 @@ pub fn manage_direnv(direnv_matches: &clap::ArgMatches) {
 }
 
 pub fn direnv_init() {
-    let sdkmanrc_path = PathBuf::from(".sdkmanrc");
-    if !sdkmanrc_path.exists() {
+    let envrc_path = PathBuf::from(".envrc");
+    if !envrc_path.exists() {
         std::fs::write(".envrc", "eval $(sdk direnv)").unwrap();
     } else {
-        let code = std::fs::read_to_string(sdkmanrc_path).unwrap();
+        let code = std::fs::read_to_string(envrc_path).unwrap();
         if !code.contains("eval $(sdk direnv)") {
             std::fs::write(".envrc", format!("{}\neval $(sdk direnv)", code)).unwrap();
         }
