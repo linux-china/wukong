@@ -35,7 +35,9 @@ struct JBangJDK {
 fn find_installed_jdks() -> Vec<JBangJDK> {
     let mut jdks: Vec<JBangJDK> = vec![];
     let jdks_path = jbang_home().join("cache").join("jdks");
-    let paths = fs::read_dir(&jdks_path).unwrap();
+    let Ok(paths) = fs::read_dir(&jdks_path) else {
+        return jdks;
+    };
     for entry in paths {
         if let Ok(dir_entry) = entry {
             let jdk_path = dir_entry.path();
@@ -297,7 +299,7 @@ pub fn build_jdk_command() -> Command {
                     Arg::new("version")
                         .help("The version of the JDK to select")
                         .index(1)
-                        .required(false)
+                        .required(true)
                 )
         )
         .subcommand(
