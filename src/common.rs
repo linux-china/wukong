@@ -72,16 +72,31 @@ pub fn get_redirect_url(http_url: &str) -> anyhow::Result<String> {
     Err(anyhow!("Failed to get redirect url: {}", http_url))
 }
 
+/// strip the first (root) component from an archive entry path, separator agnostic.
+/// Returns `None` when nothing is left, e.g. the root directory itself or a file at archive root.
+pub fn strip_root_component(path: &Path) -> Option<PathBuf> {
+    let stripped: PathBuf = path.components().skip(1).collect();
+    if stripped.as_os_str().is_empty() {
+        None
+    } else {
+        Some(stripped)
+    }
+}
+
 pub fn extract_zip<P: AsRef<Path>>(archive_file_path: P, target_dir: &PathBuf, root_excluded: bool) {
     let mut archive = ZipArchive::new(File::open(archive_file_path).unwrap()).unwrap();
     for i in 0..archive.len() {
         let mut file = archive.by_index(i).unwrap();
         if file.is_file() {
-            let enclosed_name = file.enclosed_name().unwrap();
-            let mut relative_path = enclosed_name.to_str().unwrap();
-            if root_excluded {  // exclude root path
-                relative_path = &relative_path[(relative_path.find(std::path::MAIN_SEPARATOR).unwrap() + 1)..];
-            }
+            let Some(enclosed_name) = file.enclosed_name() else { continue };
+            let relative_path = if root_excluded {  // exclude root path
+                match strip_root_component(&enclosed_name) {
+                    Some(p) => p,
+                    None => continue,
+                }
+            } else {
+                enclosed_name
+            };
             let outpath = target_dir.join(relative_path);
             if let Some(p) = outpath.parent() {
                 if !p.exists() {
@@ -102,12 +117,19 @@ pub fn extract_tgz<P: AsRef<Path>>(archive_file_path: P, target_dir: &PathBuf, r
         .entries().unwrap()
         .filter_map(|e| e.ok())
         .for_each(|mut entry| {
-            let entry_path = entry.path().unwrap();
-            let mut relative_path = entry_path.to_str().unwrap();
-            if root_excluded { // exclude root path
-                relative_path = &relative_path[(relative_path.find(std::path::MAIN_SEPARATOR).unwrap() + 1)..];
-            }
+            let entry_path = entry.path().unwrap().into_owned();
+            let relative_path = if root_excluded { // exclude root path
+                match strip_root_component(&entry_path) {
+                    Some(p) => p,
+                    None => return,
+                }
+            } else {
+                entry_path
+            };
             let path = target_dir.join(relative_path);
+            if let Some(p) = path.parent() {
+                std::fs::create_dir_all(p).unwrap();
+            }
             entry.unpack(&path).unwrap();
         });
 }
@@ -190,6 +212,13 @@ pub fn run_command_with_env_vars(command_name: &str, args: &[&str],
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_strip_root_component() {
+        assert_eq!(strip_root_component(Path::new("jbang/bin/jbang")), Some(PathBuf::from("bin").join("jbang")));
+        assert_eq!(strip_root_component(Path::new("jbang/")), None);
+        assert_eq!(strip_root_component(Path::new("README.md")), None);
+    }
 
     #[test]
     fn test_download() {

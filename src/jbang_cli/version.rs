@@ -1,7 +1,7 @@
 use std::fs::File;
 use clap::{Arg, Command};
 use tar::Archive;
-use wukong::common::http_download;
+use wukong::common::{http_download, strip_root_component};
 use crate::jbang_cli::clap_app::VERSION;
 use crate::jbang_cli::jbang_home;
 
@@ -55,12 +55,19 @@ pub fn install_jbang() {
         .entries().unwrap()
         .filter_map(|e| e.ok())
         .for_each(|mut entry| {
-            let entry_path = entry.path().unwrap();
-            let mut relative_path = entry_path.to_str().unwrap();
-            if relative_path.starts_with("jbang/") || relative_path.starts_with("jbang\\") {
-                relative_path = &relative_path[(relative_path.find(std::path::MAIN_SEPARATOR).unwrap() + 1)..];
-            }
+            let entry_path = entry.path().unwrap().into_owned();
+            let relative_path = if entry_path.starts_with("jbang") {
+                match strip_root_component(&entry_path) {
+                    Some(p) => p,
+                    None => return,
+                }
+            } else {
+                entry_path
+            };
             let path = target_dir.join(relative_path);
+            if let Some(p) = path.parent() {
+                std::fs::create_dir_all(p).unwrap();
+            }
             entry.set_preserve_mtime(true);
             entry.unpack(&path).unwrap();
         });
