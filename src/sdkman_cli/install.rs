@@ -84,7 +84,9 @@ pub fn install_candidate_from_path(
     symlink::symlink_dir(install_path, candidate_home).unwrap();
 }
 
-pub fn install_candidate(candidate_name: &str, candidate_version: &str) {
+/// Install candidate and return its home directory.
+/// Status messages are written to stderr, because stdout may be evaluated by shell, such as `eval $(sdk direnv)`.
+pub fn install_candidate(candidate_name: &str, candidate_version: &str) -> PathBuf {
     let candidate_version = if candidate_name == "java" && candidate_version.parse::<u32>().is_ok()
     {
         find_java_version(candidate_version).unwrap_or(candidate_version.to_string())
@@ -94,13 +96,13 @@ pub fn install_candidate(candidate_name: &str, candidate_version: &str) {
     let candidate_version = candidate_version.as_str();
     let candidate_home = find_candidate_home(candidate_name, candidate_version);
     if candidate_home.exists() {
-        println!(
+        eprintln!(
             "{}@{} installed already: {}",
             candidate_name,
             candidate_version,
             candidate_home.to_str().unwrap()
         );
-        return;
+        return candidate_home;
     }
     let sdkman_platform = get_sdkman_platform();
     let download_url = format!(
@@ -127,6 +129,7 @@ pub fn install_candidate(candidate_name: &str, candidate_version: &str) {
         extract_zip(&archive_file_path, &candidate_home, true);
     }
     std::fs::remove_file(&archive_file_path).unwrap();
+    candidate_home
 }
 
 #[cfg(test)]
