@@ -18,10 +18,21 @@ pub fn manage_cache(cache_matches: &clap::ArgMatches) {
                 names.insert("stdin", "stdins");
                 names.insert("url", "urls");
                 let none_selected = !names.keys().any(|key| matches.get_flag(key));
-                // clear all caches with `--all` or when no cache is specified
-                if matches.get_flag("all") || none_selected {
+                // `--all` clears everything, including JDKs
+                if matches.get_flag("all") {
                     if cache_path.exists() {
                         std::fs::remove_dir_all(cache_path).unwrap();
+                    }
+                    return;
+                }
+                // no cache specified: clear the default (safe) set, same as upstream JBang,
+                // JDKs, projects, kotlinc and groovyc caches are kept
+                if none_selected {
+                    for value in ["urls", "jars", "scripts", "stdins", "deps"] {
+                        let cache_path = cache_path.join(value);
+                        if cache_path.exists() {
+                            std::fs::remove_dir_all(cache_path).unwrap();
+                        }
                     }
                     return;
                 }
@@ -44,10 +55,10 @@ pub fn build_cache_command() -> Command {
         .about("Manage compiled scripts in the local cache.")
         .subcommand(
             Command::new("clear")
-                .about("Clear the various caches used by jbang. By default this will clear all caches. To clear specific caches list them explicitly i.e. '--project' for temporary projects.")
+                .about("Clear the various caches used by jbang. By default this will clear the JAR, script, stdin, URL and dependency caches. To clear other caches list them explicitly i.e. '--jdk' for JDKs, '--project' for temporary projects, or use '--all'.")
                 .arg(
                     Arg::new("all")
-                        .help("clear all caches")
+                        .help("clear all caches, including JDKs")
                         .long("all")
                         .num_args(0)
                         .required(false)
