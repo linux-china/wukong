@@ -21,7 +21,7 @@ fn get_shell_name() -> String {
 pub fn init() {
     let jenv_home = jenv_home();
     let shell_name = get_shell_name();
-    println!("export PATH=\"/{}/shims:${{PATH}}\"", jenv_home.to_str().unwrap());
+    println!("export PATH=\"{}/shims:${{PATH}}\"", jenv_home.to_str().unwrap());
     println!("export JENV_SHELL={}", shell_name);
     println!("export JENV_LOADED=1");
     println!("unset JAVA_HOME");
