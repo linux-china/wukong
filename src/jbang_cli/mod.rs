@@ -35,11 +35,11 @@ pub fn jbang_jar_path() -> PathBuf {
     let path = jbang_home().join("bin").join("jbang.jar");
     if !path.exists() {
         http_download(
-            "https://repo1.maven.org/maven2/dev/jbang/jbang.bin/0.138.0/jbang.bin-0.138.0-all.jar",
+            "https://repo1.maven.org/maven2/dev/jbang/jbang.bin/0.142.0/jbang.bin-0.142.0-all.jar",
             &path,
         );
         let version_file_path = jbang_home().join("version.txt");
-        std::fs::write(&version_file_path, "0.138.0").unwrap();
+        std::fs::write(&version_file_path, "0.142.0").unwrap();
         // install_jbang();
     }
     path
