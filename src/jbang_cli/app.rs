@@ -8,13 +8,17 @@ pub fn manage_app(app_matches: &clap::ArgMatches) {
             "install" => {
                 let script_or_file = matches.get_one::<String>("scriptOrFile").unwrap();
                 let command_name = if let Some(name) = matches.get_one::<String>("name") {
+                    name.clone()
+                } else if let Some(name) = derive_command_name(script_or_file) {
                     name
-                } else if script_or_file.contains('.') {
-                    &script_or_file[..script_or_file.find('.').unwrap()]
                 } else {
-                    script_or_file
+                    eprintln!("Cannot derive command name from '{}', please use --name to specify it.", script_or_file);
+                    return;
                 };
-                install_app(command_name, script_or_file);
+                let user_params: Vec<&str> = matches.get_many::<String>("userParams")
+                    .map(|values| values.map(|v| v.as_str()).collect())
+                    .unwrap_or_default();
+                install_app(&command_name, script_or_file, &user_params);
             }
             "uninstall" => {
                 let name = matches.get_one::<String>("name").unwrap();
@@ -59,7 +63,31 @@ pub fn list_apps() {
         }
     }
 }
-pub fn install_app(command_name: &str, script_or_file: &str) {
+/// Derive a command name from a script reference: local file, URL, GAV or alias.
+/// e.g. `scripts/hello.java` -> `hello`, `https://github.com/x/y/raw/main/demo.jsh?x=1` -> `demo`,
+/// `org.example:tool:1.0` -> `tool`, `hello@catalog` -> `hello`.
+fn derive_command_name(script_or_file: &str) -> Option<String> {
+    // strip URL query and fragment, then trailing slashes
+    let reference = script_or_file.split(['?', '#']).next().unwrap_or("");
+    let reference = reference.trim_end_matches(['/', '\\']);
+    let is_path = reference.contains('/') || reference.contains('\\');
+    let mut name = reference.rsplit(['/', '\\']).next().unwrap_or("");
+    if !is_path && name.matches(':').count() >= 2 {
+        // GAV: groupId:artifactId:version
+        name = name.split(':').nth(1).unwrap_or("");
+    } else if !is_path {
+        // alias@catalog
+        name = name.split('@').next().unwrap_or("");
+    }
+    if let Some(pos) = name.rfind('.') {
+        if pos > 0 {
+            name = &name[..pos];
+        }
+    }
+    if name.is_empty() || name.contains(':') { None } else { Some(name.to_string()) }
+}
+
+pub fn install_app(command_name: &str, script_or_file: &str, user_params: &[&str]) {
     let file_path = PathBuf::from(script_or_file);
     let script_path = if file_path.exists() {
         let absolute_path = std::path::absolute(file_path).unwrap();
@@ -68,9 +96,15 @@ pub fn install_app(command_name: &str, script_or_file: &str) {
         script_or_file.to_string()
     };
     let command_path = jbang_home().join("bin").join(command_name);
-    let code = format!("#!/bin/sh\nexec jbang run \"{}\" \"$@\"", script_path);
-    std::fs::write(&command_path, code).unwrap();
+    std::fs::write(&command_path, build_launcher_script(&script_path, user_params)).unwrap();
     set_executable(&command_path);
+}
+
+fn build_launcher_script(script_path: &str, user_params: &[&str]) -> String {
+    let mut args = vec![script_path];
+    args.extend_from_slice(user_params);
+    let quoted_args = shlex::try_join(args).unwrap();
+    format!("#!/bin/sh\nexec jbang run {} \"$@\"", quoted_args)
 }
 
 pub fn build_app_command() -> Command {
@@ -84,7 +118,7 @@ pub fn build_app_command() -> Command {
                         .long("name")
                         .help("A name for the command")
                         .num_args(1)
-                        .required(true)
+                        .required(false)
                 )
                 .arg(
                     Arg::new("scriptOrFile")
@@ -97,6 +131,8 @@ pub fn build_app_command() -> Command {
                         .help("Parameters to pass on to the script")
                         .index(2)
                         .num_args(1..)
+                        .trailing_var_arg(true)
+                        .allow_hyphen_values(true)
                         .required(false)
                 )
         )
@@ -148,7 +184,35 @@ mod tests {
 
     #[test]
     fn test_install_app() {
-        install_app("hello", "scripts/hello.java");
+        install_app("hello", "scripts/hello.java", &["--verbose", "hello world"]);
+    }
+
+    #[test]
+    fn test_derive_command_name() {
+        assert_eq!(derive_command_name("hello.java").as_deref(), Some("hello"));
+        assert_eq!(derive_command_name("scripts/hello.java").as_deref(), Some("hello"));
+        assert_eq!(derive_command_name("./my.app/hello.java").as_deref(), Some("hello"));
+        assert_eq!(derive_command_name("https://github.com/jbangdev/jbang-examples/blob/main/examples/helloworld.java?raw=true").as_deref(), Some("helloworld"));
+        assert_eq!(derive_command_name("https://example.com/demo.jsh#main").as_deref(), Some("demo"));
+        assert_eq!(derive_command_name("org.example:tool:1.0.0").as_deref(), Some("tool"));
+        assert_eq!(derive_command_name("hello@jbangdev").as_deref(), Some("hello"));
+        assert_eq!(derive_command_name("hello").as_deref(), Some("hello"));
+        assert_eq!(derive_command_name("https://").as_deref(), None);
+    }
+
+    #[test]
+    fn test_install_user_params() {
+        let matches = build_app_command()
+            .try_get_matches_from(["app", "install", "--name", "hi", "hello.java", "--verbose", "hello world"])
+            .unwrap();
+        let (_, install_matches) = matches.subcommand().unwrap();
+        let user_params: Vec<&str> = install_matches.get_many::<String>("userParams")
+            .unwrap().map(|v| v.as_str()).collect();
+        assert_eq!(user_params, ["--verbose", "hello world"]);
+        assert_eq!(
+            build_launcher_script("hello.java", &user_params),
+            "#!/bin/sh\nexec jbang run hello.java --verbose 'hello world' \"$@\""
+        );
     }
 
     #[test]
