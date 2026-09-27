@@ -129,6 +129,9 @@ pub fn search(command_matches: &clap::ArgMatches) {
         result.response.num_found, limit1
     );
     if let Some(docs) = &result.response.docs {
+        if docs.is_empty() {
+            return;
+        }
         let max_len = docs
             .iter()
             .map(|doc| doc.get_result_id(format).len())
@@ -190,6 +193,9 @@ pub fn class_search(command_matches: &clap::ArgMatches) {
         result.response.num_found, limit1
     );
     if let Some(docs) = &result.response.docs {
+        if docs.is_empty() {
+            return;
+        }
         let max_len = docs.iter().map(|doc| doc.id.len()).max().unwrap();
         println!(
             "  {} {}",

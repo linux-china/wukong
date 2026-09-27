@@ -25,7 +25,7 @@ pub fn gav_add(command_matches: &clap::ArgMatches) {
 
     let mut scope = "".to_owned();
     if let Some(scope_param) = command_matches.get_one::<String>("scope") {
-        if !scope.is_empty() {
+        if !scope_param.is_empty() {
             scope = scope_param.to_owned();
         }
     }
