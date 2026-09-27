@@ -74,13 +74,13 @@ pub fn find_candidate_home(candidate_name: &str, candidate_version: &str) -> Pat
 pub fn find_java_home(major_version: &str) -> Option<PathBuf> {
     let java_repo = sdkman_home().join("candidates").join("java");
     // list sub directories from java_repo
-    let entries = std::fs::read_dir(java_repo).unwrap();
-    for entry in entries {
-        let entry = entry.unwrap();
+    let entries = std::fs::read_dir(java_repo).ok()?;
+    for entry in entries.flatten() {
         if entry.path().is_dir() {
-            let version = entry.file_name().into_string().unwrap();
-            if version.starts_with(major_version) {
-                return Some(entry.path());
+            if let Ok(version) = entry.file_name().into_string() {
+                if version.starts_with(major_version) {
+                    return Some(entry.path());
+                }
             }
         }
     }
