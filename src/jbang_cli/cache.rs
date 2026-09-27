@@ -7,12 +7,6 @@ pub fn manage_cache(cache_matches: &clap::ArgMatches) {
         match sub_command {
             "clear" => {
                 let cache_path = jbang_home().join("cache");
-                if matches.get_flag("all") {
-                    if cache_path.exists() {
-                        std::fs::remove_dir_all(cache_path).unwrap();
-                    }
-                    return;
-                }
                 let mut names: HashMap<&str, &str> = HashMap::new();
                 names.insert("deps", "deps");
                 names.insert("groovyc", "groovycs");
@@ -23,6 +17,14 @@ pub fn manage_cache(cache_matches: &clap::ArgMatches) {
                 names.insert("script", "scripts");
                 names.insert("stdin", "stdins");
                 names.insert("url", "urls");
+                let none_selected = !names.keys().any(|key| matches.get_flag(key));
+                // clear all caches with `--all` or when no cache is specified
+                if matches.get_flag("all") || none_selected {
+                    if cache_path.exists() {
+                        std::fs::remove_dir_all(cache_path).unwrap();
+                    }
+                    return;
+                }
                 for (key, value) in names {
                     if matches.get_flag(key) {
                         let cache_path = cache_path.join(value);
@@ -42,7 +44,7 @@ pub fn build_cache_command() -> Command {
         .about("Manage compiled scripts in the local cache.")
         .subcommand(
             Command::new("clear")
-                .about("Clear the various caches used by jbang. By default this will clear the JAR, script, stdin and URL caches. To clear other caches list them explicitly i.e. '--project' for temporary projects.")
+                .about("Clear the various caches used by jbang. By default this will clear all caches. To clear specific caches list them explicitly i.e. '--project' for temporary projects.")
                 .arg(
                     Arg::new("all")
                         .help("clear all caches")
