@@ -25,7 +25,7 @@ use std::path::{Path, PathBuf};
 use wukong::common::{http_download, run_command};
 use zip::ZipArchive;
 
-pub const JBANG_DEFAULT_JAVA_VERSION: &str = "17";
+pub const JBANG_DEFAULT_JAVA_VERSION: &str = "21";
 
 pub fn jbang_home() -> PathBuf {
     wukong::common::jbang_home()
