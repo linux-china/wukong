@@ -13,7 +13,8 @@ use wukong::common::{
 pub fn manage_install(install_matches: &clap::ArgMatches) {
     let mut accept_as_default = install_matches.get_flag("yes");
     if !accept_as_default {
-        accept_as_default = read_sdkman_config().contains_key("sdkman_auto_answer");
+        accept_as_default = read_sdkman_config().contains_key("sdkman_auto_answer")
+            && read_sdkman_config().get("sdkman_auto_answer") == Some(&"true".to_string());
     }
     if let Some(candidate_name) = install_matches.get_one::<String>("candidate") {
         let installed_version =

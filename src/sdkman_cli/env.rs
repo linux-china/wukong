@@ -48,6 +48,7 @@ pub fn env_update() {
                     candidates.push(line.to_string());
                 }
             }
+            write_candidates(candidates);
         } else {
             eprintln!("No default Java version found!");
         }

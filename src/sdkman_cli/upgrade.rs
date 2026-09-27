@@ -1,11 +1,15 @@
-use crate::sdkman_cli::{find_candidate_home, get_remote_candidate_default_version, list_candidate_names, read_sdkman_config};
 use crate::sdkman_cli::default::make_candidate_default;
 use crate::sdkman_cli::install::install_candidate;
+use crate::sdkman_cli::{
+    find_candidate_home, get_remote_candidate_default_version, list_candidate_names,
+    read_sdkman_config,
+};
 
 pub fn manage_upgrade(upgrade_matches: &clap::ArgMatches) {
     let mut accept_as_default = upgrade_matches.get_flag("yes");
     if !accept_as_default {
-        accept_as_default = read_sdkman_config().contains_key("sdkman_auto_answer");
+        accept_as_default = read_sdkman_config().contains_key("sdkman_auto_answer")
+            && read_sdkman_config().get("sdkman_auto_answer") == Some(&"true".to_string());
     }
     if let Some(candidate_name) = upgrade_matches.get_one::<String>("candidate") {
         upgrade_candidate(candidate_name, accept_as_default);
@@ -25,7 +29,10 @@ fn upgrade_candidate(candidate_name: &str, accept_as_default: bool) {
     }
     let candidate_home = find_candidate_home(candidate_name, &default_remote_version);
     if !candidate_home.exists() {
-        println!("Begin to upgrade {} to {}", candidate_name, default_remote_version);
+        println!(
+            "Begin to upgrade {} to {}",
+            candidate_name, default_remote_version
+        );
         install_candidate(candidate_name, &default_remote_version);
         if accept_as_default {
             make_candidate_default(candidate_name, &default_remote_version);
