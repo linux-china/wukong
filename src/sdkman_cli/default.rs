@@ -19,10 +19,22 @@ pub fn make_candidate_default(candidate_name: &str, candidate_version: &str) {
         return;
     }
     let candidate_current_link = candidate_home.parent().unwrap().join("current");
-    if candidate_current_link.exists() && candidate_current_link.is_symlink() {
-        symlink::remove_symlink_dir(&candidate_current_link).unwrap();
+    // `is_symlink()` doesn't follow the link, so dangling links (target removed) are handled too;
+    // `exists()` would return false for them and leave the stale link in place.
+    if candidate_current_link.is_symlink() {
+        let remove_result = symlink::remove_symlink_dir(&candidate_current_link)
+            .or_else(|_| std::fs::remove_file(&candidate_current_link));
+        if let Err(e) = remove_result {
+            eprintln!("Failed to remove existing link {}: {}", candidate_current_link.display(), e);
+            return;
+        }
+    } else if candidate_current_link.exists() {
+        eprintln!("{} exists and is not a symlink, please remove it manually.", candidate_current_link.display());
+        return;
     }
-    symlink::symlink_dir(&candidate_home, &candidate_current_link).unwrap();
+    if let Err(e) = symlink::symlink_dir(&candidate_home, &candidate_current_link) {
+        eprintln!("Failed to create link {}: {}", candidate_current_link.display(), e);
+    }
 }
 
 #[cfg(test)]
