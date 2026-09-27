@@ -71,13 +71,13 @@ pub fn builtin_jbang_catalog() -> JBangCatalog {
 }
 
 pub fn find_jbang_catalog_from_path(path: &PathBuf) -> Option<JBangCatalog> {
-    if path.join("jbang-catalog.json").exists() {
-        serde_json::from_reader(File::open(path.join("jbang-catalog.json")).unwrap()).ok()
-    } else if let Some(parent) = path.parent() {
-        find_jbang_catalog_from_path(&PathBuf::from(parent))
-    } else {
-        None
-    }
+    // canonicalize first: parent() of a relative path such as "." is empty and stops the lookup
+    let path = path.canonicalize().ok()?;
+    path.ancestors()
+        .map(|dir| dir.join("jbang-catalog.json"))
+        .find(|catalog_file| catalog_file.exists())
+        .and_then(|catalog_file| File::open(catalog_file).ok())
+        .and_then(|file| serde_json::from_reader(file).ok())
 }
 
 pub fn java_exec(java_home: &PathBuf) -> String {
