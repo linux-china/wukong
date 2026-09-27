@@ -3,7 +3,7 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use clap::Command;
 use crate::sdkman_cli::install::install_candidate;
-use crate::sdkman_cli::{find_candidate_home, find_java_home, find_java_version, sdkman_home};
+use crate::sdkman_cli::{find_java_home, sdkman_home};
 
 pub fn manage_direnv(direnv_matches: &clap::ArgMatches) {
     if direnv_matches.subcommand_matches("init").is_some() {
@@ -26,6 +26,8 @@ pub fn direnv_init() {
     println!("direnv initialized");
 }
 
+/// Output of the hook is evaluated by shell(`eval $(sdk direnv)`), so only `export` statements are written to stdout,
+/// and all other messages(installation progress etc.) must go to stderr.
 pub fn direnv_hook() {
     let mut paths: Vec<String> = vec![];
     let mut java_version = None;
@@ -40,54 +42,31 @@ pub fn direnv_hook() {
                     candidate_home = java_home;
                 }
             }
+            if !candidate_home.exists() {
+                candidate_home = install_candidate(candidate_name, candidate_version);
+            }
             if candidate_home.exists() {
-                let candidate_home_dir = candidate_home.to_str().unwrap();
-                println!("export {}_HOME={}", candidate_name.to_uppercase(), candidate_home_dir);
-                if candidate_name == "java" && candidate_home_dir.contains("graal") {
-                    println!("export GRAALVM_HOME={}", candidate_home_dir);
-                }
-                if candidate_home.join("bin").exists() {
-                    paths.push(candidate_home.join("bin").to_str().unwrap().to_string());
-                } else {
-                    paths.push(candidate_home_dir.to_string());
-                }
+                export_candidate_home(candidate_name, &candidate_home, &mut paths);
                 if candidate_name == "java" {
                     java_version = Some(candidate_version.clone());
                 }
-            } else {
-                install_candidate(candidate_name, candidate_version);
             }
         }
     }
     if java_version.is_none() {
         let java_version_file = PathBuf::from(".java-version");
         if java_version_file.exists() {
-            let java_version = std::fs::read_to_string(java_version_file).unwrap().trim().to_string();
-            if java_version.parse::<u32>().is_ok() { // load java home from JBang
-                if let Some(java_home) = find_java_home(&java_version) {
-                    let java_home_dir = java_home.to_str().unwrap();
-                    println!("export JAVA_HOME={}", java_home_dir);
-                    if java_home_dir.contains("graal") {
-                        println!("export GRAALVM_HOME={}", java_home_dir);
-                    }
-                    paths.push(java_home.join("bin").to_str().unwrap().to_string());
-                } else {
-                    let java_version = find_java_version(&java_version).unwrap();
-                    let java_home = find_candidate_home("java", &java_version);
-                    wukong::foojay::install_jdk(&java_version, &java_home);
-                }
-            } else { // load java home from SDKMAN
-                let java_home = candidates_path.join("java").join(&java_version);
-                if java_home.exists() {
-                    let java_home_dir = java_home.to_str().unwrap();
-                    println!("export JAVA_HOME={}", java_home_dir);
-                    if java_version.contains("graal") {
-                        println!("export GRAALVM_HOME={}", java_home_dir);
-                    }
-                    paths.push(java_home.join("bin").to_str().unwrap().to_string());
-                } else {
-                    install_candidate("java", &java_version);
-                }
+            let version = std::fs::read_to_string(java_version_file).unwrap().trim().to_string();
+            let java_home = if version.parse::<u32>().is_ok() { // major version, such as 21
+                find_java_home(&version)
+            } else { // SDKMAN version, such as 21.0.4-tem
+                Some(candidates_path.join("java").join(&version)).filter(|home| home.exists())
+            };
+            // install_candidate() resolves major version to SDKMAN version and downloads it from SDKMAN broker
+            let java_home = java_home.unwrap_or_else(|| install_candidate("java", &version));
+            if java_home.exists() {
+                export_candidate_home("java", &java_home, &mut paths);
+                java_version = Some(version);
             }
         }
     }
@@ -96,6 +75,19 @@ pub fn direnv_hook() {
     }
     if !paths.is_empty() {
         println!("export PATH={}:$PATH", paths.join(":"));
+    }
+}
+
+fn export_candidate_home(candidate_name: &str, candidate_home: &PathBuf, paths: &mut Vec<String>) {
+    let candidate_home_dir = candidate_home.to_str().unwrap();
+    println!("export {}_HOME={}", candidate_name.to_uppercase(), candidate_home_dir);
+    if candidate_name == "java" && candidate_home_dir.contains("graal") {
+        println!("export GRAALVM_HOME={}", candidate_home_dir);
+    }
+    if candidate_home.join("bin").exists() {
+        paths.push(candidate_home.join("bin").to_str().unwrap().to_string());
+    } else {
+        paths.push(candidate_home_dir.to_string());
     }
 }
 
