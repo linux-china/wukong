@@ -103,6 +103,31 @@ impl McsDoc {
     }
 }
 
+/// query Maven Central with Solr query, and query parameters are URL encoded
+fn solr_search(query: &str, limit: u32) -> McsResult {
+    let url = url::Url::parse_with_params(
+        "https://search.maven.org/solrsearch/select",
+        &[("q", query), ("rows", &limit.to_string()), ("wt", "json")],
+    )
+    .unwrap();
+    let client = reqwest::blocking::Client::new();
+    client
+        .get(url)
+        .header(reqwest::header::USER_AGENT, "curl/8.7.1")
+        .send()
+        .unwrap()
+        .json::<McsResult>()
+        .unwrap()
+}
+
+fn print_found(result: &McsResult) {
+    let shown = result.response.docs.as_ref().map_or(0, |docs| docs.len());
+    println!(
+        "Found {} results (showing {})",
+        result.response.num_found, shown
+    );
+}
+
 pub fn search(command_matches: &clap::ArgMatches) {
     let query = command_matches.get_one::<String>("query").unwrap();
     let default_format = "gav".to_owned();
@@ -110,24 +135,9 @@ pub fn search(command_matches: &clap::ArgMatches) {
         .get_one::<String>("format")
         .unwrap_or(&default_format);
     let limit = command_matches.get_one::<u32>("limit").unwrap_or(&20);
-    let url = format!(
-        "https://search.maven.org/solrsearch/select?q={}&rows={}&wt=json",
-        query, limit
-    );
     println!("Searching for containing {}...", query);
-    let client = reqwest::blocking::Client::new();
-    let result = client
-        .get(&url)
-        .header(reqwest::header::USER_AGENT, "curl/8.7.1")
-        .send()
-        .unwrap()
-        .json::<McsResult>()
-        .unwrap();
-    let limit1 = *limit;
-    println!(
-        "Found {} results (showing {})",
-        result.response.num_found, limit1
-    );
+    let result = solr_search(query, *limit);
+    print_found(&result);
     if let Some(docs) = &result.response.docs {
         if docs.is_empty() {
             return;
@@ -167,31 +177,15 @@ pub fn search(command_matches: &clap::ArgMatches) {
 pub fn class_search(command_matches: &clap::ArgMatches) {
     let query = command_matches.get_one::<String>("query").unwrap();
     let limit = command_matches.get_one::<u32>("limit").unwrap_or(&20);
-    let url = if command_matches.get_flag("full-name") {
-        format!(
-            "https://search.maven.org/solrsearch/select?q=c:{}&rows={}&wt=json",
-            query, limit
-        )
+    // `fc:` for fully qualified class name, `c:` for simple class name
+    let solr_query = if command_matches.get_flag("full-name") {
+        format!("fc:{}", query)
     } else {
-        format!(
-            "https://search.maven.org/solrsearch/select?q=c:{}&rows={}&wt=json",
-            query, limit
-        )
+        format!("c:{}", query)
     };
     println!("Searching for artifacts containing {}...", query);
-    let client = reqwest::blocking::Client::new();
-    let result = client
-        .get(&url)
-        .header(reqwest::header::USER_AGENT, "curl/8.7.1")
-        .send()
-        .unwrap()
-        .json::<McsResult>()
-        .unwrap();
-    let limit1 = *limit;
-    println!(
-        "Found {} results (showing {})",
-        result.response.num_found, limit1
-    );
+    let result = solr_search(&solr_query, *limit);
+    print_found(&result);
     if let Some(docs) = &result.response.docs {
         if docs.is_empty() {
             return;
@@ -302,7 +296,7 @@ pub fn jar_info<P: AsRef<Path>>(jar_path: P) {
                 println!("{}: {}", "GAV".bold(), gav);
                 let artifact_url = format!(
                     "https://repo1.maven.org/maven2/{}/{}/{}/",
-                    project.group_id.unwrap(),
+                    project.group_id.unwrap().replace('.', "/"),
                     project.artifact_id.unwrap(),
                     project.version.unwrap(),
                 );

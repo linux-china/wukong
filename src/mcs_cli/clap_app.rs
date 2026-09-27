@@ -23,6 +23,7 @@ pub fn build_mcs_app() -> Command {
                         .long("limit")
                         .short('l')
                         .num_args(1)
+                        .value_parser(clap::value_parser!(u32))
                         .required(false),
                 )
                 .arg(
@@ -49,6 +50,7 @@ pub fn build_mcs_app() -> Command {
                         .long("limit")
                         .short('l')
                         .num_args(1)
+                        .value_parser(clap::value_parser!(u32))
                         .required(false),
                 )
                 .arg(
