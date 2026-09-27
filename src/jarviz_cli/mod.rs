@@ -175,7 +175,12 @@ fn resolve_jar_endpoint(command_matches: &clap::ArgMatches) -> Option<String> {
         let version = parts[2];
         let local_jar = get_local_jar(&group_id, artifact, version);
         return if local_jar.is_some() {
-            Some(format!("file://{}", local_jar.unwrap()))
+            let jar_path = local_jar.unwrap();
+            if jar_path.starts_with("file://") {
+                Some(jar_path.to_string())
+            }else {
+                Some(format!("file://{}", jar_path))
+            }
         } else {
             let url = format!(
                 "https://repo1.maven.org/maven2/{}/{}/{}/{}-{}.jar",

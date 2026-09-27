@@ -32,9 +32,8 @@ pub fn update_jbang() {
 
 pub fn check_jbang_version() {
     let url = "https://github.com/jbangdev/jbang/releases/latest/download/version.txt";
-    let last_version = reqwest::blocking::get(url).unwrap().text().unwrap();
+    let last_version = reqwest::blocking::get(url).unwrap().text().unwrap().trim().to_string();
     let jbang_version = get_jbang_version();
-    println!("{}", jbang_version);
     if jbang_version == last_version {
         println!("jbang is up-to-date");
     } else {
