@@ -91,6 +91,8 @@ pub fn list_jdk(distro: &str, release_status: &str) -> Vec<FoojayJDK> {
     }).join("&");
     let url = format!("https://api.foojay.io/disco/v3.0/packages?release_status={}&package_type=jdk&latest=available&{}", release_status, extra_query);
     let mut jdks = reqwest::blocking::get(&url).unwrap().json::<PackagesResponse>().unwrap().result;
+    // dedup_by only removes consecutive duplicates, so sort by major version first
+    jdks.sort_by(|a, b| b.major_version.cmp(&a.major_version));
     jdks.dedup_by(|a, b| a.major_version == b.major_version);
     jdks
 }
