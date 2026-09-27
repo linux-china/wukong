@@ -46,8 +46,14 @@ pub fn manage_install(install_matches: &clap::ArgMatches) {
                     return;
                 }
                 println!("Installing: {} {}", candidate_name, candidate_version);
-                install_candidate(candidate_name, &candidate_version);
-                candidate_version
+                let candidate_home = install_candidate(candidate_name, &candidate_version);
+                // java major version such as `21` is resolved to the real version such as `21.0.4-tem`,
+                // so take the installed version from the candidate home directory name
+                candidate_home
+                    .file_name()
+                    .and_then(|name| name.to_str())
+                    .map(|name| name.to_string())
+                    .unwrap_or(candidate_version)
             };
         println!("Done installing!");
         if accept_as_default {

@@ -13,10 +13,21 @@ use crate::jbang_cli::jbang_home;
 
 fn get_current_jdk_path() -> String {
     let current_jdk = jbang_home().join("currentjdk");
-    if current_jdk.exists() && current_jdk.is_symlink() {
-        return current_jdk.read_link().unwrap().to_str().unwrap().to_string();
+    // `is_symlink()` doesn't follow the link, so a dangling link (target JDK removed) is still reported
+    if current_jdk.is_symlink() {
+        if let Ok(target) = current_jdk.read_link() {
+            return target.to_string_lossy().to_string();
+        }
     }
     "".to_owned()
+}
+
+/// remove a directory symlink, such as `currentjdk`.
+/// On Windows, it is a directory symlink and `fs::remove_file` on it fails with PermissionDenied.
+fn remove_dir_symlink(link: &Path) -> std::io::Result<()> {
+    symlink::remove_symlink_dir(link)
+        .or_else(|_| fs::remove_file(link))
+        .or_else(|_| fs::remove_dir(link))
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -84,12 +95,8 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
                 if jdk_path.exists() {
                     let current_jdk_link = jbang_home_path.join("currentjdk");
                     if current_jdk_link.exists() || current_jdk_link.is_symlink() {
-                        // On Windows, `currentjdk` is a directory symlink; using
-                        // `fs::remove_file` on it fails with PermissionDenied.
                         let remove_result = if current_jdk_link.is_symlink() {
-                            symlink::remove_symlink_dir(&current_jdk_link)
-                                .or_else(|_| fs::remove_file(&current_jdk_link))
-                                .or_else(|_| fs::remove_dir(&current_jdk_link))
+                            remove_dir_symlink(&current_jdk_link)
                         } else if current_jdk_link.is_dir() {
                             fs::remove_dir_all(&current_jdk_link)
                         } else {
@@ -188,12 +195,17 @@ pub fn manage_jdk(jdk_matches: &clap::ArgMatches) {
                 let version = matches.get_one::<String>("version").unwrap();
                 let jdk_path = jbang_home_path.join("cache").join("jdks").join(version);
                 if jdk_path.exists() {
+                    // check the current JDK before removing the JDK directory
+                    let is_current_jdk = get_current_jdk_path() == jdk_path.to_string_lossy();
                     fs::remove_dir_all(&jdk_path).unwrap();
                     println!("JDK {} has been uninstalled.", version);
-                    let current_jdk_path = get_current_jdk_path();
-                    if jdk_path.to_str().unwrap() == current_jdk_path {
-                        symlink::remove_symlink_dir(current_jdk_path).unwrap();
-                        println!("JDK {} was the current JDK, it has been removed.", version);
+                    if is_current_jdk {
+                        // remove the `currentjdk` link itself, not its target
+                        let current_jdk_link = jbang_home_path.join("currentjdk");
+                        match remove_dir_symlink(&current_jdk_link) {
+                            Ok(_) => println!("JDK {} was the current JDK, the default JDK has been unset.", version),
+                            Err(e) => println!("Failed to remove currentjdk link: {}", e),
+                        }
                     }
                 } else {
                     println!("JDK {} is not installed.", version);
