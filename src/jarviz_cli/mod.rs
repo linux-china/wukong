@@ -184,7 +184,7 @@ fn resolve_jar_endpoint(command_matches: &clap::ArgMatches) -> Option<String> {
         } else {
             let url = format!(
                 "https://repo1.maven.org/maven2/{}/{}/{}/{}-{}.jar",
-                group_id, artifact, version, artifact, version,
+                group_id.replace('.', "/"), artifact, version, artifact, version,
             );
             Some(url)
         };
