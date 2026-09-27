@@ -13,7 +13,10 @@ use wukong::common::capture_command;
 
 pub fn get_major_version(zip_file: &mut dyn Read) -> u16 {
     let mut buffer = [0; 8];
-    zip_file.read(&mut buffer).unwrap();
+    // read_exact: compressed streams may return fewer than 8 bytes per read()
+    if zip_file.read_exact(&mut buffer).is_err() {
+        return 0;
+    }
     // check if the file is a class file
     if &buffer[0..4] == b"\xCA\xFE\xBA\xBE" {
         // get major version from buffer[6] and buffer[7]
@@ -51,6 +54,8 @@ pub fn get_java_version(major_version: u16) -> &'static str {
         68 => "24",
         69 => "25",
         70 => "26",
+        71 => "27",
+        72 => "28",
         _ => "Unknown",
     }
 }
@@ -87,7 +92,9 @@ fn get_bytecode_version(java_version: f32) -> u16 {
         24.0 => 68,
         25.0 => 69,
         26.0 => 70,
-        version if version >= 27.0 => (java_version + 44.0) as u16,
+        27.0 => 71,
+        28.0 => 72,
+        version if version >= 29.0 => (java_version + 44.0) as u16,
         _ => 0,
     }
 }
@@ -105,7 +112,7 @@ pub fn bytecode(command_matches: &clap::ArgMatches) {
 pub fn bytecode_matrix(_: &clap::ArgMatches) {
     let mut table = Table::new();
     table.add_row(row!["Bytecode Version", "Java Version"]);
-    for major_version in 45..70 {
+    for major_version in 45..=70 {
         let java_version = get_java_version(major_version);
         table.add_row(row![major_version.to_string(), java_version]);
     }
