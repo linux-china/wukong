@@ -1,8 +1,8 @@
-use std::collections::HashMap;
-use std::fs;
+use crate::mt_cli::m2_dir;
 use quick_xml::se::Serializer;
 use serde::{Deserialize, Serialize};
-use crate::mt_cli::m2_dir;
+use std::collections::HashMap;
+use std::fs;
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 #[serde(rename = "toolchains")]
@@ -13,8 +13,14 @@ pub struct Toolchains {
 impl Toolchains {
     pub fn load() -> Self {
         let file = m2_dir().join("toolchains.xml");
-        let reader = std::fs::File::open(file).unwrap();
-        quick_xml::de::from_reader(std::io::BufReader::new(reader)).unwrap()
+        if file.exists() {
+            let reader = std::fs::File::open(file).unwrap();
+            quick_xml::de::from_reader(std::io::BufReader::new(reader)).unwrap()
+        } else {
+            Toolchains {
+                toolchain: Vec::new(),
+            }
+        }
     }
 
     pub fn add_jdk(&mut self, version: &str, vendor: Option<String>, jdk_home: String) {
@@ -24,7 +30,10 @@ impl Toolchains {
                 version: version.to_string(),
                 vendor,
             },
-            configuration: [("jdkHome".to_string(), jdk_home)].iter().cloned().collect(),
+            configuration: [("jdkHome".to_string(), jdk_home)]
+                .iter()
+                .cloned()
+                .collect(),
         };
         self.toolchain.push(toolchain);
     }
