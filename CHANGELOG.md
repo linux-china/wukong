@@ -2,6 +2,10 @@
 
 Nothing Yet!
 
+# Version 0.3.5 (2026-09-27)
+
+* Fixed bugs reported by LLM :) 
+
 # Version 0.3.4 (2026-07-17)
 
 * Add `gav` command for [Maven Managing Dependencies](https://maven.apache.org/plugins/maven-dependency-plugin/examples/managing-dependencies.html): `gav add <gav>`, `gav remove <gav>`, `gav tree`, 
