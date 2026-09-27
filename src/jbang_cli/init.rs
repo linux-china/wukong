@@ -51,14 +51,14 @@ pub fn manage_init(init_matches: &clap::ArgMatches) {
             extract_code_from_openai(
                 "https://api.openai.com",
                 &api_key,
-                "gpt-5",
+                "gpt-6-luna",
                 params.get(0).unwrap(),
             )
         } else if let Ok(api_key) = std::env::var("DEEPSEEK_API_KEY") {
             extract_code_from_openai(
                 "https://api.deepseek.com",
                 &api_key,
-                "deepseek-chat",
+                "deepseek-flash",
                 params.get(0).unwrap(),
             )
         } else {
