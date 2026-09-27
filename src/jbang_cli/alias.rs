@@ -19,6 +19,7 @@ pub fn manage_alias(alias_matches: &clap::ArgMatches) {
                 let alias = Alias {
                     description,
                     script_ref,
+                    ..Default::default()
                 };
                 add_alias(name, alias);
             }
@@ -188,6 +189,7 @@ mod tests {
             script_ref:
                 "https://github.com/jbangdev/jbang-examples/blob/HEAD/examples/helloworld.java"
                     .to_string(),
+            ..Default::default()
         };
         add_alias(name, alias);
     }

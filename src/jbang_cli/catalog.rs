@@ -15,6 +15,7 @@ pub fn manage_catalog(catalog_matches: &clap::ArgMatches) {
                     catalog_ref: file.clone(),
                     description,
                     import_items: true,
+                    ..Default::default()
                 };
                 add_catalog(name, catalog_ref);
             }
@@ -189,6 +190,7 @@ mod tests {
             catalog_ref: "https://github.com/jbangdev/jbang-catalog/blob/HEAD/jbang-catalog.json".to_string(),
             description: Some("Demo catalog".to_string()),
             import_items: true,
+            ..Default::default()
         };
         add_catalog(name, catalog_ref);
     }

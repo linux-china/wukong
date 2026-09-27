@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use indexmap::IndexMap;
 use std::path::PathBuf;
 use clap::{Arg, Command};
 use colored::Colorize;
@@ -38,7 +39,7 @@ pub fn add_template(matches: &clap::ArgMatches) {
     let name = matches.get_one::<String>("name").unwrap();
     let description = matches.get_one::<String>("description").map(|item| item.to_string());
     let file = matches.get_one::<String>("file").unwrap();
-    let mut file_refs: HashMap<String, String> = HashMap::new();
+    let mut file_refs: IndexMap<String, String> = IndexMap::new();
     if file.starts_with("http://") || file.starts_with("https://") {
         let url = Url::parse(file).unwrap();
         let url_path = url.path();
@@ -61,7 +62,7 @@ pub fn add_template(matches: &clap::ArgMatches) {
     let template = Template {
         file_refs: file_refs,
         description: description,
-        properties: None,
+        ..Default::default()
     };
     let mut jbang_catalog = jbang_catalog();
     jbang_catalog.add_template(name, template);

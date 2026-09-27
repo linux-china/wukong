@@ -52,11 +52,7 @@ pub fn jdk_home(jdk_version: &str) -> PathBuf {
 pub fn jbang_catalog() -> JBangCatalog {
     let jbang_catalog_json = jbang_home().join("jbang-catalog.json");
     if !jbang_catalog_json.exists() {
-        JBangCatalog {
-            catalogs: None,
-            aliases: None,
-            templates: None,
-        }
+        JBangCatalog::default()
     } else {
         serde_json::from_reader(File::open(jbang_catalog_json).unwrap()).unwrap()
     }

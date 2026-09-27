@@ -52,7 +52,8 @@ flate2 = "1.1"
 tar = "0.4.46"
 reqwest = { version = "0.13", features = ["json", "blocking"] }
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde_json = { version = "1.0", features = ["preserve_order"] }
+indexmap = { version = "2", features = ["serde"] }
 quick-xml = { version = "0.42", features = ["serialize"] }
 which = "8"
 dirs = "6"
