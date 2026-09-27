@@ -95,7 +95,10 @@ pub fn find_java_version(major_version: &str) -> Option<String> {
                            "",
                            ""
     );
-    let text = wukong::common::http_text(&list_url);
+    // avoid panic on network failure: treat it as version not found
+    let text = reqwest::blocking::get(&list_url).ok()
+        .filter(|resp| resp.status().is_success())
+        .and_then(|resp| resp.text().ok())?;
     let versions: Vec<&str> = text.lines()
         .filter(|line| line.trim().ends_with("-tem"))
         .map(|line| line.split('|').last().unwrap().trim())

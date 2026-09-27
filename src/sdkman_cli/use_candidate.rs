@@ -11,8 +11,13 @@ pub fn manage_use(use_matches: &clap::ArgMatches) {
             use_candidate(candidate_name, &java_home);
             return;
         } else {
-            let java_version = find_java_version(&candidate_version).unwrap();
-            candidate_version = java_version;
+            match find_java_version(&candidate_version) {
+                Some(java_version) => candidate_version = java_version,
+                None => {
+                    eprintln!("Failed to find Java {} version from SDKMAN, please check network or version correct or not!", candidate_version);
+                    return;
+                }
+            }
         }
     }
     let candidate_home = find_candidate_home(candidate_name, &candidate_version);
