@@ -23,7 +23,7 @@ fn read_config() -> Result<HashMap<String, String>, PropertiesError> {
 }
 
 fn update_config(config: &HashMap<String, String>) {
-    let f = File::open(jbang_config_path()).unwrap();
+    let f = File::create(jbang_config_path()).unwrap();
     java_properties::write(BufWriter::new(f), &config).unwrap();
 }
 

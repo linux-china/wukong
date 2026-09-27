@@ -5,7 +5,7 @@ use itertools::Itertools;
 pub fn manage_build(build_matches: &clap::ArgMatches) {
     //let script_or_file = build_matches.get_one::<String>("scriptOrFile").unwrap();
     let args = std::env::args().collect::<Vec<String>>();
-    let app_args = &args[2..].iter().map(|s| s.as_str()).collect_vec();
+    let app_args = &args[1..].iter().map(|s| s.as_str()).collect_vec();
     call_jbang_sub_command(&app_args);
 }
 pub fn build_build_command() -> Command {
