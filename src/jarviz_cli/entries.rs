@@ -26,8 +26,8 @@ fn scan_classes(jar_path_or_url: &str) -> HashSet<String> {
         let mut archive = build_archive_from_url(jar_path_or_url);
         for i in 0..archive.len() {
             let mut zip_file = archive.by_index(i).unwrap();
-            if zip_file.is_file() && zip_file.name().ends_with(".class") {
-                let class_name = zip_file.name().to_string();
+            if zip_file.is_file() && zip_file.name().unwrap().ends_with(".class") {
+                let class_name = zip_file.name().unwrap().to_string();
                 classes.insert(format!("{},{}", file_name, class_name));
             }
         }
@@ -37,8 +37,8 @@ fn scan_classes(jar_path_or_url: &str) -> HashSet<String> {
             let mut archive = build_archive_from_local(local_path);
             for i in 0..archive.len() {
                 let mut zip_file = archive.by_index(i).unwrap();
-                if zip_file.is_file() && zip_file.name().ends_with(".class") {
-                    let class_name = zip_file.name().to_string();
+                if zip_file.is_file() && zip_file.name().unwrap().ends_with(".class") {
+                    let class_name = zip_file.name().unwrap().to_string();
                     classes.insert(format!("{},{}", file_name, class_name));
                 }
             }

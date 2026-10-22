@@ -287,7 +287,7 @@ pub fn jar_info<P: AsRef<Path>>(jar_path: P) {
     let mut pom_found = false;
     for i in 0..zip.len() {
         let mut file = zip.by_index(i).unwrap();
-        let file_name = file.name();
+        let file_name = file.name().unwrap();
         if file_name.ends_with("/pom.xml") {
             let mut xml_code = String::new();
             file.read_to_string(&mut xml_code).unwrap();

@@ -10,7 +10,7 @@ use std::io::Read;
 use std::path::Path;
 use std::{env, io};
 use walkdir::WalkDir;
-use zip::ZipArchive;
+use zip::{HasZipMetadata, ZipArchive};
 
 pub mod bytecode;
 pub mod clap_app;
@@ -39,13 +39,14 @@ fn scan_local_archive<P: AsRef<Path>>(
         if zip_file.is_file() {
             let major_version = get_major_version(&mut zip_file);
             if major_version > 0 {
-                if is_good_class_file(zip_file.name()) {
+                let file_name = zip_file.name().unwrap().to_string();
+                if is_good_class_file(&file_name) {
                     class_info
                         .entry(major_version)
                         .and_modify(|e| *e += 1)
                         .or_insert(1);
                     if include_details {
-                        let class_full_name = zip_file.name().to_string();
+                        let class_full_name = file_name.clone();
                         class_details
                             .entry(major_version)
                             .and_modify(|items| items.push(class_full_name.clone()))
@@ -82,13 +83,14 @@ fn scan_remote_archive(
         if zip_file.is_file() {
             let major_version = get_major_version(&mut zip_file);
             if major_version > 0 {
-                if is_good_class_file(zip_file.name()) {
+                let file_name = zip_file.name().unwrap().to_string();
+                if is_good_class_file(&file_name) {
                     class_info
                         .entry(major_version)
                         .and_modify(|e| *e += 1)
                         .or_insert(1);
                     if include_details {
-                        let class_full_name = zip_file.name().to_string();
+                        let class_full_name = file_name.clone();
                         class_details
                             .entry(major_version)
                             .and_modify(|items| items.push(class_full_name.clone()))
@@ -327,7 +329,7 @@ mod tests {
             let mut zip_file = archive.by_index(i).unwrap();
             if zip_file.is_file() {
                 let major_version = get_major_version(&mut zip_file);
-                let file_name = zip_file.name().to_string();
+                let file_name = zip_file.name().unwrap().to_string();
                 if major_version > 0 {
                     println!(
                         "{}: {}",
@@ -347,7 +349,7 @@ mod tests {
             let mut zip_file = archive.by_index(i).unwrap();
             if zip_file.is_file() {
                 let major_version = get_major_version(&mut zip_file);
-                let file_name = zip_file.name().to_string();
+                let file_name = zip_file.name().unwrap().to_string();
                 if major_version > 0 {
                     println!(
                         "{}: {}",

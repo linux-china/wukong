@@ -96,9 +96,10 @@ fn scan_services(jar_path_or_url: &str, required_service_name: Option<&String>) 
         let mut archive = build_archive_from_url(jar_path_or_url);
         for i in 0..archive.len() {
             let mut zip_file = archive.by_index(i).unwrap();
-            if zip_file.is_file() && zip_file.name().starts_with("META-INF/services/") {
+            if zip_file.is_file() && zip_file.name().unwrap().starts_with("META-INF/services/") {
                 let service_name = zip_file
                     .name()
+                    .unwrap()
                     .trim_start_matches("META-INF/services/")
                     .to_string();
                 if let Some(name) = required_service_name {
@@ -123,9 +124,10 @@ fn scan_services(jar_path_or_url: &str, required_service_name: Option<&String>) 
             let mut archive = build_archive_from_local(local_path);
             for i in 0..archive.len() {
                 let mut zip_file = archive.by_index(i).unwrap();
-                if zip_file.is_file() && zip_file.name().starts_with("META-INF/services/") {
+                if zip_file.is_file() && zip_file.name().unwrap().starts_with("META-INF/services/") {
                     let service_name = zip_file
                         .name()
+                        .unwrap()
                         .trim_start_matches("META-INF/services/")
                         .to_string();
                     // read zip_file content to string
