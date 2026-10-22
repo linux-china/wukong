@@ -60,7 +60,13 @@ fn main() {
     }
     let args = std::env::args().collect::<Vec<String>>();
     // check run script from jbang
-    if args.len() >= 3 && args[1] == "run" {
+    if args.len() >= 2 && args[1].starts_with("--main") {
+        jbang_run(
+            &args[1],
+            &args[1..].iter().map(|s| s.as_str()).collect_vec(),
+        );
+        return;
+    } else if args.len() >= 3 && args[1] == "run" {
         // jbang run script_file
         let script_path = &args[2];
         if script_path == "-h" || script_path == "--help" {
